@@ -46,7 +46,7 @@ export default function HomePage() {
         <span className="eyebrow">{pt.home.mockupEyebrow}</span>
         <h2>{pt.home.mockupTitle}</h2>
         <p>{pt.home.mockupText}</p>
-        <div className="ux-flow"><span>Início</span><span>Criar Caixa</span><span>Carrinho</span><span>Pagamento</span><span>Conta</span></div>
+        <div className="ux-flow"><span>Início</span><span>Criar Caixa</span><span>Carrinho</span><span>Pagamento</span><span>Entrar</span></div>
       </section>
     </>
   );

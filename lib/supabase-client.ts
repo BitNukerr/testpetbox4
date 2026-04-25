@@ -10,23 +10,23 @@ const supabaseKey =
 
 function getConfigError() {
   if (!supabaseUrl || !supabaseKey) {
-    return "Configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.";
+    return "Configure NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.";
   }
 
   try {
     const url = new URL(supabaseUrl);
     if (!["http:", "https:"].includes(url.protocol)) {
-      return "NEXT_PUBLIC_SUPABASE_URL must start with https://.";
+      return "NEXT_PUBLIC_SUPABASE_URL deve começar por https://.";
     }
     if (url.hostname === "your-project.supabase.co") {
-      return "Replace the placeholder NEXT_PUBLIC_SUPABASE_URL with your Supabase project URL.";
+      return "Substitua o valor temporário de NEXT_PUBLIC_SUPABASE_URL pelo URL do seu projecto Supabase.";
     }
   } catch {
-    return "NEXT_PUBLIC_SUPABASE_URL is not a valid URL.";
+    return "NEXT_PUBLIC_SUPABASE_URL não é um URL válido.";
   }
 
   if (["your_supabase_publishable_key", "your_supabase_anon_key"].includes(supabaseKey)) {
-    return "Replace the placeholder Supabase key with your publishable key.";
+    return "Substitua a chave temporária da Supabase pela chave publicável.";
   }
 
   return "";

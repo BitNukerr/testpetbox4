@@ -28,6 +28,9 @@ Open `.env.local` and set:
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+RESEND_API_KEY=re_...
+CONTACT_FROM_EMAIL=PetBox <onboarding@resend.dev>
+CONTACT_TO_EMAIL=you@example.com
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your Supabase publishable key
 SUPABASE_SERVICE_ROLE_KEY=your Supabase service role key

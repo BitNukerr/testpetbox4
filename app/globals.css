@@ -17,7 +17,7 @@ button{cursor:pointer}
 .container{width:min(1120px,calc(100% - 32px));margin:0 auto}
 .section{padding:40px 0}
 .narrow{max-width:760px}
-.section-heading{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:20px;flex-wrap:wrap}
 .eyebrow{display:inline-block;margin-bottom:10px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 h1,h2,h3,h4,p{margin:0 0 12px}
 h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}
@@ -97,7 +97,7 @@ p{line-height:1.65}
 .cart-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .meta-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:13px;color:#4f463f}
 .meta-pill strong{text-transform:capitalize}
-.cart-actions{display:flex;flex-direction:column;align-items:end;gap:12px}
+.cart-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .cart-price{font-size:1.1rem}
 .remove-btn{font-weight:700}
 .qty-row{display:flex;align-items:center;gap:10px;padding:6px;border-radius:999px;border:1px solid var(--line);background:#fff8f1}
@@ -176,6 +176,6 @@ p{line-height:1.65}
 .choice-card img{height:110px;object-fit:contain;margin:auto}
 .choice-card strong{display:block;text-align:center;margin-top:10px}
 .choice-card.active{border-color:#231f1b;box-shadow:0 0 0 3px rgba(35,31,27,.08)}
-.account-stack{display:grid;gap:20px}.auth-card .form-grid button{min-height:46px}
+.account-stack{display:grid;gap:20px}.auth-card .form-grid button{min-height:46px}.account-note{margin-top:14px}
 .brand-badge{background:transparent!important;font-size:1.7rem;width:auto;height:auto;border-radius:0}
 @media (max-width:900px){.premium-strip,.split-showcase,.config-progress{grid-template-columns:1fr}.split-showcase{padding:20px}.hero-badge{position:static;display:inline-block;margin-bottom:12px}.two-options{grid-template-columns:1fr}}

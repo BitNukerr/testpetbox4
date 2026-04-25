@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const CONTACT_TO_EMAIL = "rodrigoleite.96@gmail.com";
-
 export async function POST(req: NextRequest) {
   try {
     const { name, email, subject, message } = await req.json();
@@ -11,6 +9,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.CONTACT_FROM_EMAIL || "PetBox <onboarding@resend.dev>";
+    const to = process.env.CONTACT_TO_EMAIL || "rodrigoleite.96@gmail.com";
 
     if (!apiKey) {
       return NextResponse.json({ error: "Falta configurar RESEND_API_KEY no Vercel." }, { status: 500 });
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest) {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from,
-        to: CONTACT_TO_EMAIL,
+        to,
         reply_to: email,
         subject: subject || "Nova mensagem PetBox",
         text: `Nome: ${name}

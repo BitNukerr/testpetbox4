@@ -23,7 +23,7 @@ export default function AuthClient() {
 
   async function submit(mode: "signin" | "signup") {
     if (!isSupabaseConfigured() || !supabase) {
-      setMessage(`${supabaseConfigError} In Vercel, update the Supabase environment variables and redeploy.`);
+      setMessage(`${supabaseConfigError} Actualize as variáveis de ambiente da Supabase no Vercel e volte a publicar o site.`);
       return;
     }
 
@@ -36,9 +36,9 @@ export default function AuthClient() {
         : await supabase.auth.signUp({ email, password });
 
       if (result.error) setMessage(result.error.message);
-      else setMessage(mode === "signup" ? "Conta criada. Verifique o email, se o Supabase pedir confirmacao." : "Sessao iniciada.");
+      else setMessage(mode === "signup" ? "Conta criada. Verifique o email, caso a Supabase peça confirmação." : "Sessão iniciada.");
     } catch {
-      setMessage("Could not reach Supabase. Check that NEXT_PUBLIC_SUPABASE_URL is your full project URL, for example https://your-project-ref.supabase.co.");
+      setMessage("Não foi possível contactar a Supabase. Confirme que NEXT_PUBLIC_SUPABASE_URL usa o URL completo do projecto, por exemplo https://your-project-ref.supabase.co.");
     } finally {
       setLoading(false);
     }

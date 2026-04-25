@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const items: CartItem[] = body.items ?? [];
 
     if (!items.length) {
-      return NextResponse.json({ error: "No items provided." }, { status: 400 });
+      return NextResponse.json({ error: "Não foram enviados artigos para pagamento." }, { status: 400 });
     }
 
     const baseUrl =
@@ -76,9 +76,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Checkout session error:", error);
+    console.error("Erro na sessão de pagamento:", error);
     return NextResponse.json(
-      { error: "Failed to create checkout session." },
+      { error: "Não foi possível criar a sessão de pagamento." },
       { status: 500 }
     );
   }

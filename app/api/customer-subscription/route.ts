@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   try {
     const { customerId } = await req.json();
     if (!customerId) {
-      return NextResponse.json({ error: "Missing customerId." }, { status: 400 });
+      return NextResponse.json({ error: "Falta o ID de cliente." }, { status: 400 });
     }
 
     const subscriptions = await stripe.subscriptions.list({
@@ -21,6 +21,6 @@ export async function POST(req: NextRequest) {
       status: subscription?.status || ""
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to load subscription." }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Não foi possível carregar a subscrição." }, { status: 500 });
   }
 }

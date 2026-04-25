@@ -22,7 +22,7 @@ export default function Hero() {
         <div className="hero-stats">
           <div><strong>2 planos</strong><span>Mensal + trimestral</span></div>
           <div><strong>Cães + gatos</strong><span>Produtos por perfil</span></div>
-          <div><strong>Mobile first</strong><span>Compra simples no telemóvel</span></div>
+          <div><strong>Telemóvel primeiro</strong><span>Compra simples no telemóvel</span></div>
         </div>
       </div>
     </section>
