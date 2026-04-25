@@ -20,15 +20,27 @@ export default function AuthClient() {
       return;
     }
 
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ? { email: data.user.email || "" } : null);
-      setCheckingSession(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    let mounted = true;
+    let initialSessionLoaded = false;
+
+    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      if (!mounted) return;
       setUser(session?.user ? { email: session.user.email || "" } : null);
       setCheckingSession(false);
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      initialSessionLoaded = true;
+      applySession(data.session);
     });
-    return () => listener.subscription.unsubscribe();
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
+      applySession(session);
+    });
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function submit(mode: "signin" | "signup") {

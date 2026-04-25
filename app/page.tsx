@@ -41,13 +41,6 @@ export default function HomePage() {
         </div>
         <div className="grid three">{products.slice(0, 3).map((product) => <ProductCard key={product.slug} product={product} />)}</div>
       </section>
-
-      <section className="container section ux-panel">
-        <span className="eyebrow">{pt.home.mockupEyebrow}</span>
-        <h2>{pt.home.mockupTitle}</h2>
-        <p>{pt.home.mockupText}</p>
-        <div className="ux-flow"><span>Início</span><span>Criar Caixa</span><span>Carrinho</span><span>Pagamento</span><span>Entrar</span></div>
-      </section>
     </>
   );
 }

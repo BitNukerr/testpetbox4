@@ -32,12 +32,27 @@ export default function Header() {
       return;
     }
 
-    supabase.auth.getUser().then(({ data }) => setAuthStatus(data.user ? "signed-in" : "signed-out"));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    let mounted = true;
+    let initialSessionLoaded = false;
+
+    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      if (!mounted) return;
       setAuthStatus(session?.user ? "signed-in" : "signed-out");
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      initialSessionLoaded = true;
+      applySession(data.session);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
+      applySession(session);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const authNav = authStatus === "signed-in"

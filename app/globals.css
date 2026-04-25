@@ -164,10 +164,6 @@ p{line-height:1.65}
 .strip-card p{color:var(--muted);font-size:14px;margin:0}
 .split-showcase{display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:32px;padding:28px;margin-top:20px;margin-bottom:20px}
 .showcase-card{background:linear-gradient(180deg,#fff8ef,#edd9c1);border-radius:26px;padding:20px;border:1px solid var(--line)}
-.ux-panel{background:#231f1b;color:white;border-radius:32px;padding:32px;margin-bottom:20px}
-.ux-panel .eyebrow,.ux-panel p{color:#e9ded0}
-.ux-flow{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-.ux-flow span{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:10px 14px;font-weight:700}
 .config-progress{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
 .config-progress span{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;text-align:center;font-weight:700;font-size:13px}
 .config-progress strong{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:#231f1b;color:#fff;margin:0 auto 6px}

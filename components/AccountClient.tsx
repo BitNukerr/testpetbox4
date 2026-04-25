@@ -24,16 +24,22 @@ export default function AccountClient() {
     }
 
     let mounted = true;
+    let initialSessionLoaded = false;
 
-    supabase.auth.getUser().then(({ data }) => {
+    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
       if (!mounted) return;
-      setUser(data.user ? { email: data.user.email || "" } : null);
-      setAuthChecked(true);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ? { email: session.user.email || "" } : null);
       setAuthChecked(true);
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      initialSessionLoaded = true;
+      applySession(data.session);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
+      applySession(session);
     });
 
     return () => {

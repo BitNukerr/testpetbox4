@@ -9,9 +9,7 @@ export const pt = {
     stats: ['Planos mensais e trimestrais', 'Para cães e gatos', 'Personalização simples'],
     plansEyebrow: 'Planos', plansTitle: 'Escolha a frequência ideal', addonsEyebrow: 'Extras', addonsTitle: 'Favoritos para juntar à caixa',
     whyEyebrow: 'Experiência', whyTitle: 'Pensado para donos ocupados e animais felizes',
-    whyText: 'A navegação é simples, o configurador guia cada escolha e o pagamento é directo. O objectivo é reduzir dúvidas e aumentar a confiança antes da compra.',
-    mockupEyebrow: 'Fluxo', mockupTitle: 'Percurso pensado para comprar sem complicações',
-    mockupText: 'Início → Criar Caixa → Carrinho → Pagamento → Entrar. Cada etapa usa chamadas para acção claras e feedback visual.'
+    whyText: 'A navegação é simples, o configurador guia cada escolha e o pagamento é directo. O objectivo é reduzir dúvidas e aumentar a confiança antes da compra.'
   },
   common: { addToCart: 'Adicionar ao carrinho', view: 'Ver', checkout: 'Finalizar compra', remove: 'Remover', total: 'Total', subtotal: 'Subtotal', shipping: 'Envio', summary: 'Resumo', quantity: 'Quantidade', save: 'Guardar', loading: 'A carregar...', close: 'Fechar' },
   configure: { eyebrow: 'Configurador', title: 'Crie a caixa ideal para o seu animal', intro: 'Um processo em passos simples: animal, tamanho, plano, personalidade e extras.', steps: ['Animal', 'Tamanho', 'Plano', 'Estilo', 'Extras'], petType: 'Tipo de animal', petSize: 'Tamanho', delivery: 'Plano de entrega', theme: 'Personalidade da caixa', extras: 'Extras opcionais', dog: 'Cão', cat: 'Gato', small: 'Pequeno', medium: 'Médio', large: 'Grande', monthly: 'Mensal', quarterly: 'Trimestral', playful: 'Brincalhão', cozy: 'Conforto', outdoor: 'Aventura', calm: 'Calmo', treats: 'Snacks extra', toyUpgrade: 'Brinquedo premium', careItem: 'Produto de cuidado', photoAccessory: 'Acessório para fotos', liveSummary: 'Resumo em tempo real', add: 'Adicionar caixa', buy: 'Comprar agora' },
