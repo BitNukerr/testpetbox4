@@ -54,7 +54,7 @@ export default function Header() {
     <header className="site-header">
       <div className="container header-row">
         <Link href="/" className="brand">
-          <img src="/images/logo.png" alt="PetBox" className="brand-logo" />
+          <img src="/favicon.svg" alt="" className="brand-logo brand-logo-badge" />
           <span>
             <strong>PetBox</strong>
             <small>{pt.brand.tagline}</small>

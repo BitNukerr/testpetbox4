@@ -1,5 +1,4 @@
-import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import ShopClient from "@/components/ShopClient";
 
 export default function ShopPage() {
   return (
@@ -10,9 +9,7 @@ export default function ShopPage() {
           <h1>Snacks, brinquedos e acessórios para animais</h1>
         </div>
       </div>
-      <div className="grid three">
-        {products.map((product) => <ProductCard key={product.slug} product={product} />)}
-      </div>
+      <ShopClient />
     </section>
   );
 }
