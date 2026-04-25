@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   try {
     const { customerId, returnPath } = await req.json();
     if (!customerId) {
-      return NextResponse.json({ error: "Falta o ID de cliente Stripe." }, { status: 400 });
+      return NextResponse.json({ error: "Falta o ID de cliente de pagamento." }, { status: 400 });
     }
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const session = await stripe.billingPortal.sessions.create({

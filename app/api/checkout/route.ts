@@ -24,52 +24,25 @@ export async function POST(req: NextRequest) {
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-    const containsSubscription = items.some(
-      (item) => item.type === "plan" || item.type === "custom-box"
-    );
-    const oneTimePaymentMethods = ["card", "mb_way"] as unknown as Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
-    const subscriptionPaymentMethods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card"];
+    const mbWayOnlyPaymentMethods = ["mb_way"] as unknown as Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
-      (item) => {
-        const isSubscription =
-          item.type === "plan" || item.type === "custom-box";
-
-        if (isSubscription) {
-          return {
-            quantity: item.quantity ?? 1,
-            price_data: {
-              currency: "eur",
-              product_data: {
-                name: item.title,
-                description: item.description,
-              },
-              unit_amount: Math.round(item.price * 100),
-              recurring: {
-                interval: (item.interval ?? "month") as Stripe.PriceCreateParams.Recurring.Interval,
-                interval_count: item.intervalCount ?? 1,
-              },
-            },
-          };
-        }
-
-        return {
-          quantity: item.quantity ?? 1,
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: item.title,
-              description: item.description,
-            },
-            unit_amount: Math.round(item.price * 100),
+      (item) => ({
+        quantity: item.quantity ?? 1,
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.title,
+            description: item.description,
           },
-        };
-      }
+          unit_amount: Math.round(item.price * 100),
+        },
+      })
     );
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: containsSubscription ? "subscription" : "payment",
-      payment_method_types: containsSubscription ? subscriptionPaymentMethods : oneTimePaymentMethods,
+      mode: "payment",
+      payment_method_types: mbWayOnlyPaymentMethods,
       line_items,
       locale: "pt",
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,

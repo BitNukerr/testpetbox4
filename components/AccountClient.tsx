@@ -14,8 +14,6 @@ export default function AccountClient() {
   const [orders, setOrders] = useState(() => getOrders());
   const [customerId, setCustomer] = useState("");
   const [subscription, setSubscription] = useState<SubscriptionInfo>({});
-  const [loading, setLoading] = useState<"" | "manage" | "billing">("");
-  const [message, setMessage] = useState("");
   const [user, setUser] = useState<UserState>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -62,20 +60,6 @@ export default function AccountClient() {
     load();
   }, [customerId, user]);
 
-  async function openPortal(type: "manage" | "billing") {
-    if (!customerId) { setMessage(pt.account.completeCheckout); return; }
-    setLoading(type); setMessage("");
-    try {
-      const res = await fetch("/api/billing-portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId, returnPath: "/account" }) });
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || "Não foi possível abrir o portal.");
-      window.location.href = data.url;
-    } catch (err: any) {
-      setMessage(err.message || "Não foi possível abrir o portal.");
-      setLoading("");
-    }
-  }
-
   if (!authChecked) {
     return (
       <div className="container narrow">
@@ -114,11 +98,6 @@ export default function AccountClient() {
               <p><strong>{pt.account.customer}:</strong> {customerId || pt.account.notConnected}</p>
               <p><strong>{pt.account.subscriptionId}:</strong> {subscription.id || "—"}</p>
             </div>
-            <div className="action-row wrap">
-              <button className="btn" onClick={() => openPortal("manage")} disabled={loading !== ""}>{loading === "manage" ? pt.common.loading : pt.account.manage}</button>
-              <button className="btn btn-secondary" onClick={() => openPortal("billing")} disabled={loading !== ""}>{loading === "billing" ? pt.common.loading : pt.account.billing}</button>
-            </div>
-            {message ? <p className="error-text">{message}</p> : null}
           </div></div>
         </div>
         <div className="card"><div className="card-body">
