@@ -46,7 +46,7 @@ export default function Header() {
     <header className="site-header">
       <div className="container header-row">
         <Link href="/" className="brand">
-          <span className="brand-badge">PB</span>
+          <span className="brand-badge" aria-hidden="true">🐾</span>
           <span><strong>PetBox</strong><small>{pt.brand.tagline}</small></span>
         </Link>
         <nav className="desktop-nav" aria-label="Navegação principal">
