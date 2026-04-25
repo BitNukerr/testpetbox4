@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     const containsSubscription = items.some(
       (item) => item.type === "plan" || item.type === "custom-box"
     );
+    const oneTimePaymentMethods = ["card", "mb_way"] as unknown as Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
+    const subscriptionPaymentMethods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card"];
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
       (item) => {
@@ -67,7 +69,9 @@ export async function POST(req: NextRequest) {
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: containsSubscription ? "subscription" : "payment",
+      payment_method_types: containsSubscription ? subscriptionPaymentMethods : oneTimePaymentMethods,
       line_items,
+      locale: "pt",
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/cart`,
     };

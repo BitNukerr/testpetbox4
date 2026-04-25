@@ -17,7 +17,7 @@ const baseNav = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"checking" | "signed-in" | "signed-out">("checking");
 
   useEffect(() => {
     const refresh = () => setCount(getCart().reduce((sum, item) => sum + item.quantity, 0));
@@ -27,20 +27,23 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) return;
+    if (!isSupabaseConfigured() || !supabase) {
+      setAuthStatus("signed-out");
+      return;
+    }
 
-    supabase.auth.getUser().then(({ data }) => setIsSignedIn(Boolean(data.user)));
+    supabase.auth.getUser().then(({ data }) => setAuthStatus(data.user ? "signed-in" : "signed-out"));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsSignedIn(Boolean(session?.user));
+      setAuthStatus(session?.user ? "signed-in" : "signed-out");
     });
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const authNav = isSignedIn
+  const authNav = authStatus === "signed-in"
     ? [pt.nav.account, "/account"] as const
     : [pt.nav.login, "/login"] as const;
-  const nav = [...baseNav, authNav] as const;
+  const nav = authStatus === "checking" ? baseNav : [...baseNav, authNav] as const;
 
   return (
     <header className="site-header">

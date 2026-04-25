@@ -12,12 +12,22 @@ export default function AuthClient() {
   const [user, setUser] = useState<UserState>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) return;
+    if (!isSupabaseConfigured() || !supabase) {
+      setCheckingSession(false);
+      return;
+    }
 
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ? { email: data.user.email || "" } : null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ? { email: session.user.email || "" } : null));
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ? { email: data.user.email || "" } : null);
+      setCheckingSession(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ? { email: session.user.email || "" } : null);
+      setCheckingSession(false);
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -56,7 +66,9 @@ export default function AuthClient() {
       <div className="card-body">
         <h2>{pt.account.authTitle}</h2>
         <p className="muted">{pt.account.authIntro}</p>
-        {user ? (
+        {checkingSession ? (
+          <div className="detail-box"><p className="muted">{pt.common.loading}</p></div>
+        ) : user ? (
           <div className="detail-box">
             <p><strong>{pt.account.signedInAs}:</strong> {user.email}</p>
             <button className="btn btn-secondary" onClick={signOut}>{pt.account.signOut}</button>

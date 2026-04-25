@@ -76,7 +76,18 @@ export default function AccountClient() {
     }
   }
 
-  if (!authChecked || !user) {
+  if (!authChecked) {
+    return (
+      <div className="container narrow">
+        <div className="card"><div className="card-body">
+          <h2>{pt.common.loading}</h2>
+          <p className="muted">{pt.account.checkingSession}</p>
+        </div></div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="container narrow">
         <div className="section-heading">

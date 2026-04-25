@@ -6,14 +6,17 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
 export default function Footer() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"checking" | "signed-in" | "signed-out">("checking");
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) return;
+    if (!isSupabaseConfigured() || !supabase) {
+      setAuthStatus("signed-out");
+      return;
+    }
 
-    supabase.auth.getUser().then(({ data }) => setIsSignedIn(Boolean(data.user)));
+    supabase.auth.getUser().then(({ data }) => setAuthStatus(data.user ? "signed-in" : "signed-out"));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsSignedIn(Boolean(session?.user));
+      setAuthStatus(session?.user ? "signed-in" : "signed-out");
     });
 
     return () => listener.subscription.unsubscribe();
@@ -28,7 +31,7 @@ export default function Footer() {
           <h4>Empresa</h4>
           <Link href="/about">{pt.nav.about}</Link>
           <Link href="/contact">{pt.nav.contact}</Link>
-          <Link href={isSignedIn ? "/account" : "/login"}>{isSignedIn ? pt.nav.account : pt.nav.login}</Link>
+          {authStatus === "checking" ? null : <Link href={authStatus === "signed-in" ? "/account" : "/login"}>{authStatus === "signed-in" ? pt.nav.account : pt.nav.login}</Link>}
         </div>
       </div>
     </footer>
