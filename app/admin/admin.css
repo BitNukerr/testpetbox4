@@ -152,6 +152,18 @@
   color: var(--admin-primary-dark);
 }
 
+.admin-action-primary {
+  background: #1f6f43;
+  color: #fff;
+  border-color: #1f6f43;
+}
+
+.admin-action-primary:hover {
+  color: #fff;
+  border-color: #185c36;
+  background: #185c36;
+}
+
 .admin-chart {
   height: 230px;
   display: flex;
@@ -172,6 +184,24 @@
   border-radius: 14px;
   padding: 12px 14px;
   width: 100%;
+}
+
+.admin-inline-tools {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) minmax(160px, 1fr) auto;
+  gap: 10px;
+}
+
+.admin-preview-box {
+  border: 1px dashed rgba(15, 23, 42, .22);
+  border-radius: 18px;
+  background: #fbf7f0;
+  padding: 16px;
+}
+
+.blog-content-preview {
+  max-height: 360px;
+  overflow: auto;
 }
 .admin-login-shell {
   min-height: 100vh;
@@ -197,5 +227,9 @@
   .admin-sidebar {
     position: static;
     min-height: auto;
+  }
+
+  .admin-inline-tools {
+    grid-template-columns: 1fr;
   }
 }
