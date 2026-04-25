@@ -1,57 +1,36 @@
 # PetBox
 
-Pet subscription box demo built with Next.js and Stripe-ready account actions.
+Loja demo em Next.js para caixas de subscrição para cães e gatos, com Supabase Auth, Easypay Checkout, MB WAY, Vercel Analytics e painel admin demo.
 
-## Features
+## Funcionalidades
 
-- Dogs + cats
-- Monthly + quarterly plans
-- Subscription + one-time purchases
-- Pet box configurator
-- Mobile-friendly navigation
-- Stripe Checkout
-- Stripe Billing Portal
-- Local cart and mock order persistence
+- Produtos e planos para cães e gatos
+- Configurador de caixa personalizada
+- Carrinho local
+- Login/criação de conta via Supabase
+- Checkout Easypay com MB WAY
+- Painel `/admin` com código de acesso demo
+- Vercel Analytics
 
-## Run locally on Windows
+## Correr localmente
 
 ```bat
-cd path\to\petbox
+cd C:\Users\rodri\Downloads\tessdf\petbox
 npm install
 copy .env.example .env.local
 npm run dev
 ```
 
-Open `.env.local` and set:
+## Variáveis principais
 
 ```env
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-RESEND_API_KEY=re_...
-CONTACT_FROM_EMAIL=PetBox <onboarding@resend.dev>
-CONTACT_TO_EMAIL=you@example.com
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your Supabase publishable key
-SUPABASE_SERVICE_ROLE_KEY=your Supabase service role key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+EASYPAY_ACCOUNT_ID=your_easypay_account_id
+EASYPAY_API_KEY=your_easypay_api_key
+EASYPAY_ENVIRONMENT=sandbox
+EASYPAY_PAYMENT_METHODS=mbw
+NEXT_PUBLIC_ADMIN_ACCESS_CODE=petbox-admin
 ```
 
-For Supabase, copy the full project URL from **Supabase Dashboard -> Project Settings -> API**.
-It should look like `https://abcdefghijklm.supabase.co`; do not use only the project ref or a shortened `.co` domain.
-The browser client uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; `NEXT_PUBLIC_SUPABASE_ANON_KEY` is still supported as a fallback for older projects.
-
-## Stripe local testing
-
-For webhooks:
-
-```bat
-stripe login
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-Copy the `whsec_...` value into `.env.local`.
-
-## Important notes
-
-- Orders and customer linkage are stored in browser localStorage for local demo purposes.
-- For production, add auth + database persistence and save Stripe customer IDs server-side.
+Para aceitar cartão pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`.

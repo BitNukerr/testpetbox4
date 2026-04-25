@@ -1,21 +1,87 @@
 export const pt = {
-  nav: { shop: 'Loja', build: 'Criar Caixa', journal: 'Blog', about: 'Sobre', contact: 'Contacto', account: 'Conta', login: 'Entrar', cart: 'Carrinho' },
-  brand: { tagline: 'Caixas de subscrição para cães e gatos' },
-  home: {
-    eyebrow: 'Cães + gatos • subscrição + compras únicas',
-    title: 'Uma caixa surpresa feita à medida do seu melhor amigo.',
-    subtitle: 'A PetBox entrega brinquedos, snacks e acessórios escolhidos para o perfil do seu cão ou gato. Escolha um plano mensal ou trimestral, personalize a caixa e receba tudo em casa.',
-    primaryCta: 'Criar a minha caixa', secondaryCta: 'Ver produtos',
-    stats: ['Planos mensais e trimestrais', 'Para cães e gatos', 'Personalização simples'],
-    plansEyebrow: 'Planos', plansTitle: 'Escolha a frequência ideal', addonsEyebrow: 'Extras', addonsTitle: 'Favoritos para juntar à caixa',
-    whyEyebrow: 'Experiência', whyTitle: 'Pensado para donos ocupados e animais felizes',
-    whyText: 'A navegação é simples, o configurador guia cada escolha e o pagamento é directo. O objectivo é reduzir dúvidas e aumentar a confiança antes da compra.'
+  nav: {
+    shop: "Loja",
+    build: "Criar Caixa",
+    journal: "Blog",
+    about: "Sobre",
+    contact: "Contacto",
+    account: "Conta",
+    login: "Entrar",
+    cart: "Carrinho"
   },
-  common: { addToCart: 'Adicionar ao carrinho', view: 'Ver', checkout: 'Finalizar compra', remove: 'Remover', total: 'Total', subtotal: 'Subtotal', shipping: 'Envio', summary: 'Resumo', quantity: 'Quantidade', save: 'Guardar', loading: 'A carregar...', close: 'Fechar' },
-  configure: { eyebrow: 'Configurador', title: 'Crie a caixa ideal para o seu animal', intro: 'Um processo em passos simples: animal, tamanho, plano, personalidade e extras.', steps: ['Animal', 'Tamanho', 'Plano', 'Estilo', 'Extras'], petType: 'Tipo de animal', petSize: 'Tamanho', delivery: 'Plano de entrega', theme: 'Personalidade da caixa', extras: 'Extras opcionais', dog: 'Cão', cat: 'Gato', small: 'Pequeno', medium: 'Médio', large: 'Grande', monthly: 'Mensal', quarterly: 'Trimestral', playful: 'Brincalhão', cozy: 'Conforto', outdoor: 'Aventura', calm: 'Calmo', treats: 'Snacks extra', toyUpgrade: 'Brinquedo premium', careItem: 'Produto de cuidado', photoAccessory: 'Acessório para fotos', liveSummary: 'Resumo em tempo real', add: 'Adicionar caixa', buy: 'Comprar agora' },
-  contact: { eyebrow: 'Contacto', title: 'Fale com a equipa PetBox', intro: 'Envie uma mensagem e ela será encaminhada para o email do projecto.', name: 'O seu nome', email: 'Email', subject: 'Assunto', message: 'Como podemos ajudar?', send: 'Enviar mensagem', success: 'Mensagem enviada com sucesso.', fallback: 'Não foi possível enviar a mensagem. Verifique as variáveis de email no Vercel.' },
-  pages: { shopTitle: 'Loja de produtos para animais', shopIntro: 'Snacks, brinquedos e acessórios que podem ser comprados uma só vez ou adicionados à sua subscrição.', cartTitle: 'Reveja as escolhas para o seu animal', checkoutTitle: 'Pagamento por MB WAY', accountTitle: 'A sua conta PetBox', loginTitle: 'Entrar na PetBox', loginIntro: 'Inicie sessão para consultar a sua conta, subscrição e encomendas.', aboutEyebrow: 'Sobre', aboutTitle: 'Criada para momentos de unboxing mais felizes', aboutText: 'A PetBox é uma plataforma de comércio electrónico pensada para caixas de subscrição para animais. Combina planos mensais e trimestrais, personalização por perfil do animal, produtos avulsos e integração de pagamento.', journalTitle: 'Blog PetBox', journalIntro: 'Dicas de cuidados, brincadeiras e inspiração para donos de cães e gatos.' },
-  account: { subscription: 'Subscrição', status: 'Estado', customer: 'Cliente de pagamento', subscriptionId: 'ID da subscrição', noSubscription: 'Ainda não existe subscrição activa', notConnected: 'Ainda não ligado', manage: 'Gerir subscrição', billing: 'Detalhes de pagamento', completeCheckout: 'Conclua primeiro um pagamento por MB WAY para associar este cliente.', recentOrders: 'Encomendas recentes', noOrders: 'Ainda não existem encomendas.', loginRequired: 'Inicie sessão para ver a sua subscrição e as encomendas recentes.', checkingSession: 'A confirmar a sua sessão...', authTitle: 'Área de cliente', authIntro: 'Crie conta ou inicie sessão para aceder à área de cliente.', email: 'Email', password: 'Palavra-passe', signIn: 'Entrar', signUp: 'Criar conta', signOut: 'Terminar sessão', signedInAs: 'Sessão iniciada como' },
-  checkout: { title: 'Pagamento por MB WAY', intro: 'O pagamento é concluído com o número de telemóvel associado ao MB WAY.', mbWayAvailable: 'Só aceitamos MB WAY neste checkout.', firstName: 'Nome', lastName: 'Apelido', email: 'Email', address: 'Morada', city: 'Cidade', zip: 'Código postal', pay: 'Pagar com MB WAY', redirecting: 'A redireccionar...' },
-  cart: { emptyTitle: 'O carrinho está vazio', emptyText: 'Adicione uma caixa, um snack ou um produto avulso para começar.', shopNow: 'Ir para a loja', subscription: 'Subscrição', customBox: 'Caixa personalizada', product: 'Produto', orderSummary: 'Resumo da encomenda', orderText: 'O envio é calculado de forma simples para a demonstração. As caixas e produtos são pagos por MB WAY.' }
+  brand: {
+    tagline: "Caixas de subscrição para cães e gatos"
+  },
+  common: {
+    addToCart: "Adicionar ao carrinho",
+    view: "Ver",
+    checkout: "Finalizar compra",
+    remove: "Remover",
+    total: "Total",
+    subtotal: "Subtotal",
+    shipping: "Envio",
+    summary: "Resumo",
+    quantity: "Quantidade",
+    loading: "A carregar..."
+  },
+  home: {
+    eyebrow: "Cães + gatos | subscrição + compras únicas",
+    title: "Uma caixa surpresa feita à medida do seu melhor amigo.",
+    subtitle: "A PetBox entrega brinquedos, snacks e acessórios escolhidos para o perfil do seu cão ou gato. Escolha um plano mensal ou trimestral, personalize a caixa e receba tudo em casa.",
+    primaryCta: "Criar a minha caixa",
+    secondaryCta: "Ver produtos",
+    plansEyebrow: "Planos",
+    plansTitle: "Caixas mensais e trimestrais",
+    addonsEyebrow: "Extras",
+    addonsTitle: "Favoritos para juntar à caixa"
+  },
+  account: {
+    subscription: "Subscrição",
+    status: "Estado",
+    noSubscription: "Ainda não existe subscrição activa",
+    completeCheckout: "Quando uma subscrição estiver activa, os detalhes aparecem aqui.",
+    recentOrders: "Encomendas recentes",
+    noOrders: "Ainda não existem encomendas.",
+    loginRequired: "Inicie sessão para ver a sua subscrição e as encomendas recentes.",
+    checkingSession: "A confirmar a sua sessão...",
+    authTitle: "Área de cliente",
+    authIntro: "Crie conta ou inicie sessão para aceder à área de cliente.",
+    email: "Email",
+    password: "Palavra-passe",
+    signIn: "Entrar",
+    signUp: "Criar conta",
+    signOut: "Terminar sessão",
+    signedInAs: "Sessão iniciada como"
+  },
+  checkout: {
+    title: "Pagamento por MB WAY",
+    intro: "O pagamento é processado pela Easypay com o número de telemóvel associado ao MB WAY.",
+    mbWayAvailable: "Só aceitamos MB WAY neste checkout.",
+    firstName: "Nome",
+    lastName: "Apelido",
+    email: "Email",
+    phone: "Telemóvel MB WAY",
+    address: "Morada",
+    city: "Cidade",
+    zip: "Código postal",
+    pay: "Pagar com MB WAY",
+    loading: "A preparar pagamento..."
+  },
+  cart: {
+    emptyTitle: "O carrinho está vazio",
+    emptyText: "Adicione uma caixa, um snack ou um produto avulso para começar.",
+    shopNow: "Ir para a loja",
+    subscription: "Subscrição",
+    customBox: "Caixa personalizada",
+    product: "Produto",
+    orderSummary: "Resumo da encomenda",
+    orderText: "O envio é calculado de forma simples para a demonstração. As caixas e produtos são pagos por MB WAY."
+  },
+  configure: {
+    dog: "Cão",
+    cat: "Gato",
+    both: "Cão + gato",
+    monthly: "Mensal",
+    quarterly: "Trimestral"
+  }
 };

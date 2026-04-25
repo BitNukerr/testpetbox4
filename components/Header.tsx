@@ -6,7 +6,7 @@ import { getCart } from "@/lib/client-store";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
-const baseNav = [
+const publicNav = [
   [pt.nav.shop, "/shop"],
   [pt.nav.build, "/configure"],
   [pt.nav.journal, "/journal"],
@@ -17,68 +17,72 @@ const baseNav = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
-  const [authStatus, setAuthStatus] = useState<"checking" | "signed-in" | "signed-out">("checking");
+  const [signedIn, setSignedIn] = useState(false);
+  const [authChecked, setAuthChecked] = useState(!isSupabaseConfigured());
 
   useEffect(() => {
-    const refresh = () => setCount(getCart().reduce((sum, item) => sum + item.quantity, 0));
+    const refresh = () => {
+      const total = getCart().reduce((sum, item) => sum + item.quantity, 0);
+      setCount(total);
+    };
     refresh();
     window.addEventListener("petbox-cart-changed", refresh);
     return () => window.removeEventListener("petbox-cart-changed", refresh);
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) {
-      setAuthStatus("signed-out");
-      return;
-    }
-
+    if (!supabase) return;
     let mounted = true;
-    let initialSessionLoaded = false;
-
-    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      if (!mounted) return;
-      setAuthStatus(session?.user ? "signed-in" : "signed-out");
-    };
-
     supabase.auth.getSession().then(({ data }) => {
-      initialSessionLoaded = true;
-      applySession(data.session);
+      if (!mounted) return;
+      setSignedIn(Boolean(data.session));
+      setAuthChecked(true);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
-      applySession(session);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSignedIn(Boolean(session));
+      setAuthChecked(true);
     });
-
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
   }, []);
 
-  const authNav = authStatus === "signed-in"
-    ? [pt.nav.account, "/account"] as const
-    : [pt.nav.login, "/login"] as const;
-  const nav = authStatus === "checking" ? baseNav : [...baseNav, authNav] as const;
+  const accountLabel = signedIn ? pt.nav.account : pt.nav.login;
 
   return (
     <header className="site-header">
       <div className="container header-row">
         <Link href="/" className="brand">
-          <span className="brand-badge" aria-hidden="true">🐾</span>
-          <span><strong>PetBox</strong><small>{pt.brand.tagline}</small></span>
+          <img src="/images/logo.png" alt="PetBox" className="brand-logo" />
+          <span>
+            <strong>PetBox</strong>
+            <small>{pt.brand.tagline}</small>
+          </span>
         </Link>
+
         <nav className="desktop-nav" aria-label="Navegação principal">
-          {nav.map(([label, href]) => <Link key={href} href={href} className="nav-link">{label}</Link>)}
+          {publicNav.map(([label, href]) => (
+            <Link key={href} href={href} className="nav-link">{label}</Link>
+          ))}
+          {authChecked ? <Link href={signedIn ? "/account" : "/login"} className="nav-link">{accountLabel}</Link> : null}
         </nav>
+
         <div className="header-actions">
           <Link href="/cart" className="cart-pill">{pt.nav.cart} <span>{count}</span></Link>
-          <button className="menu-btn" onClick={() => setOpen((value) => !value)} aria-label="Abrir menu" aria-expanded={open}>{open ? "×" : "☰"}</button>
+          <button className="menu-btn" onClick={() => setOpen((v) => !v)} aria-label="Abrir menu" aria-expanded={open}>
+            {open ? "×" : "☰"}
+          </button>
         </div>
       </div>
+
       {open ? (
         <div className="mobile-menu">
           <div className="container mobile-menu-inner">
-            {nav.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>)}
+            {publicNav.map(([label, href]) => (
+              <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>
+            ))}
+            {authChecked ? <Link href={signedIn ? "/account" : "/login"} onClick={() => setOpen(false)}>{accountLabel}</Link> : null}
             <Link href="/cart" onClick={() => setOpen(false)}>{pt.nav.cart} ({count})</Link>
           </div>
         </div>

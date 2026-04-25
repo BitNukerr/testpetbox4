@@ -1,76 +1,49 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase-client";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
-
-type UserState = { email?: string } | null;
 
 export default function AuthClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState<UserState>(null);
   const [message, setMessage] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !supabase) {
-      setCheckingSession(false);
-      return;
-    }
-
-    let mounted = true;
-    let initialSessionLoaded = false;
-
-    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      if (!mounted) return;
-      setUser(session?.user ? { email: session.user.email || "" } : null);
-      setCheckingSession(false);
-    };
-
-    supabase.auth.getSession().then(({ data }) => {
-      initialSessionLoaded = true;
-      applySession(data.session);
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => setUserEmail(data.session?.user.email || ""));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user.email || "");
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
-      applySession(session);
-    });
-    return () => {
-      mounted = false;
-      listener.subscription.unsubscribe();
-    };
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   async function submit(mode: "signin" | "signup") {
     if (!isSupabaseConfigured() || !supabase) {
-      setMessage(`${supabaseConfigError} Actualize as variáveis de ambiente da Supabase no Vercel e volte a publicar o site.`);
+      setMessage("Supabase ainda não está configurado no Vercel.");
       return;
     }
 
     setLoading(true);
     setMessage("");
+    const result = mode === "signin"
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password });
+    setLoading(false);
 
-    try {
-      const result = mode === "signin"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
-
-      if (result.error) setMessage(result.error.message);
-      else setMessage(mode === "signup" ? "Conta criada. Verifique o email, caso a Supabase peça confirmação." : "Sessão iniciada.");
-    } catch {
-      setMessage("Não foi possível contactar a Supabase. Confirme que NEXT_PUBLIC_SUPABASE_URL usa o URL completo do projecto, por exemplo https://your-project-ref.supabase.co.");
-    } finally {
-      setLoading(false);
+    if (result.error) {
+      setMessage(result.error.message);
+      return;
     }
+    setMessage(mode === "signin" ? "Sessão iniciada." : "Conta criada. Verifique o email se for necessário confirmar.");
   }
 
   async function signOut() {
     if (!supabase) return;
-
     await supabase.auth.signOut();
-    setUser(null);
+    setMessage("Sessão terminada.");
   }
 
   return (
@@ -78,22 +51,20 @@ export default function AuthClient() {
       <div className="card-body">
         <h2>{pt.account.authTitle}</h2>
         <p className="muted">{pt.account.authIntro}</p>
-        {checkingSession ? (
-          <div className="detail-box"><p className="muted">{pt.common.loading}</p></div>
-        ) : user ? (
-          <div className="detail-box">
-            <p><strong>{pt.account.signedInAs}:</strong> {user.email}</p>
+        {userEmail ? (
+          <div className="action-row wrap">
+            <p className="muted">{pt.account.signedInAs} <strong>{userEmail}</strong></p>
             <button className="btn btn-secondary" onClick={signOut}>{pt.account.signOut}</button>
           </div>
         ) : (
           <div className="form-grid">
-            <input type="email" placeholder={pt.account.email} value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input type="password" placeholder={pt.account.password} value={password} onChange={(e) => setPassword(e.target.value)} />
-            <button className="btn" disabled={loading} onClick={() => submit("signin")}>{loading ? pt.common.loading : pt.account.signIn}</button>
+            <input placeholder={pt.account.email} value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input placeholder={pt.account.password} type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <button className="btn" disabled={loading} onClick={() => submit("signin")}>{pt.account.signIn}</button>
             <button className="btn btn-secondary" disabled={loading} onClick={() => submit("signup")}>{pt.account.signUp}</button>
           </div>
         )}
-        {message ? <p className="muted top-gap">{message}</p> : null}
+        {message ? <p className="muted account-note">{message}</p> : null}
       </div>
     </div>
   );

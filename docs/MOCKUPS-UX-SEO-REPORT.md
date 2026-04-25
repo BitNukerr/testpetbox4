@@ -20,7 +20,7 @@ A PetBox é uma plataforma de e-commerce para caixas de subscrição para cães 
 2. Clica em “Criar a minha caixa”.
 3. Escolhe cão ou gato, tamanho, plano e extras.
 4. Adiciona ao carrinho.
-5. Finaliza a compra com Stripe.
+5. Finaliza a compra com Easypay/MB WAY.
 6. Acede à conta para gerir subscrição e pagamento.
 
 ## 5. SEO
@@ -73,11 +73,11 @@ Crie 5 frames:
 O projecto inclui uma base para backend com:
 - Supabase Auth para login/criação de conta.
 - SQL para tabelas de perfis, encomendas e subscrições.
-- Stripe e Billing Portal.
+- Easypay Checkout para MB WAY.
 - Formulário de contacto enviado por email via Resend.
 
 ## 8. Melhorias futuras
-- Guardar encomendas reais na base de dados via Stripe webhook.
+- Guardar encomendas reais na base de dados via webhooks da Easypay.
 - Área de cliente completa com histórico persistente.
 - Blog gerido por CMS.
 - Testes A/B nas chamadas para acção.

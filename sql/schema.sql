@@ -9,9 +9,9 @@ create table if not exists public.profiles (
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
-  stripe_session_id text,
-  stripe_customer_id text,
-  stripe_subscription_id text,
+  easypay_checkout_id text,
+  easypay_payment_id text,
+  payment_method text,
   total numeric(10,2) not null default 0,
   status text not null default 'confirmada',
   created_at timestamptz default now()
@@ -20,8 +20,8 @@ create table if not exists public.orders (
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade,
-  stripe_customer_id text,
-  stripe_subscription_id text unique,
+  easypay_checkout_id text,
+  easypay_payment_id text unique,
   status text,
   plan_name text,
   current_period_end timestamptz,

@@ -6,7 +6,11 @@ import { money } from "@/lib/helpers";
 import { addToCart } from "@/lib/client-store";
 import { pt } from "@/lib/translations";
 
-const speciesLabel = { dog: "Cão", cat: "Gato", both: "Cão + gato" } as const;
+function speciesLabel(species: Product["species"]) {
+  if (species === "dog") return pt.configure.dog;
+  if (species === "cat") return pt.configure.cat;
+  return pt.configure.both;
+}
 
 export default function ProductCard({ product }: { product: Product }) {
   return (
@@ -15,12 +19,27 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="card-body">
         <span className="tag">{product.tag}</span>
         <h3>{product.title}</h3>
-        <p className="muted">{product.category} • {speciesLabel[product.species]}</p>
+        <p className="muted">{product.category} | {speciesLabel(product.species)}</p>
         <p>{product.description}</p>
         <div className="product-bottom">
           <strong>{money(product.price)}</strong>
           <div className="action-row">
-            <button className="btn small" onClick={() => addToCart({ id: `${product.slug}-${Date.now()}`, slug: product.slug, title: product.title, price: product.price, quantity: 1, image: product.image, category: product.category, type: "product", species: product.species })}>{pt.common.addToCart}</button>
+            <button
+              className="btn small"
+              onClick={() => addToCart({
+                id: `${product.slug}-${Date.now()}`,
+                slug: product.slug,
+                title: product.title,
+                price: product.price,
+                quantity: 1,
+                image: product.image,
+                category: product.category,
+                type: "product",
+                species: product.species
+              })}
+            >
+              {pt.common.addToCart}
+            </button>
             <Link href={`/product/${product.slug}`} className="btn btn-secondary small">{pt.common.view}</Link>
           </div>
         </div>

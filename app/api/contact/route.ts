@@ -3,41 +3,40 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { name, email, subject, message } = await req.json();
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: "Nome, email e mensagem são obrigatórios." }, { status: 400 });
+    if (!name || !email || !subject || !message) {
+      return NextResponse.json({ error: "Preencha todos os campos." }, { status: 400 });
     }
 
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.CONTACT_FROM_EMAIL || "PetBox <onboarding@resend.dev>";
-    const to = process.env.CONTACT_TO_EMAIL || "rodrigoleite.96@gmail.com";
+    const to = process.env.CONTACT_TO_EMAIL;
 
-    if (!apiKey) {
-      return NextResponse.json({ error: "Falta configurar RESEND_API_KEY no Vercel." }, { status: 500 });
+    if (!apiKey || !to) {
+      return NextResponse.json({ error: "Faltam as variáveis RESEND_API_KEY ou CONTACT_TO_EMAIL no Vercel." }, { status: 500 });
     }
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         from,
         to,
+        subject: `PetBox: ${subject}`,
         reply_to: email,
-        subject: subject || "Nova mensagem PetBox",
-        text: `Nome: ${name}
-Email: ${email}
-
-Mensagem:
-${message}`
+        text: `Nome: ${name}\nEmail: ${email}\n\n${message}`
       })
     });
 
     if (!response.ok) {
-      const text = await response.text();
-      return NextResponse.json({ error: text || "Falha ao enviar email." }, { status: 500 });
+      const data = await response.json().catch(() => null);
+      return NextResponse.json({ error: data?.message || "Não foi possível enviar a mensagem." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: "Erro inesperado no envio." }, { status: 500 });
+    return NextResponse.json({ error: "Não foi possível enviar a mensagem." }, { status: 500 });
   }
 }

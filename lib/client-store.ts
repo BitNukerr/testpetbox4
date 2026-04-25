@@ -20,14 +20,13 @@ export type SavedOrder = {
   total: number;
   date: string;
   status: string;
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
-  stripeSessionId?: string;
+  easypayCheckoutId?: string;
+  easypayPaymentId?: string;
+  paymentMethod?: string;
 };
 
 const CART_KEY = "petbox-cart";
 const ORDERS_KEY = "petbox-orders";
-const CUSTOMER_KEY = "petbox-customer";
 
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -64,15 +63,4 @@ export function saveOrder(order: SavedOrder) {
   orders.unshift(order);
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
   window.dispatchEvent(new Event("petbox-orders-changed"));
-}
-
-export function getCustomerId() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(CUSTOMER_KEY) || "";
-}
-
-export function setCustomerId(id: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(CUSTOMER_KEY, id);
-  window.dispatchEvent(new Event("petbox-customer-changed"));
 }

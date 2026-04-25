@@ -9,15 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.15",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "stripe": "^14.25.0",
-    "@supabase/supabase-js": "^2.45.4"
+    "@easypaypt/checkout-sdk": "^2.9.1",
+    "@supabase/supabase-js": "^2.45.4",
+    "@vercel/analytics": "^2.0.1",
+    "bootstrap": "^5.3.3",
+    "next": "^16.2.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
-    "@types/react": "18.2.73",
+    "@types/react": "^19.2.7",
     "typescript": "5.4.3"
   }
 }
