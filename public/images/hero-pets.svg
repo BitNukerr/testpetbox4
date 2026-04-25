@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<rect width="900" height="620" rx="32" fill="#fff7ef"/>
+<rect x="60" y="360" width="260" height="180" rx="28" fill="#f1dfce"/>
+<rect x="580" y="360" width="260" height="180" rx="28" fill="#ead4bf"/>
+<rect x="285" y="280" width="330" height="220" rx="28" fill="#d8b694"/>
+<rect x="325" y="240" width="250" height="70" rx="20" fill="#c99d72"/>
+<circle cx="240" cy="220" r="84" fill="#c98e58"/>
+<circle cx="220" cy="130" r="34" fill="#c98e58"/>
+<circle cx="288" cy="130" r="34" fill="#c98e58"/>
+<circle cx="215" cy="215" r="10" fill="#2a211d"/><circle cx="266" cy="215" r="10" fill="#2a211d"/>
+<ellipse cx="240" cy="244" rx="26" ry="18" fill="#f5dcc8"/>
+<circle cx="660" cy="230" r="74" fill="#8f7cb4"/>
+<polygon points="610,184 640,120 666,190" fill="#8f7cb4"/><polygon points="712,184 680,120 654,190" fill="#8f7cb4"/>
+<circle cx="638" cy="230" r="8" fill="#2a211d"/><circle cx="684" cy="230" r="8" fill="#2a211d"/>
+<rect x="140" y="410" width="100" height="90" rx="16" fill="#fff"/><rect x="660" y="405" width="100" height="95" rx="16" fill="#fff"/>
+<text x="450" y="560" text-anchor="middle" font-family="Arial" font-size="34" fill="#5a4633">PetBox</text>
+</svg>

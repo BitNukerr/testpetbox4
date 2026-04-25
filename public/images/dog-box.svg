@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="520" viewBox="0 0 700 520">
+<rect width="700" height="520" rx="30" fill="#fff7ef"/>
+<rect x="170" y="210" width="360" height="220" rx="28" fill="#d9b390"/>
+<rect x="210" y="170" width="280" height="70" rx="20" fill="#c99967"/>
+<circle cx="155" cy="175" r="70" fill="#c98e58"/><circle cx="135" cy="96" r="28" fill="#c98e58"/><circle cx="192" cy="96" r="28" fill="#c98e58"/>
+<circle cx="136" cy="176" r="8" fill="#2a211d"/><circle cx="176" cy="176" r="8" fill="#2a211d"/>
+<rect x="415" y="260" width="75" height="100" rx="16" fill="#fff"/><rect x="310" y="270" width="68" height="90" rx="16" fill="#f9e6b1"/>
+<text x="350" y="470" text-anchor="middle" font-family="Arial" font-size="30" fill="#5a4633">Custom Dog Box</text>
+</svg>
