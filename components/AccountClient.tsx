@@ -1,18 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getOrders } from "@/lib/client-store";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import AuthClient from "@/components/AuthClient";
+import type { Plan } from "@/data/products";
+import { adminStore } from "@/lib/admin-store";
+import {
+  type AccountAddress,
+  type AccountPet,
+  type AccountSubscription,
+  getAddress,
+  getOrders,
+  getPets,
+  getSubscription,
+  setAddress,
+  setPets,
+  setSubscription
+} from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
-import AuthClient from "@/components/AuthClient";
 
 type UserState = { email?: string } | null;
 
+const emptyPet: AccountPet = {
+  id: "",
+  name: "",
+  species: "dog",
+  size: "medium",
+  birthday: "",
+  allergies: "",
+  preferences: ""
+};
+
+function todayPlus(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function petSpeciesLabel(value: AccountPet["species"]) {
+  return value === "dog" ? "Cao" : "Gato";
+}
+
+function petSizeLabel(value: AccountPet["size"]) {
+  if (value === "small") return "Pequeno";
+  if (value === "large") return "Grande";
+  return "Medio";
+}
+
+function subscriptionStatusLabel(value: AccountSubscription["status"]) {
+  if (value === "active") return "Activa";
+  if (value === "paused") return "Pausada";
+  return "Cancelada";
+}
+
+function subscriptionPill(value?: AccountSubscription["status"]) {
+  if (value === "active") return "admin-pill-success";
+  if (value === "paused") return "admin-pill-warning";
+  return "admin-pill-danger";
+}
+
 export default function AccountClient() {
   const [orders, setOrders] = useState(() => getOrders());
+  const [pets, setPetsState] = useState<AccountPet[]>(() => getPets());
+  const [petForm, setPetForm] = useState<AccountPet>(emptyPet);
+  const [editingPetId, setEditingPetId] = useState<string | null>(null);
+  const [address, setAddressState] = useState<AccountAddress>(() => getAddress());
+  const [subscription, setSubscriptionState] = useState<AccountSubscription | null>(() => getSubscription());
+  const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
   const [user, setUser] = useState<UserState>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const selectedPlan = useMemo(() => plans.find((plan) => plan.id === subscription?.plan) || plans[0], [plans, subscription?.plan]);
+  const selectedPet = useMemo(() => pets.find((pet) => pet.id === subscription?.petId), [pets, subscription?.petId]);
 
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) {
@@ -46,11 +108,123 @@ export default function AccountClient() {
   }, []);
 
   useEffect(() => {
-    const refresh = () => setOrders(getOrders());
-    refresh();
-    window.addEventListener("petbox-orders-changed", refresh);
-    return () => window.removeEventListener("petbox-orders-changed", refresh);
+    const refreshOrders = () => setOrders(getOrders());
+    const refreshAccount = () => {
+      setPetsState(getPets());
+      setAddressState(getAddress());
+      setSubscriptionState(getSubscription());
+    };
+    const refreshAdmin = () => setPlans(adminStore.plans.get());
+
+    refreshOrders();
+    refreshAccount();
+    refreshAdmin();
+    window.addEventListener("petbox-orders-changed", refreshOrders);
+    window.addEventListener("petbox-account-changed", refreshAccount);
+    window.addEventListener("petbox-admin-changed", refreshAdmin);
+    return () => {
+      window.removeEventListener("petbox-orders-changed", refreshOrders);
+      window.removeEventListener("petbox-account-changed", refreshAccount);
+      window.removeEventListener("petbox-admin-changed", refreshAdmin);
+    };
   }, []);
+
+  function savePet() {
+    if (!petForm.name.trim()) {
+      setMessage("Adicione o nome do animal.");
+      return;
+    }
+
+    const pet = { ...petForm, id: petForm.id || `pet-${Date.now()}` };
+    const nextPets = editingPetId
+      ? pets.map((item) => item.id === editingPetId ? pet : item)
+      : [...pets, pet];
+
+    setPets(nextPets);
+    setPetForm(emptyPet);
+    setEditingPetId(null);
+    setMessage("Perfil do animal guardado.");
+  }
+
+  function editPet(pet: AccountPet) {
+    setPetForm(pet);
+    setEditingPetId(pet.id);
+    setMessage("");
+  }
+
+  function deletePet(id: string) {
+    const nextPets = pets.filter((pet) => pet.id !== id);
+    setPets(nextPets);
+    if (subscription?.petId === id) {
+      setSubscription(null);
+    }
+    setPetForm(emptyPet);
+    setEditingPetId(null);
+    setMessage("Perfil removido.");
+  }
+
+  function saveAddress() {
+    setAddress(address);
+    setMessage("Dados de entrega guardados.");
+  }
+
+  function createOrUpdateSubscription() {
+    const plan = selectedPlan || plans[0];
+    const pet = selectedPet || pets[0];
+    if (!plan || !pet) {
+      setMessage("Adicione pelo menos um animal e um plano.");
+      return;
+    }
+
+    const nextSubscription: AccountSubscription = {
+      id: subscription?.id || `sub-${Date.now()}`,
+      status: subscription?.status || "active",
+      plan: plan.id,
+      cadence: plan.cadence,
+      petId: pet.id,
+      nextBoxDate: subscription?.nextBoxDate || todayPlus(14),
+      renewalDate: subscription?.renewalDate || todayPlus(plan.cadence === "monthly" ? 30 : 90),
+      price: plan.price,
+      extras: subscription?.extras || ""
+    };
+    setSubscription(nextSubscription);
+    setMessage("Subscricao guardada.");
+  }
+
+  function updateSubscription(patch: Partial<AccountSubscription>) {
+    if (!subscription) return;
+    const next = { ...subscription, ...patch };
+    setSubscription(next);
+    setMessage("Subscricao actualizada.");
+  }
+
+  function skipNextBox() {
+    if (!subscription) return;
+    updateSubscription({
+      nextBoxDate: todayPlus(subscription.cadence === "monthly" ? 30 : 90),
+      renewalDate: todayPlus(subscription.cadence === "monthly" ? 30 : 90)
+    });
+  }
+
+  function updateSubscriptionPlan(planId: string) {
+    const plan = plans.find((item) => item.id === planId);
+    if (!plan) return;
+    if (!subscription) {
+      setSubscriptionState({
+        id: "",
+        status: "active",
+        plan: plan.id,
+        cadence: plan.cadence,
+        petId: pets[0]?.id || "",
+        nextBoxDate: todayPlus(14),
+        renewalDate: todayPlus(plan.cadence === "monthly" ? 30 : 90),
+        price: plan.price,
+        extras: ""
+      });
+      return;
+    }
+    updateSubscription({ plan: plan.id, cadence: plan.cadence, price: plan.price });
+  }
 
   if (!authChecked) {
     return (
@@ -76,8 +250,8 @@ export default function AccountClient() {
             <h2>Mais simples para voltar a comprar</h2>
             <ul className="perks">
               <li>Consultar encomendas recentes</li>
-              <li>Acompanhar subscrições activas</li>
-              <li>Guardar o acesso à área de cliente</li>
+              <li>Acompanhar subscricoes activas</li>
+              <li>Guardar o acesso a area de cliente</li>
             </ul>
           </div></div>
         </div>
@@ -90,25 +264,141 @@ export default function AccountClient() {
     <>
       <div className="container section-heading">
         <div><span className="eyebrow">{pt.nav.account}</span><h1>A sua conta PetBox</h1></div>
+        <Link href="/configure" className="btn btn-secondary">Criar nova caixa</Link>
       </div>
-      <div className="container section-grid">
-        <div className="account-stack">
-          <AuthClient />
-          <div className="card"><div className="card-body">
-            <h2>{pt.account.subscription}</h2>
-            <div className="detail-box">
-              <p><strong>{pt.account.status}:</strong> {pt.account.noSubscription}</p>
-              <p className="muted">{pt.account.completeCheckout}</p>
+
+      <div className="container account-overview">
+        <div className="account-stat"><span>Animais</span><strong>{pets.length}</strong></div>
+        <div className="account-stat"><span>Subscricao</span><strong>{subscription ? subscriptionStatusLabel(subscription.status) : "Sem plano"}</strong></div>
+        <div className="account-stat"><span>Encomendas</span><strong>{orders.length}</strong></div>
+      </div>
+
+      <div className="container account-layout">
+        <div className="account-main">
+          <section className="card"><div className="card-body">
+            <div className="account-card-heading">
+              <div><span className="tag">Perfis</span><h2>Animais</h2></div>
+              <button className="btn btn-secondary small" onClick={() => { setPetForm(emptyPet); setEditingPetId(null); }}>Novo animal</button>
             </div>
-          </div></div>
+            <div className="pet-grid">
+              {pets.length === 0 ? <p className="muted">Adicione o primeiro animal para personalizar as caixas.</p> : pets.map((pet) => (
+                <article className="pet-profile" key={pet.id}>
+                  <div>
+                    <strong>{pet.name}</strong>
+                    <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)}</span>
+                    {pet.allergies ? <small>Alergias: {pet.allergies}</small> : null}
+                    {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
+                  </div>
+                  <div className="action-row wrap">
+                    <button className="link-btn" onClick={() => editPet(pet)}>Editar</button>
+                    <button className="link-btn remove-btn" onClick={() => deletePet(pet.id)}>Remover</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="form-grid account-form">
+              <input placeholder="Nome do animal" value={petForm.name} onChange={(event) => setPetForm({ ...petForm, name: event.target.value })} />
+              <input type="date" value={petForm.birthday} onChange={(event) => setPetForm({ ...petForm, birthday: event.target.value })} />
+              <select value={petForm.species} onChange={(event) => setPetForm({ ...petForm, species: event.target.value as AccountPet["species"] })}>
+                <option value="dog">Cao</option>
+                <option value="cat">Gato</option>
+              </select>
+              <select value={petForm.size} onChange={(event) => setPetForm({ ...petForm, size: event.target.value as AccountPet["size"] })}>
+                <option value="small">Pequeno</option>
+                <option value="medium">Medio</option>
+                <option value="large">Grande</option>
+              </select>
+              <input className="span-2" placeholder="Alergias ou ingredientes a evitar" value={petForm.allergies} onChange={(event) => setPetForm({ ...petForm, allergies: event.target.value })} />
+              <input className="span-2" placeholder="Preferencias de brinquedos, snacks ou estilo" value={petForm.preferences} onChange={(event) => setPetForm({ ...petForm, preferences: event.target.value })} />
+            </div>
+            <button className="btn top-gap" onClick={savePet}>{editingPetId ? "Guardar animal" : "Adicionar animal"}</button>
+          </div></section>
+
+          <section className="card"><div className="card-body">
+            <div className="account-card-heading">
+              <div><span className="tag">Entrega</span><h2>Dados de contacto e morada</h2></div>
+              <button className="btn btn-secondary small" onClick={saveAddress}>Guardar</button>
+            </div>
+            <div className="form-grid account-form">
+              <input placeholder="Nome completo" value={address.name} onChange={(event) => setAddressState({ ...address, name: event.target.value })} />
+              <input placeholder="Telemovel" value={address.phone} onChange={(event) => setAddressState({ ...address, phone: event.target.value })} />
+              <input placeholder="Telemovel MB WAY" value={address.mbwayPhone} onChange={(event) => setAddressState({ ...address, mbwayPhone: event.target.value })} />
+              <input placeholder="NIF opcional" value={address.nif} onChange={(event) => setAddressState({ ...address, nif: event.target.value })} />
+              <input className="span-2" placeholder="Morada" value={address.address} onChange={(event) => setAddressState({ ...address, address: event.target.value })} />
+              <input placeholder="Cidade" value={address.city} onChange={(event) => setAddressState({ ...address, city: event.target.value })} />
+              <input placeholder="Codigo postal" value={address.zip} onChange={(event) => setAddressState({ ...address, zip: event.target.value })} />
+            </div>
+          </div></section>
+
+          <section className="card"><div className="card-body">
+            <h2>{pt.account.recentOrders}</h2>
+            {orders.length === 0 ? (
+              <div className="empty-account-block">
+                <p className="muted">{pt.account.noOrders}</p>
+                <Link href="/shop" className="btn btn-secondary small">Ir para a loja</Link>
+              </div>
+            ) : orders.map((order) => (
+              <div className="order-row" key={order.id}>
+                <div><strong>{order.title}</strong><p className="muted">{order.date} | {order.status}</p></div>
+                <strong>{money(order.total)}</strong>
+              </div>
+            ))}
+          </div></section>
         </div>
-        <div className="card"><div className="card-body">
-          <h2>{pt.account.recentOrders}</h2>
-          {orders.length === 0 ? <p className="muted">{pt.account.noOrders}</p> : orders.map((order) => (
-            <div className="order-row" key={order.id}><div><strong>{order.title}</strong><p className="muted">{order.date} | {order.status}</p></div><strong>{money(order.total)}</strong></div>
-          ))}
-        </div></div>
+
+        <aside className="account-side">
+          <AuthClient />
+
+          <section className="card"><div className="card-body">
+            <div className="account-card-heading">
+              <div><span className="tag">Subscricao</span><h2>Proxima caixa</h2></div>
+              {subscription ? <span className={`admin-pill ${subscriptionPill(subscription.status)}`}>{subscriptionStatusLabel(subscription.status)}</span> : null}
+            </div>
+            {subscription && selectedPlan ? (
+              <div className="subscription-panel">
+                <div className="detail-box">
+                  <p><strong>Plano:</strong> {selectedPlan.name}</p>
+                  <p><strong>Animal:</strong> {selectedPet?.name || "Sem animal"}</p>
+                  <p><strong>Proxima caixa:</strong> {subscription.nextBoxDate}</p>
+                  <p><strong>Renovacao:</strong> {subscription.renewalDate}</p>
+                  <p><strong>Total:</strong> {money(subscription.price)}</p>
+                  {subscription.extras ? <p><strong>Extras:</strong> {subscription.extras}</p> : null}
+                </div>
+                <div className="account-action-grid">
+                  <button className="btn btn-secondary small" onClick={skipNextBox}>Saltar proxima</button>
+                  <button className="btn btn-secondary small" onClick={() => updateSubscription({ status: subscription.status === "paused" ? "active" : "paused" })}>{subscription.status === "paused" ? "Retomar" : "Pausar"}</button>
+                  <button className="btn btn-secondary small" onClick={() => updateSubscription({ status: "cancelled" })}>Cancelar</button>
+                </div>
+              </div>
+            ) : (
+              <p className="muted">Ainda nao existe uma subscricao activa. Pode criar uma caixa personalizada ou guardar aqui o plano preferido.</p>
+            )}
+            <div className="form-grid account-form">
+              <select value={subscription?.plan || plans[0]?.id || ""} onChange={(event) => updateSubscriptionPlan(event.target.value)}>
+                {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
+              </select>
+              <select value={subscription?.petId || pets[0]?.id || ""} onChange={(event) => subscription ? updateSubscription({ petId: event.target.value }) : setSubscriptionState({ id: "", status: "active", plan: plans[0]?.id || "", cadence: plans[0]?.cadence || "monthly", petId: event.target.value, nextBoxDate: todayPlus(14), renewalDate: todayPlus(30), price: plans[0]?.price || 0, extras: "" })}>
+                {pets.length === 0 ? <option value="">Sem animais</option> : pets.map((pet) => <option key={pet.id} value={pet.id}>{pet.name}</option>)}
+              </select>
+              <input type="date" value={subscription?.nextBoxDate || todayPlus(14)} onChange={(event) => subscription ? updateSubscription({ nextBoxDate: event.target.value }) : null} />
+              <input type="date" value={subscription?.renewalDate || todayPlus(30)} onChange={(event) => subscription ? updateSubscription({ renewalDate: event.target.value }) : null} />
+              <input className="span-2" placeholder="Extras para a proxima caixa" value={subscription?.extras || ""} onChange={(event) => subscription ? updateSubscription({ extras: event.target.value }) : setSubscriptionState({ id: "", status: "active", plan: plans[0]?.id || "", cadence: plans[0]?.cadence || "monthly", petId: pets[0]?.id || "", nextBoxDate: todayPlus(14), renewalDate: todayPlus(30), price: plans[0]?.price || 0, extras: event.target.value })} />
+            </div>
+            <button className="btn full top-gap" onClick={createOrUpdateSubscription}>{subscription ? "Guardar subscricao" : "Criar subscricao"}</button>
+          </div></section>
+
+          <section className="card"><div className="card-body">
+            <span className="tag">Ajuda</span>
+            <h2>Suporte rapido</h2>
+            <div className="account-action-grid">
+              <Link href="/contact" className="btn btn-secondary small">Contactar suporte</Link>
+              <Link href="/shop" className="btn btn-secondary small">Adicionar produtos</Link>
+              <Link href="/configure" className="btn btn-secondary small">Alterar caixa</Link>
+            </div>
+          </div></section>
+        </aside>
       </div>
+      {message ? <div className="container"><p className="account-toast success-text">{message}</p></div> : null}
     </>
   );
 }

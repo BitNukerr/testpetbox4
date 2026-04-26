@@ -25,8 +25,43 @@ export type SavedOrder = {
   paymentMethod?: string;
 };
 
+export type AccountPet = {
+  id: string;
+  name: string;
+  species: "dog" | "cat";
+  size: "small" | "medium" | "large";
+  birthday: string;
+  allergies: string;
+  preferences: string;
+};
+
+export type AccountAddress = {
+  name: string;
+  phone: string;
+  mbwayPhone: string;
+  address: string;
+  city: string;
+  zip: string;
+  nif: string;
+};
+
+export type AccountSubscription = {
+  id: string;
+  status: "active" | "paused" | "cancelled";
+  plan: string;
+  cadence: "monthly" | "quarterly";
+  petId: string;
+  nextBoxDate: string;
+  renewalDate: string;
+  price: number;
+  extras: string;
+};
+
 const CART_KEY = "petbox-cart";
 const ORDERS_KEY = "petbox-orders";
+const PETS_KEY = "petbox-account-pets";
+const ADDRESS_KEY = "petbox-account-address";
+const SUBSCRIPTION_KEY = "petbox-account-subscription";
 
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -63,4 +98,64 @@ export function saveOrder(order: SavedOrder) {
   orders.unshift(order);
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
   window.dispatchEvent(new Event("petbox-orders-changed"));
+}
+
+function readArray<T>(key: string): T[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(key) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeValue<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(key, JSON.stringify(value));
+  window.dispatchEvent(new Event("petbox-account-changed"));
+}
+
+export function getPets() {
+  return readArray<AccountPet>(PETS_KEY);
+}
+
+export function setPets(pets: AccountPet[]) {
+  writeValue(PETS_KEY, pets);
+}
+
+export function getAddress(): AccountAddress {
+  if (typeof window === "undefined") {
+    return { name: "", phone: "", mbwayPhone: "", address: "", city: "", zip: "", nif: "" };
+  }
+  try {
+    return {
+      name: "",
+      phone: "",
+      mbwayPhone: "",
+      address: "",
+      city: "",
+      zip: "",
+      nif: "",
+      ...(JSON.parse(localStorage.getItem(ADDRESS_KEY) || "{}") || {})
+    };
+  } catch {
+    return { name: "", phone: "", mbwayPhone: "", address: "", city: "", zip: "", nif: "" };
+  }
+}
+
+export function setAddress(address: AccountAddress) {
+  writeValue(ADDRESS_KEY, address);
+}
+
+export function getSubscription(): AccountSubscription | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem(SUBSCRIPTION_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+export function setSubscription(subscription: AccountSubscription | null) {
+  writeValue(SUBSCRIPTION_KEY, subscription);
 }
