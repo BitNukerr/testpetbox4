@@ -22,7 +22,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="muted">{product.category} | {speciesLabel(product.species)}</p>
         <p>{product.description}</p>
         <div className="product-bottom">
-          <strong>{money(product.price)}</strong>
+          <strong className="product-price">{money(product.price)}</strong>
           <div className="action-row">
             <button
               className="btn small"

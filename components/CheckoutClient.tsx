@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CheckoutError, CheckoutInstance, CheckoutOutput, CheckoutPaymentError } from "@easypaypt/checkout-sdk";
-import { getCart, saveOrder, setCart } from "@/lib/client-store";
+import { type CartItem, getCart, saveOrder, setCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 
 export default function CheckoutClient() {
   const router = useRouter();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [checkoutReady, setCheckoutReady] = useState(false);
@@ -44,7 +44,23 @@ export default function CheckoutClient() {
     return "Não foi possível concluir o pagamento.";
   }
 
-  async function startCheckout() {
+  function validateCheckout() {
+    if (items.length === 0) return "O carrinho está vazio.";
+    if (!customer.firstName.trim() || !customer.lastName.trim()) return "Preencha o nome e apelido.";
+    if (!/^\S+@\S+\.\S+$/.test(customer.email.trim())) return "Escreva um email válido.";
+    if (!/^\+?\d[\d\s]{8,}$/.test(customer.phone.trim())) return "Escreva um número de telemóvel válido para MB WAY.";
+    if (!customer.address.trim() || !customer.city.trim() || !customer.zip.trim()) return "Preencha a morada completa.";
+    return "";
+  }
+
+  async function startCheckout(event?: React.FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    const validationError = validateCheckout();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
     setError("");
     setCheckoutReady(false);
@@ -113,19 +129,21 @@ export default function CheckoutClient() {
           <h2>{pt.checkout.title}</h2>
           <p className="muted">{pt.checkout.intro}</p>
           <p className="muted">{pt.checkout.mbWayAvailable}</p>
-          <div className="form-grid">
-            <input placeholder={pt.checkout.firstName} value={customer.firstName} onChange={(event) => updateCustomer("firstName", event.target.value)} />
-            <input placeholder={pt.checkout.lastName} value={customer.lastName} onChange={(event) => updateCustomer("lastName", event.target.value)} />
-            <input placeholder={pt.checkout.email} value={customer.email} onChange={(event) => updateCustomer("email", event.target.value)} className="span-2" />
-            <input placeholder={pt.checkout.phone} value={customer.phone} onChange={(event) => updateCustomer("phone", event.target.value)} className="span-2" />
-            <input placeholder={pt.checkout.address} value={customer.address} onChange={(event) => updateCustomer("address", event.target.value)} className="span-2" />
-            <input placeholder={pt.checkout.city} value={customer.city} onChange={(event) => updateCustomer("city", event.target.value)} />
-            <input placeholder={pt.checkout.zip} value={customer.zip} onChange={(event) => updateCustomer("zip", event.target.value)} />
-          </div>
-          {error ? <p className="error-text">{error}</p> : null}
-          <button className="btn checkout-pay-btn" disabled={items.length === 0 || loading} onClick={startCheckout}>
-            {loading ? pt.checkout.loading : pt.checkout.pay}
-          </button>
+          <form onSubmit={startCheckout}>
+            <div className="form-grid">
+              <input required autoComplete="given-name" placeholder={pt.checkout.firstName} value={customer.firstName} onChange={(event) => updateCustomer("firstName", event.target.value)} />
+              <input required autoComplete="family-name" placeholder={pt.checkout.lastName} value={customer.lastName} onChange={(event) => updateCustomer("lastName", event.target.value)} />
+              <input required autoComplete="email" inputMode="email" placeholder={pt.checkout.email} value={customer.email} onChange={(event) => updateCustomer("email", event.target.value)} className="span-2" />
+              <input required autoComplete="tel" inputMode="tel" placeholder={pt.checkout.phone} value={customer.phone} onChange={(event) => updateCustomer("phone", event.target.value)} className="span-2" />
+              <input required autoComplete="street-address" placeholder={pt.checkout.address} value={customer.address} onChange={(event) => updateCustomer("address", event.target.value)} className="span-2" />
+              <input required autoComplete="address-level2" placeholder={pt.checkout.city} value={customer.city} onChange={(event) => updateCustomer("city", event.target.value)} />
+              <input required autoComplete="postal-code" placeholder={pt.checkout.zip} value={customer.zip} onChange={(event) => updateCustomer("zip", event.target.value)} />
+            </div>
+            {error ? <p className="error-text">{error}</p> : null}
+            <button className="btn checkout-pay-btn" disabled={items.length === 0 || loading} type="submit">
+              {loading ? pt.checkout.loading : pt.checkout.pay}
+            </button>
+          </form>
           <div id="easypay-checkout" className={checkoutReady ? "easypay-checkout-shell is-ready" : "easypay-checkout-shell"} />
         </div>
       </div>

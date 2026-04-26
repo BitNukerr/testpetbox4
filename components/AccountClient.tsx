@@ -69,7 +69,18 @@ export default function AccountClient() {
         <div className="section-heading">
           <div><span className="eyebrow">{pt.nav.login}</span><h1>Entrar na PetBox</h1></div>
         </div>
-        <AuthClient />
+        <div className="auth-page-grid">
+          <AuthClient />
+          <div className="card auth-benefits"><div className="card-body">
+            <span className="tag">Conta PetBox</span>
+            <h2>Mais simples para voltar a comprar</h2>
+            <ul className="perks">
+              <li>Consultar encomendas recentes</li>
+              <li>Acompanhar subscrições activas</li>
+              <li>Guardar o acesso à área de cliente</li>
+            </ul>
+          </div></div>
+        </div>
         <p className="muted account-note">{pt.account.loginRequired}</p>
       </div>
     );
