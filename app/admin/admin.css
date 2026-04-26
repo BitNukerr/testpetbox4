@@ -294,6 +294,73 @@
   font-size: .8rem;
 }
 
+.admin-config-group,
+.admin-config-editor {
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  background: #fbfdff;
+  padding: 18px;
+}
+
+.admin-config-group-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.admin-config-group-head h3 {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+
+.admin-config-group-head p {
+  color: var(--admin-muted);
+  margin: 0;
+}
+
+.admin-config-options {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-config-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+}
+
+.admin-config-option img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: #fff7ed;
+}
+
+.admin-config-option strong,
+.admin-config-option span,
+.admin-config-option small {
+  display: block;
+}
+
+.admin-config-option span {
+  color: var(--admin-muted);
+  font-size: .9rem;
+}
+
+.admin-config-option small {
+  color: var(--admin-muted);
+  font-weight: 700;
+}
+
 .admin-image-presets {
   display: flex;
   gap: 10px;
@@ -380,5 +447,9 @@
 
   .admin-home-preview {
     position: static;
+  }
+
+  .admin-config-option {
+    grid-template-columns: 1fr;
   }
 }

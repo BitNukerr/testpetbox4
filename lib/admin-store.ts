@@ -29,6 +29,31 @@ export type HomeSettings = {
   productsTitle: string;
 };
 
+export type ConfigOption = {
+  id: string;
+  label: string;
+  description: string;
+  price: number;
+  image?: string;
+};
+
+export type ConfiguratorSettings = {
+  animalTitle: string;
+  animalText: string;
+  sizeTitle: string;
+  sizeText: string;
+  planTitle: string;
+  planText: string;
+  personalityTitle: string;
+  personalityText: string;
+  extrasTitle: string;
+  extrasText: string;
+  animals: ConfigOption[];
+  sizes: ConfigOption[];
+  personalities: ConfigOption[];
+  extras: ConfigOption[];
+};
+
 const KEYS = {
   products: "petbox-admin-products",
   plans: "petbox-admin-plans",
@@ -36,7 +61,8 @@ const KEYS = {
   orders: "petbox-admin-orders",
   customers: "petbox-admin-customers",
   subscriptions: "petbox-admin-subscriptions",
-  home: "petbox-admin-home"
+  home: "petbox-admin-home",
+  configurator: "petbox-admin-configurator"
 };
 
 const defaultHomeSettings: HomeSettings = {
@@ -58,6 +84,40 @@ const defaultHomeSettings: HomeSettings = {
   plansTitle: "Caixas mensais e trimestrais",
   productsEyebrow: "Extras",
   productsTitle: "Produtos para juntar a caixa"
+};
+
+const defaultConfiguratorSettings: ConfiguratorSettings = {
+  animalTitle: "Escolha o animal",
+  animalText: "Adaptamos os produtos ao perfil da caixa.",
+  sizeTitle: "Escolha o tamanho",
+  sizeText: "Use o tamanho para ajustar quantidade e resistencia dos produtos.",
+  planTitle: "Escolha o plano",
+  planText: "O preco base vem dos planos configurados no admin.",
+  personalityTitle: "Personalidade da caixa",
+  personalityText: "Defina o estilo dos brinquedos, snacks e extras.",
+  extrasTitle: "Extras opcionais",
+  extrasText: "Adicione produtos extra a caixa.",
+  animals: [
+    { id: "dog", label: "Cao", description: "Snacks, brinquedos de roer e aventura.", price: 0, image: "/images/dog-box.svg" },
+    { id: "cat", label: "Gato", description: "Brinquedos interactivos, snacks e conforto.", price: 0, image: "/images/cat-box.svg" }
+  ],
+  sizes: [
+    { id: "small", label: "Pequeno", description: "Para animais pequenos ou jovens.", price: 0 },
+    { id: "medium", label: "Medio", description: "O equilibrio ideal para a maioria.", price: 0 },
+    { id: "large", label: "Grande", description: "Mais volume e brinquedos resistentes.", price: 8 }
+  ],
+  personalities: [
+    { id: "playful", label: "Brincalhao", description: "Mais brinquedos e snacks de recompensa.", price: 0 },
+    { id: "cozy", label: "Conforto", description: "Produtos suaves, descanso e mimo.", price: 0 },
+    { id: "outdoor", label: "Aventura", description: "Extras resistentes para passeios.", price: 0 },
+    { id: "calm", label: "Calmo", description: "Opcoes tranquilas e enriquecimento leve.", price: 0 }
+  ],
+  extras: [
+    { id: "treats", label: "Snacks extra", description: "Mais recompensas para treino e mimo.", price: 6 },
+    { id: "toy", label: "Brinquedo premium", description: "Um brinquedo extra escolhido por perfil.", price: 6 },
+    { id: "care", label: "Produto de cuidado", description: "Cuidado simples para pele, pelo ou patas.", price: 6 },
+    { id: "photo", label: "Acessorio para fotos", description: "Um detalhe especial para fotografias.", price: 6 }
+  ]
 };
 
 const defaultPosts: EditablePost[] = adminJournalPosts.map((post) => {
@@ -115,7 +175,8 @@ export const defaults = {
   customers: adminCustomers,
   subscriptions: adminSubscriptions,
   stats: adminStats,
-  home: defaultHomeSettings
+  home: defaultHomeSettings,
+  configurator: defaultConfiguratorSettings
 };
 
 export const adminStore = {
@@ -154,6 +215,11 @@ export const adminStore = {
     set: (settings: HomeSettings) => writeObject(KEYS.home, settings),
     reset: () => writeObject(KEYS.home, defaults.home)
   },
+  configurator: {
+    get: () => readObject<ConfiguratorSettings>(KEYS.configurator, defaults.configurator),
+    set: (settings: ConfiguratorSettings) => writeObject(KEYS.configurator, settings),
+    reset: () => writeObject(KEYS.configurator, defaults.configurator)
+  },
   resetAll() {
     adminStore.products.reset();
     adminStore.plans.reset();
@@ -162,5 +228,6 @@ export const adminStore = {
     adminStore.customers.reset();
     adminStore.subscriptions.reset();
     adminStore.home.reset();
+    adminStore.configurator.reset();
   }
 };

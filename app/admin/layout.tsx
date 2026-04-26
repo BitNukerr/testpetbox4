@@ -7,6 +7,7 @@ import "./admin.css";
 const adminNav = [
   ["Dashboard", "/admin"],
   ["Pagina inicial", "/admin/home"],
+  ["Criar caixa", "/admin/configurator"],
   ["Encomendas", "/admin/orders"],
   ["Produtos", "/admin/products"],
   ["Planos", "/admin/plans"],

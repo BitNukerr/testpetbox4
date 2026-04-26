@@ -2,58 +2,80 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Plan } from "@/data/products";
-import { adminStore } from "@/lib/admin-store";
+import { adminStore, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
 import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 import { useRouter } from "next/navigation";
 
-const sizeLabels = { small: "Pequeno", medium: "Medio", large: "Grande" } as const;
-const sizeText = { small: "Para animais pequenos ou jovens.", medium: "O equilibrio ideal para a maioria.", large: "Mais volume e brinquedos resistentes." } as const;
-const themeLabels = { playful: "Brincalhao", cozy: "Conforto", outdoor: "Aventura", calm: "Calmo" } as const;
-const themeText = { playful: "Mais brinquedos e snacks de recompensa.", cozy: "Produtos suaves, descanso e mimo.", outdoor: "Extras resistentes para passeios.", calm: "Opcoes tranquilas e enriquecimento leve." } as const;
-const extraLabels = { treats: "Snacks extra", toy: "Brinquedo premium", care: "Produto de cuidado", photo: "Acessorio para fotos" } as const;
+function firstOption(options: ConfigOption[], fallback: string) {
+  return options[0]?.id || fallback;
+}
 
-function planPrice(plans: Plan[], cadence: "monthly" | "quarterly") {
-  return plans.find((plan) => plan.cadence === cadence)?.price || (cadence === "monthly" ? 39 : 99);
+function planLabel(plan: Plan) {
+  return plan.cadence === "monthly" ? pt.configure.monthly : pt.configure.quarterly;
+}
+
+function getOption(options: ConfigOption[], id: string) {
+  return options.find((option) => option.id === id) || options[0];
 }
 
 export default function Configurator() {
   const router = useRouter();
   const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
-  const [species, setSpecies] = useState<"dog" | "cat">("dog");
-  const [size, setSize] = useState<keyof typeof sizeLabels>("medium");
-  const [cadence, setCadence] = useState<"monthly" | "quarterly">("monthly");
-  const [theme, setTheme] = useState<keyof typeof themeLabels>("playful");
-  const [extras, setExtras] = useState<(keyof typeof extraLabels)[]>(["treats"]);
+  const [settings, setSettings] = useState<ConfiguratorSettings>(() => adminStore.configurator.get());
+  const [animalId, setAnimalId] = useState(() => firstOption(adminStore.configurator.get().animals, "dog"));
+  const [sizeId, setSizeId] = useState(() => firstOption(adminStore.configurator.get().sizes, "medium"));
+  const [planId, setPlanId] = useState(() => adminStore.plans.get()[0]?.id || "");
+  const [personalityId, setPersonalityId] = useState(() => firstOption(adminStore.configurator.get().personalities, "playful"));
+  const [extraIds, setExtraIds] = useState<string[]>(() => adminStore.configurator.get().extras[0]?.id ? [adminStore.configurator.get().extras[0].id] : []);
 
   useEffect(() => {
-    const refresh = () => setPlans(adminStore.plans.get());
+    const refresh = () => {
+      const nextPlans = adminStore.plans.get();
+      const nextSettings = adminStore.configurator.get();
+
+      setPlans(nextPlans);
+      setSettings(nextSettings);
+      setAnimalId((current) => nextSettings.animals.some((option) => option.id === current) ? current : firstOption(nextSettings.animals, "dog"));
+      setSizeId((current) => nextSettings.sizes.some((option) => option.id === current) ? current : firstOption(nextSettings.sizes, "medium"));
+      setPlanId((current) => nextPlans.some((plan) => plan.id === current) ? current : nextPlans[0]?.id || "");
+      setPersonalityId((current) => nextSettings.personalities.some((option) => option.id === current) ? current : firstOption(nextSettings.personalities, "playful"));
+      setExtraIds((current) => current.filter((id) => nextSettings.extras.some((option) => option.id === id)));
+    };
+
     refresh();
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);
 
-  const base = planPrice(plans, cadence);
-  const total = base + extras.length * 6;
-  const summary = useMemo(() => ({ species, size, cadence, theme, extras: extras.map((extra) => extraLabels[extra]).join(", ") || "Nenhum" }), [species, size, cadence, theme, extras]);
+  const animal = getOption(settings.animals, animalId);
+  const size = getOption(settings.sizes, sizeId);
+  const selectedPlan = plans.find((plan) => plan.id === planId) || plans[0];
+  const personality = getOption(settings.personalities, personalityId);
+  const selectedExtras = settings.extras.filter((extra) => extraIds.includes(extra.id));
+  const total = (selectedPlan?.price || 0) + (animal?.price || 0) + (size?.price || 0) + (personality?.price || 0) + selectedExtras.reduce((sum, extra) => sum + extra.price, 0);
+  const summaryExtras = useMemo(() => selectedExtras.map((extra) => extra.label).join(", ") || "Nenhum", [selectedExtras]);
 
-  function toggleExtra(extra: keyof typeof extraLabels) {
-    setExtras((prev) => prev.includes(extra) ? prev.filter((item) => item !== extra) : [...prev, extra]);
+  function toggleExtra(extraId: string) {
+    setExtraIds((prev) => prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]);
   }
 
   function addConfigured(goCheckout = false) {
+    if (!selectedPlan || !animal || !size || !personality) return;
+
     addToCart({
       id: `custom-${Date.now()}`,
       slug: "custom-pet-box",
-      title: `${cadence === "monthly" ? "Caixa Mensal" : "Caixa Trimestral"} ${species === "dog" ? "Cao" : "Gato"}`,
+      title: `${selectedPlan.name} ${animal.label}`,
       price: total,
       quantity: 1,
       type: "custom-box",
-      cadence,
-      species,
+      cadence: selectedPlan.cadence,
+      species: animal.id,
       category: "Caixa personalizada",
-      metadata: { tamanho: sizeLabels[size], tema: themeLabels[theme], extras: summary.extras }
+      image: animal.image,
+      metadata: { animal: animal.label, tamanho: size.label, personalidade: personality.label, extras: summaryExtras }
     });
     router.push(goCheckout ? "/checkout" : "/cart");
   }
@@ -63,54 +85,67 @@ export default function Configurator() {
       <div className="config-grid">
         <div className="config-panel">
           <div className="config-step">
-            <div className="config-step-head"><span>1</span><div><h2>Escolha o animal</h2><p>Adaptamos os produtos ao perfil da caixa.</p></div></div>
+            <div className="config-step-head"><span>1</span><div><h2>{settings.animalTitle}</h2><p>{settings.animalText}</p></div></div>
             <div className="choice-grid two-choice">
-              {(["dog", "cat"] as const).map((value) => (
-                <button key={value} className={`choice-card ${species === value ? "active" : ""}`} onClick={() => setSpecies(value)}>
-                  <strong>{value === "dog" ? pt.configure.dog : pt.configure.cat}</strong>
-                  <span>{value === "dog" ? "Snacks, brinquedos de roer e aventura." : "Brinquedos interactivos, snacks e conforto."}</span>
+              {settings.animals.map((option) => (
+                <button key={option.id} className={`choice-card ${animalId === option.id ? "active" : ""}`} onClick={() => setAnimalId(option.id)}>
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                  {option.price ? <em>+{money(option.price)}</em> : null}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="config-step">
-            <div className="config-step-head"><span>2</span><div><h2>Tamanho e plano</h2><p>O preco base vem dos planos que configurar no admin.</p></div></div>
+            <div className="config-step-head"><span>2</span><div><h2>{settings.sizeTitle}</h2><p>{settings.sizeText}</p></div></div>
             <div className="choice-grid">
-              {Object.entries(sizeLabels).map(([value, label]) => (
-                <button key={value} className={`choice-card ${size === value ? "active" : ""}`} onClick={() => setSize(value as keyof typeof sizeLabels)}>
-                  <strong>{label}</strong>
-                  <span>{sizeText[value as keyof typeof sizeText]}</span>
-                </button>
-              ))}
-            </div>
-            <div className="choice-grid two-choice mt-3">
-              {(["monthly", "quarterly"] as const).map((value) => (
-                <button key={value} className={`choice-card price-choice ${cadence === value ? "active" : ""}`} onClick={() => setCadence(value)}>
-                  <strong>{value === "monthly" ? pt.configure.monthly : pt.configure.quarterly}</strong>
-                  <span>{money(planPrice(plans, value))}</span>
+              {settings.sizes.map((option) => (
+                <button key={option.id} className={`choice-card ${sizeId === option.id ? "active" : ""}`} onClick={() => setSizeId(option.id)}>
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                  {option.price ? <em>+{money(option.price)}</em> : null}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="config-step">
-            <div className="config-step-head"><span>3</span><div><h2>Personalidade e extras</h2><p>Defina o estilo da caixa e adicione extras opcionais.</p></div></div>
-            <div className="choice-grid">
-              {Object.entries(themeLabels).map(([value, label]) => (
-                <button key={value} className={`choice-card ${theme === value ? "active" : ""}`} onClick={() => setTheme(value as keyof typeof themeLabels)}>
-                  <strong>{label}</strong>
-                  <span>{themeText[value as keyof typeof themeText]}</span>
+            <div className="config-step-head"><span>3</span><div><h2>{settings.planTitle}</h2><p>{settings.planText}</p></div></div>
+            <div className="choice-grid two-choice">
+              {plans.map((plan) => (
+                <button key={plan.id} className={`choice-card price-choice ${planId === plan.id ? "active" : ""}`} onClick={() => setPlanId(plan.id)}>
+                  <strong>{plan.name}</strong>
+                  <span>{money(plan.price)}</span>
+                  <small>{planLabel(plan)}</small>
                 </button>
               ))}
             </div>
-            <div className="check-grid config-extra-grid">
-              {Object.entries(extraLabels).map(([value, label]) => (
-                <label key={value} className={`check-item ${extras.includes(value as keyof typeof extraLabels) ? "active" : ""}`}>
-                  <input type="checkbox" checked={extras.includes(value as keyof typeof extraLabels)} onChange={() => toggleExtra(value as keyof typeof extraLabels)} />
-                  <span>{label}</span>
-                  <strong>+6,00 €</strong>
-                </label>
+          </div>
+
+          <div className="config-step">
+            <div className="config-step-head"><span>4</span><div><h2>{settings.personalityTitle}</h2><p>{settings.personalityText}</p></div></div>
+            <div className="choice-grid personality-grid">
+              {settings.personalities.map((option) => (
+                <button key={option.id} className={`choice-card personality-card ${personalityId === option.id ? "active" : ""}`} onClick={() => setPersonalityId(option.id)}>
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                  {option.price ? <em>+{money(option.price)}</em> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="config-step">
+            <div className="config-step-head"><span>5</span><div><h2>{settings.extrasTitle}</h2><p>{settings.extrasText}</p></div></div>
+            <div className="choice-grid extra-card-grid">
+              {settings.extras.map((extra) => (
+                <button key={extra.id} className={`choice-card extra-choice ${extraIds.includes(extra.id) ? "active" : ""}`} onClick={() => toggleExtra(extra.id)}>
+                  <span className="extra-check" aria-hidden="true">{extraIds.includes(extra.id) ? "✓" : ""}</span>
+                  <strong>{extra.label}</strong>
+                  <span>{extra.description}</span>
+                  <em>+{money(extra.price)}</em>
+                </button>
               ))}
             </div>
           </div>
@@ -118,15 +153,16 @@ export default function Configurator() {
 
         <aside className="config-summary">
           <div className="summary-media">
-            <img src={species === "dog" ? "/images/dog-box.svg" : "/images/cat-box.svg"} alt="Pre-visualizacao da caixa" />
+            <img src={animal?.image || "/images/dog-box.svg"} alt="Pre-visualizacao da caixa" />
           </div>
           <span className="tag">Resumo em tempo real</span>
-          <h3>{cadence === "monthly" ? "Caixa Mensal" : "Caixa Trimestral"} {species === "dog" ? "Cao" : "Gato"}</h3>
+          <h3>{selectedPlan?.name || "Caixa PetBox"} {animal?.label || ""}</h3>
           <div className="summary-lines">
-            <div><span>Tamanho</span><strong>{sizeLabels[summary.size]}</strong></div>
-            <div><span>Tema</span><strong>{themeLabels[summary.theme]}</strong></div>
-            <div><span>Extras</span><strong>{summary.extras}</strong></div>
-            <div><span>Plano</span><strong>{summary.cadence === "monthly" ? pt.configure.monthly : pt.configure.quarterly}</strong></div>
+            <div><span>Animal</span><strong>{animal?.label}</strong></div>
+            <div><span>Tamanho</span><strong>{size?.label}</strong></div>
+            <div><span>Plano</span><strong>{selectedPlan ? planLabel(selectedPlan) : "-"}</strong></div>
+            <div><span>Personalidade</span><strong>{personality?.label}</strong></div>
+            <div><span>Extras</span><strong>{summaryExtras}</strong></div>
           </div>
           <p className="price">{money(total)}</p>
           <div className="config-summary-actions">

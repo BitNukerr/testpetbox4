@@ -10,7 +10,7 @@ export type CartItem = {
   category?: string;
   type: "product" | "plan" | "custom-box";
   cadence?: "monthly" | "quarterly";
-  species?: "dog" | "cat" | "both";
+  species?: string;
   metadata?: Record<string, string>;
 };
 

@@ -90,9 +90,17 @@ p{line-height:1.65}
 .choice-card{min-height:108px;text-align:left;border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:.18s ease}
 .choice-card strong{font-size:1rem}
 .choice-card span{color:var(--muted);font-size:14px;line-height:1.45}
+.choice-card em{font-style:normal;font-weight:800;color:var(--text);margin-top:auto}
+.choice-card small{color:var(--muted);font-weight:700}
 .choice-card.active,.choice-card:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(35,31,27,.08)}
+.choice-card.active{background:#fffaf4}
 .price-choice{min-height:82px}
 .price-choice span{font-size:1.2rem;color:var(--text);font-weight:800}
+.personality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.extra-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.extra-choice{position:relative;padding-right:52px}
+.extra-check{position:absolute;top:14px;right:14px;display:grid;place-items:center;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#fff;font-weight:900}
+.extra-choice.active .extra-check{background:var(--accent);border-color:var(--accent)}
 .config-extra-grid{margin-top:14px}
 .config-extra-grid .check-item{justify-content:space-between}
 .check-item.active{border-color:var(--accent);background:#fff}
