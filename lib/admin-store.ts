@@ -8,13 +8,56 @@ export type EditablePost = AdminJournalPost & {
   body: string;
 };
 
+export type HomeSettings = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  primaryCta: string;
+  primaryHref: string;
+  secondaryCta: string;
+  secondaryHref: string;
+  heroImage: string;
+  statOneTitle: string;
+  statOneText: string;
+  statTwoTitle: string;
+  statTwoText: string;
+  statThreeTitle: string;
+  statThreeText: string;
+  plansEyebrow: string;
+  plansTitle: string;
+  productsEyebrow: string;
+  productsTitle: string;
+};
+
 const KEYS = {
   products: "petbox-admin-products",
   plans: "petbox-admin-plans",
   posts: "petbox-admin-posts",
   orders: "petbox-admin-orders",
   customers: "petbox-admin-customers",
-  subscriptions: "petbox-admin-subscriptions"
+  subscriptions: "petbox-admin-subscriptions",
+  home: "petbox-admin-home"
+};
+
+const defaultHomeSettings: HomeSettings = {
+  eyebrow: "PetBox",
+  title: "Caixas de subscricao para caes e gatos",
+  subtitle: "Receba brinquedos, snacks e cuidados escolhidos para o perfil do seu animal.",
+  primaryCta: "Criar caixa",
+  primaryHref: "/configure",
+  secondaryCta: "Loja",
+  secondaryHref: "/shop",
+  heroImage: "/images/hero-pets.svg",
+  statOneTitle: "2 planos",
+  statOneText: "Mensal + trimestral",
+  statTwoTitle: "Caes + gatos",
+  statTwoText: "Produtos por perfil",
+  statThreeTitle: "MB WAY",
+  statThreeText: "Pagamento por Easypay",
+  plansEyebrow: "Planos",
+  plansTitle: "Caixas mensais e trimestrais",
+  productsEyebrow: "Extras",
+  productsTitle: "Produtos para juntar a caixa"
 };
 
 const defaultPosts: EditablePost[] = adminJournalPosts.map((post) => {
@@ -40,6 +83,20 @@ function write<T>(key: string, value: T[]) {
   window.dispatchEvent(new Event("petbox-admin-changed"));
 }
 
+function readObject<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    return { ...fallback, ...(JSON.parse(localStorage.getItem(key) || "") || {}) };
+  } catch {
+    return fallback;
+  }
+}
+
+function writeObject<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+  window.dispatchEvent(new Event("petbox-admin-changed"));
+}
+
 export function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -57,7 +114,8 @@ export const defaults = {
   orders: adminOrders,
   customers: adminCustomers,
   subscriptions: adminSubscriptions,
-  stats: adminStats
+  stats: adminStats,
+  home: defaultHomeSettings
 };
 
 export const adminStore = {
@@ -91,6 +149,11 @@ export const adminStore = {
     set: (items: AdminSubscription[]) => write(KEYS.subscriptions, items),
     reset: () => write(KEYS.subscriptions, defaults.subscriptions)
   },
+  home: {
+    get: () => readObject<HomeSettings>(KEYS.home, defaults.home),
+    set: (settings: HomeSettings) => writeObject(KEYS.home, settings),
+    reset: () => writeObject(KEYS.home, defaults.home)
+  },
   resetAll() {
     adminStore.products.reset();
     adminStore.plans.reset();
@@ -98,5 +161,6 @@ export const adminStore = {
     adminStore.orders.reset();
     adminStore.customers.reset();
     adminStore.subscriptions.reset();
+    adminStore.home.reset();
   }
 };
