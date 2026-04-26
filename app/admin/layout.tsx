@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminGate from "@/components/AdminGate";
+import AdminLogoutButton from "@/components/AdminLogoutButton";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./admin.css";
 
@@ -7,6 +8,7 @@ const adminNav = [
   ["Dashboard", "/admin"],
   ["Encomendas", "/admin/orders"],
   ["Produtos", "/admin/products"],
+  ["Planos", "/admin/plans"],
   ["Clientes", "/admin/customers"],
   ["Subscrições", "/admin/subscriptions"],
   ["Blog", "/admin/journal"],
@@ -42,9 +44,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </nav>
 
                 <div className="mt-4 pt-4 border-top border-secondary">
-                  <Link href="/" className="admin-action-btn d-inline-flex text-decoration-none">
-                    Ver website
-                  </Link>
+                  <div className="d-grid gap-2">
+                    <Link href="/" className="admin-action-btn d-inline-flex text-decoration-none justify-content-center">
+                      Ver website
+                    </Link>
+                    <AdminLogoutButton />
+                  </div>
                 </div>
               </div>
             </aside>

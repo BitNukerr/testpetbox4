@@ -164,6 +164,11 @@
   background: #185c36;
 }
 
+.admin-logout-btn {
+  width: 100%;
+  justify-content: center;
+}
+
 .admin-chart {
   height: 230px;
   display: flex;
@@ -184,6 +189,93 @@
   border-radius: 14px;
   padding: 12px 14px;
   width: 100%;
+}
+
+.admin-products-table {
+  table-layout: fixed;
+}
+
+.admin-products-table th:first-child,
+.admin-products-table td:first-child {
+  width: 32%;
+}
+
+.admin-actions-heading {
+  text-align: right;
+  width: 180px;
+}
+
+.admin-table-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-product-cell img {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  object-fit: contain;
+  background: #fff7ed;
+  flex: 0 0 auto;
+}
+
+.admin-product-preview {
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 18px;
+  background: #fbf7f0;
+  position: sticky;
+  top: 110px;
+}
+
+.admin-product-preview img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  background: #fff;
+  margin: 10px 0 14px;
+}
+
+.admin-image-presets {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-image-preset {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  background: #fff;
+  padding: 8px;
+}
+
+.admin-image-preset.active,
+.admin-image-preset:hover {
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, .14);
+}
+
+.admin-image-preset img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .admin-inline-tools {
@@ -231,5 +323,13 @@
 
   .admin-inline-tools {
     grid-template-columns: 1fr;
+  }
+
+  .admin-products-table {
+    table-layout: auto;
+  }
+
+  .admin-product-preview {
+    position: static;
   }
 }

@@ -109,8 +109,9 @@ export default function AdminJournalClient() {
 
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        insertImage(reader.result, imageAlt || file.name.replace(/\.[^.]+$/, ""));
+      const result = reader.result;
+      if (typeof result === "string") {
+        insertImage(result, imageAlt || file.name.replace(/\.[^.]+$/, ""));
       }
     };
     reader.readAsDataURL(file);
