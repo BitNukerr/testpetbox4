@@ -125,6 +125,20 @@ export default function AdminHomeClient() {
     );
   }
 
+  function PreviewTile({ box, variant }: { box: (typeof campaignBoxes)[number]; variant: "promo" | "green" | "cream" | "blue" | "blog" }) {
+    return (
+      <div className={`admin-home-preview-tile ${variant}`}>
+        <div>
+          <span>{String(form[box.label] || "")}</span>
+          <strong>{String(form[box.heading] || "")}</strong>
+          <p>{String(form[box.text] || "")}</p>
+          <em>{String(form[box.cta] || "")}</em>
+        </div>
+        <img src={String(form[box.image] || form.heroImage)} alt="" />
+      </div>
+    );
+  }
+
   return (
     <div className="admin-card">
       <div className="card-header d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -172,15 +186,24 @@ export default function AdminHomeClient() {
 
           <div className="col-xl-5">
             <div className="admin-home-preview">
-              <span className="eyebrow">{form.showcaseLeadTitle}</span>
-              <h2>{form.showcasePromoTitle}</h2>
-              <p>{form.showcasePromoText}</p>
-              <img src={form.showcasePromoImage || form.heroImage} alt="" />
-              <div className="admin-home-stats">
-                <div><strong>{form.showcaseTileOneLabel}</strong><span>{form.showcaseTileOneTitle}</span></div>
-                <div><strong>{form.showcaseTileTwoLabel}</strong><span>{form.showcaseTileTwoTitle}</span></div>
-                <div><strong>{form.showcaseTileThreeLabel}</strong><span>{form.showcaseTileThreeTitle}</span></div>
-                <div><strong>{form.showcaseTileFourLabel}</strong><span>{form.showcaseTileFourTitle}</span></div>
+              <div className="admin-home-preview-head">
+                <span className="eyebrow">Pre-visualizacao</span>
+                <h2>Homepage</h2>
+                <p>Veja como os blocos ficam antes de guardar.</p>
+              </div>
+
+              <div className="admin-home-preview-grid">
+                <div className="admin-home-preview-lead">
+                  <div className="admin-preview-word">PETBOX</div>
+                  <strong>{form.showcaseLeadTitle}</strong>
+                  <p>{form.showcaseLeadText}</p>
+                </div>
+
+                <PreviewTile box={campaignBoxes[0]} variant="promo" />
+                <PreviewTile box={campaignBoxes[1]} variant="green" />
+                <PreviewTile box={campaignBoxes[2]} variant="cream" />
+                <PreviewTile box={campaignBoxes[3]} variant="blue" />
+                <PreviewTile box={campaignBoxes[4]} variant="blog" />
               </div>
             </div>
           </div>
