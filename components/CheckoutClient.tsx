@@ -82,7 +82,7 @@ export default function CheckoutClient() {
         testing: data.testing,
         showLoading: true,
         hideSubscriptionSummary: true,
-        logoUrl: `${window.location.origin}/favicon.svg`,
+        logoUrl: `${window.location.origin}/dog-paw.png`,
         backgroundColor: "#fff9f3",
         accentColor: "#231f1b",
         buttonBackgroundColor: "#231f1b",

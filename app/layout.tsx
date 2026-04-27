@@ -16,9 +16,9 @@ export const metadata = {
     type: "website"
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg"
+    icon: "/dog-paw.png",
+    shortcut: "/dog-paw.png",
+    apple: "/dog-paw.png"
   }
 };
 

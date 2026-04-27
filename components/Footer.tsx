@@ -11,7 +11,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <div className="footer-brand"><img src="/logo-paw.svg" alt="" /><h3>PetBox</h3></div>
+          <div className="footer-brand"><img src="/dog-paw.png" alt="" /><h3>PetBox</h3></div>
           <p>Caixas mensais e trimestrais para caes e gatos, com snacks, brinquedos e extras avulsos.</p>
         </div>
         <div>
