@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
+import { prepareAdminImage } from "@/lib/admin-image";
 
 const heroPresets = [
   "/images/hero-pets.svg",
@@ -91,22 +92,29 @@ export default function AdminHomeClient() {
     setMessage("Pagina inicial reposta.");
   }
 
-  function handleImageFile(field: FieldName, file: File | undefined) {
+  async function handleImageFile(field: FieldName, file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMessage("Escolha um ficheiro de imagem.");
-      return;
+    try {
+      const result = await prepareAdminImage(file, { width: 900, height: 650, fit: "contain" });
+      update(field, result);
+      setMessage("Imagem adicionada e ajustada ao tamanho certo.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        update(field, result);
-        setMessage("Imagem adicionada.");
-      }
-    };
-    reader.readAsDataURL(file);
+  async function handleLeadImages(files: FileList | null) {
+    if (!files?.length) return;
+    try {
+      const prepared = await Promise.all(Array.from(files).map((file) => prepareAdminImage(file, { width: 520, height: 520, fit: "contain" })));
+      setForm((current) => {
+        const existing = current.showcaseLeadImages.trim();
+        return { ...current, showcaseLeadImages: [existing, ...prepared].filter(Boolean).join("\n") };
+      });
+      setMessage(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} adicionada${prepared.length === 1 ? "" : "s"} ao bloco animado.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar as imagens.");
+    }
   }
 
   function ImageControls({ field }: { field: FieldName }) {
@@ -164,6 +172,7 @@ export default function AdminHomeClient() {
                 <div className="col-md-5"><label className="form-label fw-bold">Link</label><input className="admin-form-control" value={form.showcaseLeadHref} onChange={(event) => update("showcaseLeadHref", event.target.value)} /></div>
                 <div className="col-12"><label className="form-label fw-bold">Texto</label><textarea className="admin-form-control" rows={2} value={form.showcaseLeadText} onChange={(event) => update("showcaseLeadText", event.target.value)} /></div>
                 <div className="col-12"><label className="form-label fw-bold">Imagens animadas</label><textarea className="admin-form-control" rows={5} value={form.showcaseLeadImages} onChange={(event) => update("showcaseLeadImages", event.target.value)} placeholder="Uma imagem por linha, exemplo: /images/dog-box.svg" /></div>
+                <div className="col-12"><label className="form-label fw-bold">Carregar imagens animadas</label><input className="admin-form-control" type="file" accept="image/*" multiple onChange={(event) => handleLeadImages(event.target.files)} /><div className="text-muted small mt-2">Pode escolher varias imagens. Cada uma e ajustada para caber no bloco sem cortar, mesmo com proporcoes diferentes.</div></div>
               </div>
             </div>
 

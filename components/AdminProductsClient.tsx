@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { adminStore, slugify } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
+import { prepareAdminImage } from "@/lib/admin-image";
 
 const emptyProduct: Product = {
   slug: "",
@@ -90,22 +91,15 @@ export default function AdminProductsClient() {
     setMessage("Produtos repostos.");
   }
 
-  function handleImageFile(file: File | undefined) {
+  async function handleImageFile(file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMessage("Escolha um ficheiro de imagem.");
-      return;
+    try {
+      const result = await prepareAdminImage(file, { width: 900, height: 900, fit: "contain" });
+      setForm((current) => ({ ...current, image: result }));
+      setMessage("Imagem adicionada e ajustada ao produto.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        setForm((current) => ({ ...current, image: result }));
-        setMessage("Imagem adicionada ao produto.");
-      }
-    };
-    reader.readAsDataURL(file);
   }
 
   return (

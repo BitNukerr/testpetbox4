@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { adminStore, slugify, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
+import { prepareAdminImage } from "@/lib/admin-image";
 
 type OptionGroup = "animals" | "sizes" | "personalities" | "extras";
 
@@ -106,19 +107,15 @@ export default function AdminConfiguratorClient() {
     setMessage("Configurador reposto.");
   }
 
-  function handleImageFile(file: File | undefined) {
+  async function handleImageFile(file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMessage("Escolha um ficheiro de imagem.");
-      return;
+    try {
+      const result = await prepareAdminImage(file, { width: 720, height: 720, fit: "contain" });
+      updateOption("image", result);
+      setMessage("Imagem adicionada e ajustada a opcao.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") updateOption("image", result);
-    };
-    reader.readAsDataURL(file);
   }
 
   return (

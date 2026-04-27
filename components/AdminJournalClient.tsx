@@ -3,6 +3,7 @@
 import { useState } from "react";
 import BlogContent from "@/components/BlogContent";
 import { adminStore, slugify, type EditablePost } from "@/lib/admin-store";
+import { prepareAdminImage } from "@/lib/admin-image";
 
 const emptyPost: EditablePost = {
   slug: "",
@@ -100,21 +101,15 @@ export default function AdminJournalClient() {
     setMessage("Imagem adicionada ao conteudo.");
   }
 
-  function handleImageFile(file: File | undefined) {
+  async function handleImageFile(file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMessage("Escolha um ficheiro de imagem.");
-      return;
+    try {
+      const result = await prepareAdminImage(file, { width: 1400, height: 900, fit: "max" });
+      insertImage(result, imageAlt || file.name.replace(/\.[^.]+$/, ""));
+      setMessage("Imagem ajustada e adicionada ao conteudo.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        insertImage(result, imageAlt || file.name.replace(/\.[^.]+$/, ""));
-      }
-    };
-    reader.readAsDataURL(file);
   }
 
   function deletePost(slug: string) {
