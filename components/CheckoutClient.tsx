@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CheckoutError, CheckoutInstance, CheckoutOutput, CheckoutPaymentError } from "@easypaypt/checkout-sdk";
 import { type CartItem, getCart, saveOrder, setCart } from "@/lib/client-store";
+import { adminStore } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 
 export default function CheckoutClient() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [settings, setSettings] = useState(() => adminStore.settings.get());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [checkoutReady, setCheckoutReady] = useState(false);
@@ -25,12 +27,19 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => { setItems(getCart()); }, []);
+  useEffect(() => {
+    const refresh = () => setSettings(adminStore.settings.get());
+    refresh();
+    window.addEventListener("petbox-admin-changed", refresh);
+    return () => window.removeEventListener("petbox-admin-changed", refresh);
+  }, []);
   useEffect(() => () => { checkoutRef.current?.unmount(); }, []);
 
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
+  const shipping = subtotal > 0 ? Number(settings.shippingPrice || 0) : 0;
   const total = useMemo(() => {
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    return subtotal + (subtotal > 0 ? 8 : 0);
-  }, [items]);
+    return subtotal + shipping;
+  }, [shipping, subtotal]);
 
   function updateCustomer(field: keyof typeof customer, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
@@ -68,7 +77,7 @@ export default function CheckoutClient() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, customer })
+        body: JSON.stringify({ items, customer, shippingPrice: shipping })
       });
       const data = await res.json();
       if (!res.ok || !data.manifest) throw new Error(data.error || "Não foi possível iniciar o pagamento.");
@@ -156,6 +165,8 @@ export default function CheckoutClient() {
               <strong>{money(item.price * item.quantity)}</strong>
             </div>
           ))}
+          <div className="summary-line"><span>{pt.common.subtotal}</span><strong>{money(subtotal)}</strong></div>
+          <div className="summary-line"><span>{pt.common.shipping}</span><strong>{money(shipping)}</strong></div>
           <div className="summary-line total"><span>{pt.common.total}</span><strong>{money(total)}</strong></div>
         </div>
       </aside>

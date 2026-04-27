@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CartItem, getCart, setCart } from "@/lib/client-store";
+import { adminStore } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 
@@ -23,9 +24,16 @@ function speciesLabel(species?: CartItem["species"]) {
 
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [settings, setSettings] = useState(() => adminStore.settings.get());
   useEffect(() => { const refresh = () => setItems(getCart()); refresh(); window.addEventListener("petbox-cart-changed", refresh); return () => window.removeEventListener("petbox-cart-changed", refresh); }, []);
+  useEffect(() => {
+    const refresh = () => setSettings(adminStore.settings.get());
+    refresh();
+    window.addEventListener("petbox-admin-changed", refresh);
+    return () => window.removeEventListener("petbox-admin-changed", refresh);
+  }, []);
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
-  const shipping = subtotal > 0 ? 8 : 0;
+  const shipping = subtotal > 0 ? Number(settings.shippingPrice || 0) : 0;
 
   function updateQty(id: string, quantity: number) {
     if (quantity < 1) {

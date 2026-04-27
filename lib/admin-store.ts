@@ -88,6 +88,13 @@ export type ConfiguratorSettings = {
   extras: ConfigOption[];
 };
 
+export type StoreSettings = {
+  storeName: string;
+  email: string;
+  note: string;
+  shippingPrice: number;
+};
+
 const KEYS = {
   products: "petbox-admin-products",
   plans: "petbox-admin-plans",
@@ -96,7 +103,8 @@ const KEYS = {
   customers: "petbox-admin-customers",
   subscriptions: "petbox-admin-subscriptions",
   home: "petbox-admin-home",
-  configurator: "petbox-admin-configurator"
+  configurator: "petbox-admin-configurator",
+  settings: "petbox-admin-settings"
 };
 
 const defaultHomeSettings: HomeSettings = {
@@ -188,6 +196,13 @@ const defaultConfiguratorSettings: ConfiguratorSettings = {
   ]
 };
 
+const defaultStoreSettings: StoreSettings = {
+  storeName: "PetBox",
+  email: "rodrigoleite.96@gmail.com",
+  note: "Painel preparado para ligar a Supabase, Easypay e gestao real de encomendas.",
+  shippingPrice: 8
+};
+
 const defaultPosts: EditablePost[] = adminJournalPosts.map((post) => {
   const publicPost = journalPosts.find((item) => item.slug === post.slug);
   return {
@@ -244,7 +259,8 @@ export const defaults = {
   subscriptions: adminSubscriptions,
   stats: adminStats,
   home: defaultHomeSettings,
-  configurator: defaultConfiguratorSettings
+  configurator: defaultConfiguratorSettings,
+  settings: defaultStoreSettings
 };
 
 export const adminStore = {
@@ -288,6 +304,11 @@ export const adminStore = {
     set: (settings: ConfiguratorSettings) => writeObject(KEYS.configurator, settings),
     reset: () => writeObject(KEYS.configurator, defaults.configurator)
   },
+  settings: {
+    get: () => readObject<StoreSettings>(KEYS.settings, defaults.settings),
+    set: (settings: StoreSettings) => writeObject(KEYS.settings, settings),
+    reset: () => writeObject(KEYS.settings, defaults.settings)
+  },
   resetAll() {
     adminStore.products.reset();
     adminStore.plans.reset();
@@ -297,5 +318,6 @@ export const adminStore = {
     adminStore.subscriptions.reset();
     adminStore.home.reset();
     adminStore.configurator.reset();
+    adminStore.settings.reset();
   }
 };

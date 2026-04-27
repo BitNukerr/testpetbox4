@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const items: CartItem[] = body.items ?? [];
     const customer: CheckoutCustomer = body.customer ?? {};
+    const requestedShipping = Math.max(0, Number(body.shippingPrice) || 0);
 
     if (!items.length) {
       return NextResponse.json({ error: "Não foram enviados artigos para pagamento." }, { status: 400 });
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
       value: toMoney(item.price)
     }));
     const subtotal = items.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0);
-    const shipping = subtotal > 0 ? 8 : 0;
+    const shipping = subtotal > 0 ? requestedShipping : 0;
     const total = toMoney(subtotal + shipping);
     const orderKey = `petbox-${Date.now()}`;
 
