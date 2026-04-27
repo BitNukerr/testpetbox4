@@ -45,8 +45,8 @@ p{line-height:1.65}
 .brand{display:flex;align-items:center;gap:12px;min-width:max-content}
 .brand-logo{width:54px;height:50px;object-fit:contain}
 .brand-logo-badge{border-radius:14px;box-shadow:0 6px 18px rgba(6,75,43,.14)}
-.brand strong{display:block;font-size:2rem;letter-spacing:-.03em;line-height:1;color:#063150}
-.brand strong span{color:#063150}
+.brand strong{display:block;font-size:2rem;letter-spacing:-.03em;line-height:1;color:var(--text)}
+.brand strong span{color:#79c7e7}
 .brand small{display:block;color:var(--muted);font-size:12px}
 .brand-badge{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:16px;background:transparent}
 .desktop-nav{display:flex;gap:10px;align-items:center}
