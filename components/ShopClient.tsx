@@ -13,6 +13,15 @@ function speciesMatches(product: Product, filter: SpeciesFilter) {
   return product.species === filter || product.species === "both";
 }
 
+const categoryIcons: Record<string, string> = {
+  Todos: "✦",
+  Snacks: "◐",
+  Brinquedos: "◌",
+  Cuidado: "✚",
+  Acessorios: "◇",
+  "Acessórios": "◇"
+};
+
 export default function ShopClient() {
   const [items, setItems] = useState<Product[]>(() => adminStore.products.get());
   const [query, setQuery] = useState("");
@@ -47,13 +56,24 @@ export default function ShopClient() {
     <div className="shop-layout">
       <aside className="shop-filters">
         <div className="filter-head">
-          <span className="tag">Filtros</span>
+          <div><span className="tag">Filtros</span><h2>Encontrar produto</h2></div>
           <button className="link-btn" onClick={() => { setQuery(""); setCategory("Todos"); setSpecies("all"); setSort("featured"); }}>Limpar</button>
         </div>
-        <label><span>Pesquisar</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="snacks, brinquedos..." /></label>
-        <label><span>Categoria</span><select value={category} onChange={(event) => setCategory(event.target.value)}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label><span>Animal</span><select value={species} onChange={(event) => setSpecies(event.target.value as SpeciesFilter)}><option value="all">Todos</option><option value="dog">Cao</option><option value="cat">Gato</option><option value="both">Cao + gato</option></select></label>
-        <label><span>Ordenar</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="featured">Destaques</option><option value="rating">Melhor avaliacao</option><option value="price-asc">Preco mais baixo</option><option value="price-desc">Preco mais alto</option></select></label>
+        <label className="filter-search"><span>Pesquisar</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="snacks, brinquedos..." /></label>
+        <div className="filter-group">
+          <span>Categoria</span>
+          <div className="filter-options">
+            {categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><b>{categoryIcons[item] || "•"}</b>{item}</button>)}
+          </div>
+        </div>
+        <div className="filter-control">
+          <b>♧</b>
+          <label><span>Animal</span><select value={species} onChange={(event) => setSpecies(event.target.value as SpeciesFilter)}><option value="all">Todos</option><option value="dog">Cao</option><option value="cat">Gato</option><option value="both">Cao + gato</option></select></label>
+        </div>
+        <div className="filter-control">
+          <b>↕</b>
+          <label><span>Ordenar</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="featured">Destaques</option><option value="rating">Melhor avaliacao</option><option value="price-asc">Preco mais baixo</option><option value="price-desc">Preco mais alto</option></select></label>
+        </div>
       </aside>
 
       <div>
