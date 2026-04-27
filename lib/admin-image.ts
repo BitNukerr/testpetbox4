@@ -3,6 +3,7 @@ export type AdminImageOptions = {
   height: number;
   fit?: "contain" | "max";
   quality?: number;
+  output?: "auto" | "png" | "webp";
 };
 
 function readFileAsDataUrl(file: File) {
@@ -61,5 +62,7 @@ export async function prepareAdminImage(file: File, options: AdminImageOptions) 
   const y = fit === "max" ? 0 : Math.round((canvas.height - drawHeight) / 2);
   context.drawImage(image, x, y, drawWidth, drawHeight);
 
-  return canvas.toDataURL("image/webp", quality);
+  const output = options.output || "auto";
+  const mimeType = output === "png" || (output === "auto" && file.type === "image/png") ? "image/png" : "image/webp";
+  return mimeType === "image/png" ? canvas.toDataURL(mimeType) : canvas.toDataURL(mimeType, quality);
 }

@@ -112,7 +112,7 @@ export default function AdminHomeClient() {
 
   return (
     <div className="admin-card">
-      <div className="card-header d-flex flex-column flex-md-row justify-content-between gap-3">
+      <div className="card-header admin-save-header d-flex flex-column flex-md-row justify-content-between gap-3">
         <div>
           <h2 className="h4 mb-1">Pagina inicial</h2>
           <div className="text-muted">Configure textos, imagens e links dos blocos da primeira pagina.</div>

@@ -37,6 +37,11 @@ export default function HomeShowcaseClient() {
       .filter(Boolean);
     return configured.length ? configured : products.slice(0, 5).map((product) => product.image);
   }, [products, settings.showcaseLeadImages]);
+  const heroLoopImages = useMemo(() => {
+    const source = heroImages.length ? heroImages : ["/images/dog-box.svg"];
+    const count = Math.max(6, source.length);
+    return Array.from({ length: count }, (_, index) => source[index % source.length]);
+  }, [heroImages]);
   const quarterlyPlan = plans.find((plan) => plan.cadence === "quarterly") || plans[1] || plans[0];
 
   return (
@@ -47,8 +52,12 @@ export default function HomeShowcaseClient() {
             <span>P</span><span>E</span><span>T</span><span>B</span><span>O</span><span>X</span>
           </div>
           <div className="video-asset-track" aria-hidden="true">
-            {[...heroImages, ...heroImages, ...heroImages].map((image, index) => (
-              <img key={`${image}-${index}`} src={image} alt="" />
+            {[0, 1].map((group) => (
+              <div className="video-asset-group" key={group}>
+                {heroLoopImages.map((image, index) => (
+                  <img key={`${group}-${index}`} src={image} alt="" />
+                ))}
+              </div>
             ))}
           </div>
           <div className="video-caption">
