@@ -32,7 +32,7 @@ export default function HomeShowcaseClient() {
   const featuredProducts = useMemo(() => products.slice(0, 4), [products]);
   const heroImages = useMemo(() => {
     const configured = settings.showcaseLeadImages
-      .split(/\r?\n|,/)
+      .split(/\r?\n/)
       .map((image) => image.trim())
       .filter(Boolean);
     return configured.length ? configured : products.slice(0, 5).map((product) => product.image);

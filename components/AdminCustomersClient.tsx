@@ -20,6 +20,7 @@ function money(value: number) {
 export default function AdminCustomersClient() {
   const [customers, setCustomers] = useState<AdminCustomer[]>(() => adminStore.customers.get());
   const [editing, setEditing] = useState<AdminCustomer | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<AdminCustomer>(emptyCustomer);
   const [message, setMessage] = useState("");
 
@@ -31,12 +32,14 @@ export default function AdminCustomersClient() {
 
   function startNew() {
     setEditing(null);
+    setFormOpen(true);
     setForm({ ...emptyCustomer, id: `CUS-${String(customers.length + 1).padStart(3, "0")}` });
     setMessage("");
   }
 
   function startEdit(customer: AdminCustomer) {
     setEditing(customer);
+    setFormOpen(true);
     setForm(customer);
     setMessage("");
   }
@@ -50,6 +53,7 @@ export default function AdminCustomersClient() {
     const exists = customers.some((item) => item.id === customer.id);
     save(exists ? customers.map((item) => item.id === customer.id ? customer : item) : [...customers, customer], exists ? "Cliente actualizado." : "Cliente criado.");
     setEditing(customer);
+    setFormOpen(false);
   }
 
   function deleteCustomer(id: string) {
@@ -61,6 +65,7 @@ export default function AdminCustomersClient() {
     adminStore.customers.reset();
     setCustomers(adminStore.customers.get());
     startNew();
+    setFormOpen(false);
     setMessage("Utilizadores repostos para os dados demo.");
   }
 
@@ -70,7 +75,7 @@ export default function AdminCustomersClient() {
         <div><h2 className="h4 mb-1">Clientes</h2><div className="text-muted">Adicione, edite, remova ou reponha utilizadores demo.</div></div>
         <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={startNew}>Adicionar cliente</button><button className="admin-action-btn" onClick={resetUsers}>Repor utilizadores</button></div>
       </div>
-      <div className="card-body">
+      {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-2"><label className="form-label fw-bold">ID</label><input className="admin-form-control" value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} /></div>
           <div className="col-md-5"><label className="form-label fw-bold">Nome</label><input className="admin-form-control" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></div>
@@ -78,10 +83,10 @@ export default function AdminCustomersClient() {
           <div className="col-md-5"><label className="form-label fw-bold">Animal</label><input className="admin-form-control" value={form.pet} onChange={(event) => setForm({ ...form, pet: event.target.value })} /></div>
           <div className="col-md-4"><label className="form-label fw-bold">Subscrição</label><select className="admin-form-control" value={form.subscription} onChange={(event) => setForm({ ...form, subscription: event.target.value as AdminCustomer["subscription"] })}><option>Ativa</option><option>Pausada</option><option>Sem subscrição</option></select></div>
           <div className="col-md-3"><label className="form-label fw-bold">Valor total</label><input className="admin-form-control" type="number" value={form.lifetimeValue} onChange={(event) => setForm({ ...form, lifetimeValue: Number(event.target.value) })} /></div>
-          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={saveCustomer}>{editing ? "Guardar cliente" : "Criar cliente"}</button><button className="admin-action-btn" onClick={startNew}>Limpar</button></div>
+          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={saveCustomer}>{editing ? "Guardar cliente" : "Criar cliente"}</button><button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyCustomer); }}>Fechar</button></div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
-      </div>
+      </div> : message ? <div className="card-body"><p className="text-muted mb-0">{message}</p></div> : null}
       <div className="table-responsive">
         <table className="table admin-table">
           <thead><tr><th>ID</th><th>Cliente</th><th>Animal</th><th>Subscrição</th><th>Valor total</th><th /></tr></thead>

@@ -24,6 +24,7 @@ function cadenceLabel(cadence: Plan["cadence"]) {
 export default function AdminPlansClient() {
   const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
   const [editing, setEditing] = useState<Plan | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<Plan>(emptyPlan);
   const [perksText, setPerksText] = useState("");
   const [message, setMessage] = useState("");
@@ -32,6 +33,7 @@ export default function AdminPlansClient() {
 
   function startNew() {
     setEditing(null);
+    setFormOpen(true);
     setForm(emptyPlan);
     setPerksText("");
     setMessage("");
@@ -39,6 +41,7 @@ export default function AdminPlansClient() {
 
   function startEdit(plan: Plan) {
     setEditing(plan);
+    setFormOpen(true);
     setForm(plan);
     setPerksText(plan.perks.join("\n"));
     setMessage("");
@@ -68,6 +71,7 @@ export default function AdminPlansClient() {
     savePlans(next, exists ? "Plano actualizado." : "Plano criado.");
     setEditing(plan);
     setForm(plan);
+    setFormOpen(false);
   }
 
   function deletePlan(id: string) {
@@ -79,6 +83,7 @@ export default function AdminPlansClient() {
     adminStore.plans.reset();
     setPlans(adminStore.plans.get());
     startNew();
+    setFormOpen(false);
     setMessage("Planos repostos.");
   }
 
@@ -95,7 +100,7 @@ export default function AdminPlansClient() {
         </div>
       </div>
 
-      <div className="card-body">
+      {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-6"><label className="form-label fw-bold">Nome</label><input className="admin-form-control" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, id: editing ? form.id : slugify(event.target.value) })} /></div>
           <div className="col-md-6"><label className="form-label fw-bold">ID</label><input className="admin-form-control" value={form.id} onChange={(event) => setForm({ ...form, id: slugify(event.target.value) })} /></div>
@@ -103,10 +108,10 @@ export default function AdminPlansClient() {
           <div className="col-md-4"><label className="form-label fw-bold">Preco</label><input className="admin-form-control" type="number" min="0" value={form.price} onChange={(event) => setForm({ ...form, price: Number(event.target.value) })} /></div>
           <div className="col-12"><label className="form-label fw-bold">Descricao</label><textarea className="admin-form-control" rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
           <div className="col-12"><label className="form-label fw-bold">Vantagens</label><textarea className="admin-form-control" rows={4} value={perksText} onChange={(event) => setPerksText(event.target.value)} placeholder="Uma vantagem por linha" /></div>
-          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={savePlan}>{editing ? "Guardar plano" : "Criar plano"}</button><button className="admin-action-btn" onClick={startNew}>Limpar</button></div>
+          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={savePlan}>{editing ? "Guardar plano" : "Criar plano"}</button><button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyPlan); setPerksText(""); }}>Fechar</button></div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
-      </div>
+      </div> : message ? <div className="card-body"><p className="text-muted mb-0">{message}</p></div> : null}
 
       <div className="table-responsive">
         <table className="table admin-table">

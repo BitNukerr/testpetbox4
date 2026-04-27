@@ -27,6 +27,7 @@ function StatusPill({ status }: { status: string }) {
 export default function AdminOrdersClient() {
   const [orders, setOrders] = useState<AdminOrder[]>(() => adminStore.orders.get());
   const [editing, setEditing] = useState<AdminOrder | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<AdminOrder>(emptyOrder);
   const [message, setMessage] = useState("");
 
@@ -38,12 +39,14 @@ export default function AdminOrdersClient() {
 
   function startNew() {
     setEditing(null);
+    setFormOpen(true);
     setForm({ ...emptyOrder, id: `PB-${Date.now().toString().slice(-4)}` });
     setMessage("");
   }
 
   function startEdit(order: AdminOrder) {
     setEditing(order);
+    setFormOpen(true);
     setForm(order);
     setMessage("");
   }
@@ -57,6 +60,7 @@ export default function AdminOrdersClient() {
     const exists = orders.some((item) => item.id === order.id);
     save(exists ? orders.map((item) => item.id === order.id ? order : item) : [order, ...orders], exists ? "Encomenda actualizada." : "Encomenda criada.");
     setEditing(order);
+    setFormOpen(false);
   }
 
   function deleteOrder(id: string) {
@@ -68,6 +72,7 @@ export default function AdminOrdersClient() {
     adminStore.orders.reset();
     setOrders(adminStore.orders.get());
     startNew();
+    setFormOpen(false);
     setMessage("Encomendas repostas.");
   }
 
@@ -77,7 +82,7 @@ export default function AdminOrdersClient() {
         <div><h2 className="h4 mb-1">Encomendas</h2><div className="text-muted">Crie, edite estados, totais e dados de expedição.</div></div>
         <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={startNew}>Nova encomenda</button><button className="admin-action-btn" onClick={resetOrders}>Repor encomendas</button></div>
       </div>
-      <div className="card-body">
+      {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-2"><label className="form-label fw-bold">ID</label><input className="admin-form-control" value={form.id} onChange={(event) => setForm({ ...form, id: event.target.value })} /></div>
           <div className="col-md-4"><label className="form-label fw-bold">Cliente</label><input className="admin-form-control" value={form.customer} onChange={(event) => setForm({ ...form, customer: event.target.value })} /></div>
@@ -87,10 +92,10 @@ export default function AdminOrdersClient() {
           <div className="col-md-3"><label className="form-label fw-bold">Estado</label><select className="admin-form-control" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as AdminOrder["status"] })}><option>Pago</option><option>Pendente</option><option>Enviado</option><option>Cancelado</option></select></div>
           <div className="col-md-2"><label className="form-label fw-bold">Total</label><input className="admin-form-control" type="number" value={form.total} onChange={(event) => setForm({ ...form, total: Number(event.target.value) })} /></div>
           <div className="col-md-2"><label className="form-label fw-bold">Data</label><input className="admin-form-control" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} /></div>
-          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={saveOrder}>{editing ? "Guardar encomenda" : "Criar encomenda"}</button><button className="admin-action-btn" onClick={startNew}>Limpar</button></div>
+          <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={saveOrder}>{editing ? "Guardar encomenda" : "Criar encomenda"}</button><button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyOrder); }}>Fechar</button></div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
-      </div>
+      </div> : message ? <div className="card-body"><p className="text-muted mb-0">{message}</p></div> : null}
       <div className="table-responsive">
         <table className="table admin-table">
           <thead><tr><th>ID</th><th>Cliente</th><th>Pet</th><th>Plano</th><th>Data</th><th>Estado</th><th>Total</th><th /></tr></thead>

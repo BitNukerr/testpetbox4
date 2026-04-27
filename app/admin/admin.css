@@ -522,6 +522,87 @@
   flex-wrap: wrap;
 }
 
+.admin-image-field {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-image-current,
+.admin-image-empty,
+.admin-image-list-item {
+  position: relative;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.admin-image-current {
+  width: min(240px, 100%);
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+}
+
+.admin-image-current img,
+.admin-image-list-item img {
+  width: 100%;
+  height: 140px;
+  object-fit: contain;
+}
+
+.admin-image-empty {
+  min-height: 86px;
+  display: grid;
+  place-items: center;
+  color: var(--admin-muted);
+  font-weight: 800;
+}
+
+.admin-image-remove,
+.admin-image-list-actions button {
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text);
+  font-weight: 900;
+  border-radius: 999px;
+}
+
+.admin-image-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+}
+
+.admin-image-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.admin-image-list-item {
+  padding: 8px;
+}
+
+.admin-image-list-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.admin-image-list-actions button {
+  min-width: 28px;
+  height: 28px;
+}
+
+.admin-image-list-actions button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
 .admin-image-preset {
   width: 58px;
   height: 58px;

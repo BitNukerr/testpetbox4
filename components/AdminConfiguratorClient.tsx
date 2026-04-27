@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AdminImageField } from "@/components/AdminImageField";
 import { adminStore, slugify, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
-import { prepareAdminImage } from "@/lib/admin-image";
 
 type OptionGroup = "animals" | "sizes" | "personalities" | "extras";
 
@@ -39,6 +39,7 @@ export default function AdminConfiguratorClient() {
   const [form, setForm] = useState<ConfiguratorSettings>(() => adminStore.configurator.get());
   const [editingGroup, setEditingGroup] = useState<OptionGroup>("animals");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [optionForm, setOptionForm] = useState<ConfigOption>(emptyOption);
   const [message, setMessage] = useState("");
 
@@ -53,6 +54,7 @@ export default function AdminConfiguratorClient() {
   function startNew(group: OptionGroup) {
     setEditingGroup(group);
     setEditingId(null);
+    setEditorOpen(true);
     setOptionForm(emptyOption);
     setMessage("");
   }
@@ -60,6 +62,7 @@ export default function AdminConfiguratorClient() {
   function startEdit(group: OptionGroup, option: ConfigOption) {
     setEditingGroup(group);
     setEditingId(option.id);
+    setEditorOpen(true);
     setOptionForm(option);
     setMessage("");
   }
@@ -82,6 +85,7 @@ export default function AdminConfiguratorClient() {
       return { ...current, [editingGroup]: nextItems };
     });
     setEditingId(id);
+    setEditorOpen(false);
     setOptionForm(nextOption);
     setMessage("Opcao guardada. Clique em Guardar configurador para publicar.");
   }
@@ -89,6 +93,7 @@ export default function AdminConfiguratorClient() {
   function deleteOption(group: OptionGroup, id: string) {
     setForm((current) => ({ ...current, [group]: current[group].filter((item) => item.id !== id) }));
     if (editingGroup === group && editingId === id) startNew(group);
+    if (editingGroup === group && editingId === id) setEditorOpen(false);
     setMessage("Opcao removida. Clique em Guardar configurador para publicar.");
   }
 
@@ -103,19 +108,9 @@ export default function AdminConfiguratorClient() {
     setForm(next);
     setEditingGroup("animals");
     setEditingId(null);
+    setEditorOpen(false);
     setOptionForm(emptyOption);
     setMessage("Configurador reposto.");
-  }
-
-  async function handleImageFile(file: File | undefined) {
-    if (!file) return;
-    try {
-      const result = await prepareAdminImage(file, { width: 720, height: 720, fit: "contain" });
-      updateOption("image", result);
-      setMessage("Imagem adicionada e ajustada a opcao.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
-    }
   }
 
   return (
@@ -167,7 +162,7 @@ export default function AdminConfiguratorClient() {
             </div>
           ))}
 
-          <div className="col-12">
+          {editorOpen ? <div className="col-12">
             <div className="admin-config-editor">
               <div><h3 className="h5 mb-1">{editingId ? "Editar opcao" : "Nova opcao"}</h3><p className="text-muted mb-0">Grupo: {groups.find((group) => group.key === editingGroup)?.title}</p></div>
               <div className="row g-3 mt-1">
@@ -175,12 +170,11 @@ export default function AdminConfiguratorClient() {
                 <div className="col-md-6"><label className="form-label fw-bold">ID</label><input className="admin-form-control" value={optionForm.id} onChange={(event) => updateOption("id", slugify(event.target.value))} /></div>
                 <div className="col-md-8"><label className="form-label fw-bold">Descricao</label><input className="admin-form-control" value={optionForm.description} onChange={(event) => updateOption("description", event.target.value)} /></div>
                 <div className="col-md-4"><label className="form-label fw-bold">Preco extra</label><input className="admin-form-control" type="number" value={optionForm.price} onChange={(event) => updateOption("price", Number(event.target.value))} /></div>
-                <div className="col-md-8"><label className="form-label fw-bold">Imagem opcional</label><input className="admin-form-control" value={optionForm.image || ""} onChange={(event) => updateOption("image", event.target.value)} /></div>
-                <div className="col-md-4"><label className="form-label fw-bold">Carregar imagem</label><input className="admin-form-control" type="file" accept="image/*" onChange={(event) => handleImageFile(event.target.files?.[0])} /></div>
-                <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={saveOption}>Guardar opcao</button><button className="admin-action-btn" onClick={() => startNew(editingGroup)}>Limpar</button></div>
+                <div className="col-12"><label className="form-label fw-bold">Imagem opcional</label><AdminImageField value={optionForm.image || ""} onChange={(image) => updateOption("image", image)} onMessage={setMessage} options={{ width: 720, height: 720, fit: "contain" }} /></div>
+                <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={saveOption}>Guardar opcao</button><button className="admin-action-btn" onClick={() => { setEditorOpen(false); setEditingId(null); setOptionForm(emptyOption); }}>Fechar</button></div>
               </div>
             </div>
-          </div>
+          </div> : null}
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
       </div>

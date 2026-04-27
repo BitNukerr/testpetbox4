@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AdminImageField, AdminImageListField } from "@/components/AdminImageField";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
-import { prepareAdminImage } from "@/lib/admin-image";
 
 const heroPresets = [
   "/images/hero-pets.svg",
@@ -92,45 +92,8 @@ export default function AdminHomeClient() {
     setMessage("Pagina inicial reposta.");
   }
 
-  async function handleImageFile(field: FieldName, file: File | undefined) {
-    if (!file) return;
-    try {
-      const result = await prepareAdminImage(file, { width: 900, height: 650, fit: "contain" });
-      update(field, result);
-      setMessage("Imagem adicionada e ajustada ao tamanho certo.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
-    }
-  }
-
-  async function handleLeadImages(files: FileList | null) {
-    if (!files?.length) return;
-    try {
-      const prepared = await Promise.all(Array.from(files).map((file) => prepareAdminImage(file, { width: 520, height: 520, fit: "contain" })));
-      setForm((current) => {
-        const existing = current.showcaseLeadImages.trim();
-        return { ...current, showcaseLeadImages: [existing, ...prepared].filter(Boolean).join("\n") };
-      });
-      setMessage(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} adicionada${prepared.length === 1 ? "" : "s"} ao bloco animado.`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar as imagens.");
-    }
-  }
-
   function ImageControls({ field }: { field: FieldName }) {
-    return (
-      <>
-        <input className="admin-form-control" value={String(form[field] || "")} onChange={(event) => update(field, event.target.value)} />
-        <input className="admin-form-control mt-2" type="file" accept="image/*" onChange={(event) => handleImageFile(field, event.target.files?.[0])} />
-        <div className="admin-image-presets mt-2">
-          {heroPresets.map((image) => (
-            <button key={image} className={`admin-image-preset ${form[field] === image ? "active" : ""}`} onClick={() => update(field, image)} type="button">
-              <img src={image} alt="" />
-            </button>
-          ))}
-        </div>
-      </>
-    );
+    return <AdminImageField value={String(form[field] || "")} onChange={(value) => update(field, value)} onMessage={setMessage} presets={heroPresets} options={{ width: 900, height: 650, fit: "contain" }} />;
   }
 
   function PreviewTile({ box, variant }: { box: (typeof campaignBoxes)[number]; variant: "promo" | "green" | "cream" | "blue" | "blog" }) {
@@ -171,8 +134,11 @@ export default function AdminHomeClient() {
                 <div className="col-md-7"><label className="form-label fw-bold">Titulo</label><input className="admin-form-control" value={form.showcaseLeadTitle} onChange={(event) => update("showcaseLeadTitle", event.target.value)} /></div>
                 <div className="col-md-5"><label className="form-label fw-bold">Link</label><input className="admin-form-control" value={form.showcaseLeadHref} onChange={(event) => update("showcaseLeadHref", event.target.value)} /></div>
                 <div className="col-12"><label className="form-label fw-bold">Texto</label><textarea className="admin-form-control" rows={2} value={form.showcaseLeadText} onChange={(event) => update("showcaseLeadText", event.target.value)} /></div>
-                <div className="col-12"><label className="form-label fw-bold">Imagens animadas</label><textarea className="admin-form-control" rows={5} value={form.showcaseLeadImages} onChange={(event) => update("showcaseLeadImages", event.target.value)} placeholder="Uma imagem por linha, exemplo: /images/dog-box.svg" /></div>
-                <div className="col-12"><label className="form-label fw-bold">Carregar imagens animadas</label><input className="admin-form-control" type="file" accept="image/*" multiple onChange={(event) => handleLeadImages(event.target.files)} /><div className="text-muted small mt-2">Pode escolher varias imagens. Cada uma e ajustada para caber no bloco sem cortar, mesmo com proporcoes diferentes.</div></div>
+                <div className="col-12">
+                  <label className="form-label fw-bold">Imagens animadas</label>
+                  <AdminImageListField value={form.showcaseLeadImages} onChange={(value) => update("showcaseLeadImages", value)} onMessage={setMessage} presets={heroPresets} options={{ width: 520, height: 520, fit: "contain" }} />
+                  <div className="text-muted small mt-2">Pode escolher varias imagens, remover com X e ordenar com as setas. Cada imagem e ajustada sem cortar.</div>
+                </div>
               </div>
             </div>
 

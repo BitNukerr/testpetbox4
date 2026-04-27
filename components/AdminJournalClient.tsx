@@ -18,8 +18,8 @@ const emptyPost: EditablePost = {
 export default function AdminJournalClient() {
   const [posts, setPosts] = useState<EditablePost[]>(() => adminStore.posts.get());
   const [editing, setEditing] = useState<EditablePost | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<EditablePost>(emptyPost);
-  const [imageUrl, setImageUrl] = useState("");
   const [imageAlt, setImageAlt] = useState("");
   const [message, setMessage] = useState("");
 
@@ -31,16 +31,16 @@ export default function AdminJournalClient() {
 
   function startNew() {
     setEditing(null);
+    setFormOpen(true);
     setForm({ ...emptyPost, date: new Date().toISOString().slice(0, 10) });
-    setImageUrl("");
     setImageAlt("");
     setMessage("");
   }
 
   function startEdit(post: EditablePost) {
     setEditing(post);
+    setFormOpen(true);
     setForm(post);
-    setImageUrl("");
     setImageAlt("");
     setMessage("");
   }
@@ -60,6 +60,7 @@ export default function AdminJournalClient() {
     save(next, exists ? updatedMessage : createdMessage);
     setEditing(post);
     setForm(post);
+    setFormOpen(false);
   }
 
   function savePost() {
@@ -83,7 +84,7 @@ export default function AdminJournalClient() {
     }
   }
 
-  function insertImage(src = imageUrl, alt = imageAlt) {
+  function insertImage(src: string, alt = imageAlt) {
     const cleanSrc = src.trim();
     const cleanAlt = alt.trim() || "Imagem do artigo";
     if (!cleanSrc) {
@@ -96,7 +97,6 @@ export default function AdminJournalClient() {
       ...current,
       body: current.body.trim() ? `${current.body.trim()}\n\n${imageLine}\n\n` : `${imageLine}\n\n`
     }));
-    setImageUrl("");
     setImageAlt("");
     setMessage("Imagem adicionada ao conteudo.");
   }
@@ -130,7 +130,7 @@ export default function AdminJournalClient() {
         <div><h2 className="h4 mb-1">Blog</h2><div className="text-muted">Crie, edite, publique e remova artigos.</div></div>
         <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={startNew}>Novo artigo</button><button className="admin-action-btn" onClick={resetPosts}>Repor blog</button></div>
       </div>
-      <div className="card-body">
+      {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-7"><label className="form-label fw-bold">Titulo</label><input className="admin-form-control" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value, slug: editing ? form.slug : slugify(event.target.value) })} /></div>
           <div className="col-md-5"><label className="form-label fw-bold">Slug</label><input className="admin-form-control" value={form.slug} onChange={(event) => setForm({ ...form, slug: slugify(event.target.value) })} /></div>
@@ -141,19 +141,17 @@ export default function AdminJournalClient() {
           <div className="col-12">
             <label className="form-label fw-bold">Imagens no conteudo</label>
             <div className="admin-inline-tools">
-              <input className="admin-form-control" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="/images/foto.jpg ou https://..." />
               <input className="admin-form-control" value={imageAlt} onChange={(event) => setImageAlt(event.target.value)} placeholder="Descricao da imagem" />
-              <button className="admin-action-btn" onClick={() => insertImage()}>Inserir imagem</button>
             </div>
             <input className="admin-form-control mt-2" type="file" accept="image/*" onChange={(event) => handleImageFile(event.target.files?.[0])} />
-            <div className="text-muted small mt-2">Tambem pode escrever no texto: ![Descricao](/images/foto.jpg)</div>
+            <div className="text-muted small mt-2">A imagem e ajustada automaticamente e inserida no conteudo.</div>
           </div>
           <div className="col-12"><label className="form-label fw-bold">Conteudo</label><textarea className="admin-form-control" rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} /></div>
           <div className="col-12 d-flex gap-2 flex-wrap">
             <button className="admin-action-btn" onClick={savePost}>{editing ? "Guardar artigo" : "Criar artigo"}</button>
             <button className="admin-action-btn admin-action-primary" onClick={() => savePostWithStatus("Publicado")}>Publicar</button>
             <button className="admin-action-btn" onClick={() => savePostWithStatus("Rascunho")}>Guardar como rascunho</button>
-            <button className="admin-action-btn" onClick={startNew}>Limpar</button>
+            <button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyPost); }}>Fechar</button>
           </div>
           <div className="col-12">
             <div className="admin-preview-box">
@@ -163,7 +161,7 @@ export default function AdminJournalClient() {
           </div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
-      </div>
+      </div> : message ? <div className="card-body"><p className="text-muted mb-0">{message}</p></div> : null}
       <div className="table-responsive">
         <table className="table admin-table">
           <thead><tr><th>Titulo</th><th>Autor</th><th>Data</th><th>Estado</th><th /></tr></thead>

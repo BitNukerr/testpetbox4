@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AdminImageField } from "@/components/AdminImageField";
 import { adminStore, slugify } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
-import { prepareAdminImage } from "@/lib/admin-image";
 
 const emptyProduct: Product = {
   slug: "",
@@ -40,6 +40,7 @@ function speciesLabel(species: Product["species"]) {
 export default function AdminProductsClient() {
   const [products, setProducts] = useState<Product[]>(() => adminStore.products.get());
   const [editing, setEditing] = useState<Product | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<Product>(emptyProduct);
   const [message, setMessage] = useState("");
 
@@ -53,12 +54,14 @@ export default function AdminProductsClient() {
 
   function startNew() {
     setEditing(null);
+    setFormOpen(true);
     setForm(emptyProduct);
     setMessage("");
   }
 
   function startEdit(product: Product) {
     setEditing(product);
+    setFormOpen(true);
     setForm(product);
     setMessage("");
   }
@@ -76,11 +79,13 @@ export default function AdminProductsClient() {
     saveProducts(next, exists ? "Produto actualizado." : "Produto criado.");
     setEditing(product);
     setForm(product);
+    setFormOpen(false);
   }
 
   function deleteProduct(slug: string) {
     saveProducts(products.filter((item) => item.slug !== slug), "Produto removido.");
     startNew();
+    setFormOpen(false);
   }
 
   function resetProducts() {
@@ -88,18 +93,8 @@ export default function AdminProductsClient() {
     const next = adminStore.products.get();
     setProducts(next);
     startNew();
+    setFormOpen(false);
     setMessage("Produtos repostos.");
-  }
-
-  async function handleImageFile(file: File | undefined) {
-    if (!file) return;
-    try {
-      const result = await prepareAdminImage(file, { width: 900, height: 900, fit: "contain" });
-      setForm((current) => ({ ...current, image: result }));
-      setMessage("Imagem adicionada e ajustada ao produto.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
-    }
   }
 
   return (
@@ -115,7 +110,7 @@ export default function AdminProductsClient() {
         </div>
       </div>
 
-      <div className="card-body">
+      {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-xl-8">
             <div className="row g-3">
@@ -125,9 +120,7 @@ export default function AdminProductsClient() {
               <div className="col-md-4"><label className="form-label fw-bold">Animal</label><select className="admin-form-control" value={form.species} onChange={(event) => setForm({ ...form, species: event.target.value as Product["species"] })}><option value="dog">Cao</option><option value="cat">Gato</option><option value="both">Ambos</option></select></div>
               <div className="col-md-2"><label className="form-label fw-bold">Preco</label><input className="admin-form-control" type="number" min="0" value={form.price} onChange={(event) => setForm({ ...form, price: Number(event.target.value) })} /></div>
               <div className="col-md-2"><label className="form-label fw-bold">Avaliacao</label><input className="admin-form-control" type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(event) => setForm({ ...form, rating: Number(event.target.value) })} /></div>
-              <div className="col-md-6"><label className="form-label fw-bold">Imagem</label><input className="admin-form-control" value={form.image} onChange={(event) => setForm({ ...form, image: event.target.value })} placeholder="/images/produto.svg ou https://..." /></div>
-              <div className="col-md-6"><label className="form-label fw-bold">Carregar imagem</label><input className="admin-form-control" type="file" accept="image/*" onChange={(event) => handleImageFile(event.target.files?.[0])} /></div>
-              <div className="col-12"><label className="form-label fw-bold">Imagens rapidas</label><div className="admin-image-presets">{imagePresets.map((image) => <button key={image} className={`admin-image-preset ${form.image === image ? "active" : ""}`} onClick={() => setForm({ ...form, image })}><img src={image} alt="" /></button>)}</div></div>
+              <div className="col-12"><label className="form-label fw-bold">Imagem</label><AdminImageField value={form.image} onChange={(image) => setForm({ ...form, image })} onMessage={setMessage} presets={imagePresets} options={{ width: 900, height: 900, fit: "contain" }} /></div>
               <div className="col-12"><label className="form-label fw-bold">Etiqueta</label><input className="admin-form-control" value={form.tag} onChange={(event) => setForm({ ...form, tag: event.target.value })} /></div>
               <div className="col-12"><label className="form-label fw-bold">Descricao</label><textarea className="admin-form-control" rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
             </div>
@@ -146,11 +139,11 @@ export default function AdminProductsClient() {
 
           <div className="col-12 d-flex gap-2 flex-wrap">
             <button className="admin-action-btn admin-action-primary" onClick={saveProduct}>{editing ? "Guardar alteracoes" : "Criar produto"}</button>
-            <button className="admin-action-btn" onClick={startNew}>Limpar</button>
+            <button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyProduct); }}>Fechar</button>
           </div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
-      </div>
+      </div> : message ? <div className="card-body"><p className="text-muted mb-0">{message}</p></div> : null}
 
       <div className="table-responsive">
         <table className="table admin-table admin-products-table">
