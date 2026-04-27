@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AuthClient from "@/components/AuthClient";
 import type { Plan } from "@/data/products";
+import { deleteRemotePet, loadRemoteAccount, saveRemoteAddress, saveRemotePet, saveRemoteProfile, saveRemoteSubscription } from "@/lib/account-db";
 import { adminStore } from "@/lib/admin-store";
 import {
   type AccountAddress,
@@ -82,6 +83,7 @@ export default function AccountClient() {
   const [user, setUser] = useState<UserState>(null);
   const [profileName, setProfileName] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
+  const [remoteReady, setRemoteReady] = useState(false);
   const [message, setMessage] = useState("");
 
   const accountScope = user?.id || user?.email || "";
@@ -155,21 +157,55 @@ export default function AccountClient() {
     };
   }, [accountScope]);
 
-  function savePet() {
+  useEffect(() => {
+    if (!user?.id || !supabase) {
+      setRemoteReady(false);
+      return;
+    }
+
+    let mounted = true;
+    loadRemoteAccount(user.id)
+      .then((data) => {
+        if (!mounted) return;
+        if (data.profile?.full_name) setProfileName(data.profile.full_name);
+        setPetsState(data.pets);
+        setAddressState(data.address || emptyAddress);
+        setSubscriptionState(data.subscription);
+        setOrders(data.orders);
+        setRemoteReady(true);
+      })
+      .catch(() => setRemoteReady(false));
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
+
+  async function savePet() {
     if (!petForm.name.trim()) {
       setMessage("Adicione o nome do animal.");
       return;
     }
 
     const pet = { ...petForm, id: petForm.id || `pet-${Date.now()}` };
+    let savedPet = pet;
+    if (user?.id && supabase) {
+      try {
+        savedPet = await saveRemotePet(user.id, pet);
+      } catch {
+        setMessage("Nao foi possivel guardar no Supabase. Guardei neste browser.");
+      }
+    }
+
     const nextPets = editingPetId
-      ? pets.map((item) => item.id === editingPetId ? pet : item)
-      : [...pets, pet];
+      ? pets.map((item) => item.id === editingPetId ? savedPet : item)
+      : [...pets, savedPet];
 
     setPets(nextPets, accountScope);
+    setPetsState(nextPets);
     setPetForm(emptyPet);
     setEditingPetId(null);
-    setMessage("Perfil do animal guardado.");
+    setMessage(remoteReady ? "Perfil do animal guardado no Supabase." : "Perfil do animal guardado.");
   }
 
   function editPet(pet: AccountPet) {
@@ -178,18 +214,35 @@ export default function AccountClient() {
     setMessage("");
   }
 
-  function deletePet(id: string) {
+  async function deletePet(id: string) {
+    if (user?.id && supabase && !id.startsWith("pet-")) {
+      try {
+        await deleteRemotePet(id);
+      } catch {
+        setMessage("Nao foi possivel remover no Supabase.");
+        return;
+      }
+    }
     const nextPets = pets.filter((pet) => pet.id !== id);
     setPets(nextPets, accountScope);
+    setPetsState(nextPets);
     if (subscription?.petId === id) {
       setSubscription(null, accountScope);
+      setSubscriptionState(null);
     }
     setPetForm(emptyPet);
     setEditingPetId(null);
     setMessage("Perfil removido.");
   }
 
-  function saveAddress() {
+  async function saveAddress() {
+    if (user?.id && supabase) {
+      try {
+        await saveRemoteAddress(user.id, address);
+      } catch {
+        setMessage("Nao foi possivel guardar no Supabase. Guardei neste browser.");
+      }
+    }
     setAddress(address, accountScope);
     setMessage("Dados de entrega guardados.");
   }
@@ -205,12 +258,15 @@ export default function AccountClient() {
         setMessage("Nao foi possivel actualizar o perfil.");
         return;
       }
+      if (user?.id) {
+        await saveRemoteProfile(user.id, user.email || "", profileName.trim()).catch(() => null);
+      }
     }
     setUser((current) => current ? { ...current, name: profileName.trim() } : current);
     setMessage("Perfil actualizado.");
   }
 
-  function createOrUpdateSubscription() {
+  async function createOrUpdateSubscription() {
     const plan = selectedPlan || plans[0];
     const pet = selectedPet || pets[0];
     if (!plan || !pet) {
@@ -229,14 +285,32 @@ export default function AccountClient() {
       price: plan.price,
       extras: subscription?.extras || ""
     };
-    setSubscription(nextSubscription, accountScope);
+    let savedSubscription = nextSubscription;
+    if (user?.id && supabase) {
+      try {
+        savedSubscription = await saveRemoteSubscription(user.id, nextSubscription);
+      } catch {
+        setMessage("Nao foi possivel guardar a subscricao no Supabase. Guardei neste browser.");
+      }
+    }
+    setSubscription(savedSubscription, accountScope);
+    setSubscriptionState(savedSubscription);
     setMessage("Subscricao guardada.");
   }
 
-  function updateSubscription(patch: Partial<AccountSubscription>) {
+  async function updateSubscription(patch: Partial<AccountSubscription>) {
     if (!subscription) return;
     const next = { ...subscription, ...patch };
-    setSubscription(next, accountScope);
+    let savedSubscription = next;
+    if (user?.id && supabase) {
+      try {
+        savedSubscription = await saveRemoteSubscription(user.id, next);
+      } catch {
+        setMessage("Nao foi possivel actualizar no Supabase. Guardei neste browser.");
+      }
+    }
+    setSubscription(savedSubscription, accountScope);
+    setSubscriptionState(savedSubscription);
     setMessage("Subscricao actualizada.");
   }
 

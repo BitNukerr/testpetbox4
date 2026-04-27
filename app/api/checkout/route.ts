@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 type CartItem = {
   id?: string;
@@ -62,6 +63,55 @@ function shippingPriceFromRequest(value: unknown) {
   return safeMoney(value);
 }
 
+async function buildOrderItems(items: CartItem[]) {
+  const admin = getSupabaseAdmin();
+  const productSlugs = items.filter((item) => item.type !== "plan").map((item) => cleanString(item.slug)).filter(Boolean);
+  const planIds = items.filter((item) => item.type === "plan").map((item) => cleanString(item.slug || item.id)).filter(Boolean);
+
+  if (!admin || (!productSlugs.length && !planIds.length)) {
+    return items.map((item) => ({
+      description: cleanString(item.description || item.title, "Produto PetBox"),
+      quantity: safeQuantity(item.quantity),
+      key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
+      value: toMoney(safeMoney(item.price))
+    }));
+  }
+
+  const [productsResult, plansResult] = await Promise.all([
+    productSlugs.length ? admin.from("products").select("slug,title,price").in("slug", productSlugs).eq("is_active", true) : Promise.resolve({ data: [], error: null }),
+    planIds.length ? admin.from("plans").select("id,name,price").in("id", planIds).eq("is_active", true) : Promise.resolve({ data: [], error: null })
+  ]);
+
+  if (productsResult.error || plansResult.error) {
+    throw new Error("Nao foi possivel validar os precos dos artigos.");
+  }
+
+  const products = new Map((productsResult.data || []).map((product: any) => [product.slug, product]));
+  const plans = new Map((plansResult.data || []).map((plan: any) => [plan.id, plan]));
+
+  return items.map((item) => {
+    const quantity = safeQuantity(item.quantity);
+    if (item.type === "plan") {
+      const plan = plans.get(cleanString(item.slug || item.id));
+      if (plan) {
+        return { description: plan.name, quantity, key: plan.id, value: toMoney(Number(plan.price)) };
+      }
+    }
+
+    const product = products.get(cleanString(item.slug));
+    if (product) {
+      return { description: product.title, quantity, key: product.slug, value: toMoney(Number(product.price)) };
+    }
+
+    return {
+      description: cleanString(item.description || item.title, "Produto PetBox"),
+      quantity,
+      key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
+      value: toMoney(safeMoney(item.price))
+    };
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -86,13 +136,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const orderItems = items.map((item) => ({
-      description: cleanString(item.description || item.title, "Produto PetBox"),
-      quantity: safeQuantity(item.quantity),
-      key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
-      value: toMoney(safeMoney(item.price))
-    }));
-    const subtotal = items.reduce((sum, item) => sum + safeMoney(item.price) * safeQuantity(item.quantity), 0);
+    const orderItems = await buildOrderItems(items);
+    const subtotal = orderItems.reduce((sum, item) => sum + item.value * item.quantity, 0);
     const shipping = subtotal > 0 ? requestedShipping : 0;
     const total = toMoney(subtotal + shipping);
     const orderKey = `petbox-${Date.now()}`;
