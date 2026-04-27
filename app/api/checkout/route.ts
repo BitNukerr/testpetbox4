@@ -9,8 +9,10 @@ type CartItem = {
   price: number;
   quantity: number;
   type?: "plan" | "custom-box" | "product";
+  species?: string;
   interval?: "month" | "year";
   intervalCount?: number;
+  config?: Record<string, string>;
 };
 
 type CheckoutCustomer = {
@@ -27,6 +29,12 @@ type BuiltOrderItem = {
   value: number;
   productSlug?: string | null;
   planId?: string | null;
+};
+
+type ConfigOption = {
+  id: string;
+  label: string;
+  price?: number;
 };
 
 const EASYPAY_METHODS = new Set(["cc", "mbw", "mb", "dd", "vi", "ap", "gp", "sw"]);
@@ -82,8 +90,10 @@ async function userIdFromAccessToken(accessToken: unknown) {
 
 async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
   const admin = getSupabaseAdmin();
-  const productSlugs = items.filter((item) => item.type !== "plan").map((item) => cleanString(item.slug)).filter(Boolean);
-  const planIds = items.filter((item) => item.type === "plan").map((item) => cleanString(item.slug || item.id)).filter(Boolean);
+  const productSlugs = items.filter((item) => item.type === "product").map((item) => cleanString(item.slug)).filter(Boolean);
+  const planIds = items
+    .map((item) => item.type === "plan" ? cleanString(item.slug || item.id) : item.type === "custom-box" ? cleanString(item.config?.planId) : "")
+    .filter(Boolean);
 
   if (!admin || (!productSlugs.length && !planIds.length)) {
     return items.map((item) => ({
@@ -96,17 +106,24 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
     }));
   }
 
-  const [productsResult, plansResult] = await Promise.all([
+  const [productsResult, plansResult, configuratorResult] = await Promise.all([
     productSlugs.length ? admin.from("products").select("slug,title,price").in("slug", productSlugs).eq("is_active", true) : Promise.resolve({ data: [], error: null }),
-    planIds.length ? admin.from("plans").select("id,name,price").in("id", planIds).eq("is_active", true) : Promise.resolve({ data: [], error: null })
+    planIds.length ? admin.from("plans").select("id,name,price").in("id", planIds).eq("is_active", true) : Promise.resolve({ data: [], error: null }),
+    items.some((item) => item.type === "custom-box") ? admin.from("configurator_settings").select("settings").eq("id", true).maybeSingle() : Promise.resolve({ data: null, error: null })
   ]);
 
-  if (productsResult.error || plansResult.error) {
+  if (productsResult.error || plansResult.error || configuratorResult.error) {
     throw new Error("Nao foi possivel validar os precos dos artigos.");
   }
 
   const products = new Map((productsResult.data || []).map((product: any) => [product.slug, product]));
   const plans = new Map((plansResult.data || []).map((plan: any) => [plan.id, plan]));
+  const configurator = (configuratorResult.data as any)?.settings || null;
+
+  function findOption(group: string, id: string): ConfigOption | null {
+    const options = Array.isArray(configurator?.[group]) ? configurator[group] : [];
+    return options.find((option: ConfigOption) => option.id === id) || null;
+  }
 
   return items.map((item) => {
     const quantity = safeQuantity(item.quantity);
@@ -114,6 +131,39 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
       const plan = plans.get(cleanString(item.slug || item.id));
       if (plan) {
         return { description: plan.name, quantity, key: plan.id, value: toMoney(Number(plan.price)), productSlug: null, planId: plan.id };
+      }
+    }
+
+    if (item.type === "custom-box") {
+      const planId = cleanString(item.config?.planId);
+      const animalId = cleanString(item.config?.animalId || item.species);
+      const sizeId = cleanString(item.config?.sizeId);
+      const personalityId = cleanString(item.config?.personalityId);
+      const extraIds = cleanString(item.config?.extraIds)
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+      const plan = plans.get(planId);
+
+      if (plan && configurator) {
+        const animal = findOption("animals", animalId);
+        const size = findOption("sizes", sizeId);
+        const personality = findOption("personalities", personalityId);
+        const extras = extraIds.map((id) => findOption("extras", id)).filter(Boolean) as ConfigOption[];
+
+        if (!animal || !size || !personality || extras.length !== extraIds.length) {
+          throw new Error("A caixa personalizada tem opcoes invalidas. Volte a configurar a caixa.");
+        }
+
+        const price = toMoney(
+          Number(plan.price || 0) +
+          Number(animal.price || 0) +
+          Number(size.price || 0) +
+          Number(personality.price || 0) +
+          extras.reduce((sum, extra) => sum + Number(extra.price || 0), 0)
+        );
+        const label = [plan.name, animal.label].filter(Boolean).join(" ");
+        return { description: label || "Caixa personalizada PetBox", quantity, key: `custom-${plan.id}-${animal.id}`, value: price, productSlug: null, planId: plan.id };
       }
     }
 

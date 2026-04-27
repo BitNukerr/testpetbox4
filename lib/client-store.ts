@@ -12,6 +12,7 @@ export type CartItem = {
   cadence?: "monthly" | "quarterly";
   species?: string;
   metadata?: Record<string, string>;
+  config?: Record<string, string>;
 };
 
 export type SavedOrder = {

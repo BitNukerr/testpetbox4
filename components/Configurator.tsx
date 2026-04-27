@@ -94,6 +94,13 @@ export default function Configurator() {
       species: animal.id,
       category: "Caixa personalizada",
       image: animal.image,
+      config: {
+        planId: selectedPlan.id,
+        animalId: animal.id,
+        sizeId: size.id,
+        personalityId: personality.id,
+        extraIds: selectedExtras.map((extra) => extra.id).join(",")
+      },
       metadata: { animal: animal.label, tamanho: size.label, personalidade: personality.label, extras: summaryExtras }
     });
     router.push(goCheckout ? "/checkout" : "/cart");
