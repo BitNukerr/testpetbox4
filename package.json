@@ -12,6 +12,7 @@
     "@easypaypt/checkout-sdk": "^2.9.1",
     "@supabase/supabase-js": "^2.45.4",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "bootstrap": "^5.3.3",
     "next": "^16.2.4",
     "react": "^19.2.3",
