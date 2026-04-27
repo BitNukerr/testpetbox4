@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCart } from "@/lib/client-store";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
@@ -15,6 +16,7 @@ const publicNav = [
 ] as const;
 
 export default function Header() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [signedIn, setSignedIn] = useState(false);
@@ -50,11 +52,13 @@ export default function Header() {
 
   const accountLabel = signedIn ? pt.nav.account : pt.nav.login;
 
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <header className="site-header">
       <div className="container header-row">
         <Link href="/" className="brand">
-          <img src="/favicon.svg" alt="" className="brand-logo brand-logo-badge" />
+          <img src="/logo-paw.svg" alt="" className="brand-logo" />
           <span>
             <strong><span>Pet</span>Box</strong>
             <small>{pt.brand.tagline}</small>

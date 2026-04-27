@@ -1,12 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <h3>PetBox</h3>
-          <p>Caixas mensais e trimestrais para cães e gatos, com snacks, brinquedos e extras avulsos.</p>
+          <div className="footer-brand"><img src="/logo-paw.svg" alt="" /><h3>PetBox</h3></div>
+          <p>Caixas mensais e trimestrais para caes e gatos, com snacks, brinquedos e extras avulsos.</p>
         </div>
         <div>
           <h4>Explorar</h4>

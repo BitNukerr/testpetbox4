@@ -19,7 +19,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="card-body">
         <span className="tag">{product.tag}</span>
         <h3>{product.title}</h3>
-        <p className="muted">{product.category} | {speciesLabel(product.species)} | ★ {product.rating}</p>
+        <p className="muted product-meta">{product.category} / {speciesLabel(product.species)} / {product.rating.toFixed(1)} estrelas</p>
         <p>{product.description}</p>
         <div className="product-bottom">
           <strong className="product-price">{money(product.price)}</strong>

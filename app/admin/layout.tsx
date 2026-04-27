@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <aside className="col-lg-3 col-xl-2">
               <div className="admin-sidebar">
                 <div className="admin-logo">
-                  <img src="/favicon.svg" alt="" className="admin-logo-icon" />
+                  <img src="/logo-paw.svg" alt="" className="admin-logo-icon" />
                   <div>
                     <strong>PetBox Admin</strong>
                     <div className="small text-white-50">Gestao da loja</div>
