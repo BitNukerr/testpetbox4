@@ -28,7 +28,11 @@ export default function CartClient() {
   const shipping = subtotal > 0 ? 8 : 0;
 
   function updateQty(id: string, quantity: number) {
-    setCart(items.map((item) => item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item));
+    if (quantity < 1) {
+      removeItem(id);
+      return;
+    }
+    setCart(items.map((item) => item.id === id ? { ...item, quantity } : item));
   }
 
   function removeItem(id: string) {
