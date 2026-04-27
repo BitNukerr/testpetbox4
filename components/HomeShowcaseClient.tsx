@@ -47,7 +47,7 @@ export default function HomeShowcaseClient() {
             <span>P</span><span>E</span><span>T</span><span>B</span><span>O</span><span>X</span>
           </div>
           <div className="video-asset-track" aria-hidden="true">
-            {[...heroImages, ...heroImages].map((image, index) => (
+            {[...heroImages, ...heroImages, ...heroImages].map((image, index) => (
               <img key={`${image}-${index}`} src={image} alt="" />
             ))}
           </div>
