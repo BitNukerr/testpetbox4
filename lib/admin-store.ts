@@ -55,6 +55,12 @@ export type HomeSettings = {
   showcaseTileThreeCta: string;
   showcaseTileThreeHref: string;
   showcaseTileThreeImage: string;
+  showcaseTileFourLabel: string;
+  showcaseTileFourTitle: string;
+  showcaseTileFourText: string;
+  showcaseTileFourCta: string;
+  showcaseTileFourHref: string;
+  showcaseTileFourImage: string;
 };
 
 export type ConfigOption = {
@@ -139,7 +145,13 @@ const defaultHomeSettings: HomeSettings = {
   showcaseTileThreeText: "Uma experiencia simples, segura e com entregas em Portugal.",
   showcaseTileThreeCta: "Saber mais",
   showcaseTileThreeHref: "/about",
-  showcaseTileThreeImage: "/dog-paw.png"
+  showcaseTileThreeImage: "/dog-paw.png",
+  showcaseTileFourLabel: "Blog",
+  showcaseTileFourTitle: "Guias e novidades para cuidar melhor",
+  showcaseTileFourText: "Leia ideias sobre snacks, brinquedos, rotinas e caixas misterio.",
+  showcaseTileFourCta: "Ler blog",
+  showcaseTileFourHref: "/journal",
+  showcaseTileFourImage: "/images/about-pets.svg"
 };
 
 const defaultConfiguratorSettings: ConfiguratorSettings = {

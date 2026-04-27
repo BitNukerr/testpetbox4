@@ -90,6 +90,14 @@ export default function HomeShowcaseClient() {
           <em>{settings.showcaseTileThreeCta}</em>
           <img src={settings.showcaseTileThreeImage} alt="" />
         </Link>
+
+        <Link href={settings.showcaseTileFourHref || "/journal"} className="campaign-tile tile-wide tile-blog">
+          <span>{settings.showcaseTileFourLabel}</span>
+          <strong>{settings.showcaseTileFourTitle}</strong>
+          <p>{settings.showcaseTileFourText}</p>
+          <em>{settings.showcaseTileFourCta}</em>
+          <img src={settings.showcaseTileFourImage} alt="" />
+        </Link>
       </section>
 
       <section className="home-offer-grid" aria-label="Produtos e vantagens">

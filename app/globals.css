@@ -96,6 +96,11 @@ p{line-height:1.65}
 .tile-side strong{max-width:88%;font-size:2rem}
 .tile-side p{max-width:80%}
 .tile-side img{width:110px;right:18px;bottom:14px;background:#fff;border-radius:26px;padding:16px}
+.tile-wide{grid-column:span 2}
+.tile-blog{background:#fff1d9;border-color:#f0d0a0}
+.tile-blog strong{max-width:62%}
+.tile-blog p{max-width:52%}
+.tile-blog img{width:32%;max-height:170px;right:20px;bottom:8px}
 .home-offer-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;margin-top:24px}
 .offer-card{display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;min-height:230px;padding:14px;background:#fff;color:#063150}
 .offer-card img{width:100%;height:104px;object-fit:contain;border-radius:18px;background:#fff7ec;padding:10px}
@@ -308,6 +313,7 @@ p{line-height:1.65}
   .campaign-video-card{grid-column:auto;min-height:330px}
   .campaign-promo-card{grid-row:auto}
   .campaign-tile strong,.campaign-tile p{max-width:76%}
+  .tile-wide{grid-column:auto}
   .home-offer-grid{grid-template-columns:1fr 1fr}
   .offer-card{min-height:220px}
   .offer-card img{height:100px}
@@ -334,6 +340,7 @@ p{line-height:1.65}
   .campaign-tile{min-height:190px}
   .campaign-tile strong,.campaign-tile p{max-width:100%}
   .campaign-tile img{opacity:.22;width:48%}
+  .tile-blog strong,.tile-blog p{max-width:100%}
   .home-offer-grid{grid-template-columns:1fr}
   .brand strong{font-size:15px}
   .brand small{font-size:11px}

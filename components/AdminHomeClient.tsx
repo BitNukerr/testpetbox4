@@ -60,6 +60,15 @@ const campaignBoxes: Array<{
     cta: "showcaseTileThreeCta",
     href: "showcaseTileThreeHref",
     image: "showcaseTileThreeImage"
+  },
+  {
+    title: "Bloco 4 - Blog/novidades",
+    label: "showcaseTileFourLabel",
+    heading: "showcaseTileFourTitle",
+    text: "showcaseTileFourText",
+    cta: "showcaseTileFourCta",
+    href: "showcaseTileFourHref",
+    image: "showcaseTileFourImage"
   }
 ];
 
@@ -171,6 +180,7 @@ export default function AdminHomeClient() {
                 <div><strong>{form.showcaseTileOneLabel}</strong><span>{form.showcaseTileOneTitle}</span></div>
                 <div><strong>{form.showcaseTileTwoLabel}</strong><span>{form.showcaseTileTwoTitle}</span></div>
                 <div><strong>{form.showcaseTileThreeLabel}</strong><span>{form.showcaseTileThreeTitle}</span></div>
+                <div><strong>{form.showcaseTileFourLabel}</strong><span>{form.showcaseTileFourTitle}</span></div>
               </div>
             </div>
           </div>
