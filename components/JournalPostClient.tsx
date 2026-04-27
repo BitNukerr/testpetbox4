@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BlogContent from "@/components/BlogContent";
+import { loadAdminPosts } from "@/lib/admin-db";
 import { adminStore, type EditablePost } from "@/lib/admin-store";
 
 export default function JournalPostClient({ slug }: { slug: string }) {
@@ -9,8 +10,10 @@ export default function JournalPostClient({ slug }: { slug: string }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setPost(adminStore.posts.get().find((item) => item.slug === slug) || null);
-    setLoaded(true);
+    loadAdminPosts()
+      .then((posts) => setPost((posts.length ? posts : adminStore.posts.get()).find((item) => item.slug === slug) || null))
+      .catch(() => setPost(adminStore.posts.get().find((item) => item.slug === slug) || null))
+      .finally(() => setLoaded(true));
   }, [slug]);
 
   if (!loaded) return null;

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { loadAdminPlans, loadAdminProducts, loadRemoteHomeSettings } from "@/lib/admin-db";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
 import { money } from "@/lib/helpers";
@@ -25,6 +26,24 @@ export default function HomeShowcaseClient() {
     };
 
     refresh();
+    Promise.all([
+      loadRemoteHomeSettings(adminStore.home.get()).catch(() => null),
+      loadAdminProducts().catch(() => []),
+      loadAdminPlans().catch(() => [])
+    ]).then(([remoteSettings, remoteProducts, remotePlans]) => {
+      if (remoteSettings) {
+        setSettings(remoteSettings);
+        adminStore.home.set(remoteSettings);
+      }
+      if (remoteProducts.length) {
+        setProducts(remoteProducts);
+        adminStore.products.set(remoteProducts);
+      }
+      if (remotePlans.length) {
+        setPlans(remotePlans);
+        adminStore.plans.set(remotePlans);
+      }
+    });
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

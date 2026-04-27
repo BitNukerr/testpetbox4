@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { loadAdminPosts } from "@/lib/admin-db";
 import { adminStore, type EditablePost } from "@/lib/admin-store";
 
 export default function JournalClient() {
@@ -10,6 +11,14 @@ export default function JournalClient() {
   useEffect(() => {
     const refresh = () => setPosts(adminStore.posts.get());
     refresh();
+    loadAdminPosts()
+      .then((items) => {
+        if (items.length) {
+          setPosts(items);
+          adminStore.posts.set(items);
+        }
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

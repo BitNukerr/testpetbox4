@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import HomeFeaturedProductsClient from "@/components/HomeFeaturedProductsClient";
 import HomePlansClient from "@/components/HomePlansClient";
+import { loadRemoteHomeSettings } from "@/lib/admin-db";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
 
 export default function HomeContentClient() {
@@ -12,6 +13,12 @@ export default function HomeContentClient() {
   useEffect(() => {
     const refresh = () => setSettings(adminStore.home.get());
     refresh();
+    loadRemoteHomeSettings(adminStore.home.get())
+      .then((remoteSettings) => {
+        setSettings(remoteSettings);
+        adminStore.home.set(remoteSettings);
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminImageField, AdminImageListField } from "@/components/AdminImageField";
+import { loadRemoteHomeSettings, saveRemoteHomeSettings } from "@/lib/admin-db";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
 
 const heroPresets = [
@@ -77,13 +78,28 @@ export default function AdminHomeClient() {
   const [form, setForm] = useState<HomeSettings>(() => adminStore.home.get());
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    loadRemoteHomeSettings(adminStore.home.get())
+      .then((settings) => {
+        setForm(settings);
+        adminStore.home.set(settings);
+      })
+      .catch(() => null);
+  }, []);
+
   function update(field: FieldName, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function save() {
+  async function save() {
+    let remoteSaved = true;
+    try {
+      await saveRemoteHomeSettings(form);
+    } catch {
+      remoteSaved = false;
+    }
     adminStore.home.set(form);
-    setMessage("Pagina inicial actualizada.");
+    setMessage(remoteSaved ? "Pagina inicial actualizada." : "Pagina guardada localmente. Confirme que o Supabase/RLS esta configurado.");
   }
 
   function reset() {

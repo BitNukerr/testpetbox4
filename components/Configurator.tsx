@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Plan } from "@/data/products";
+import { loadAdminPlans, loadRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
 import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
@@ -45,6 +46,24 @@ export default function Configurator() {
     };
 
     refresh();
+    Promise.all([
+      loadAdminPlans().catch(() => []),
+      loadRemoteConfiguratorSettings(adminStore.configurator.get()).catch(() => null)
+    ]).then(([remotePlans, remoteSettings]) => {
+      if (remotePlans.length) {
+        setPlans(remotePlans);
+        adminStore.plans.set(remotePlans);
+        setPlanId((current) => remotePlans.some((plan) => plan.id === current) ? current : remotePlans[0]?.id || "");
+      }
+      if (remoteSettings) {
+        setSettings(remoteSettings);
+        adminStore.configurator.set(remoteSettings);
+        setAnimalId((current) => remoteSettings.animals.some((option) => option.id === current) ? current : firstOption(remoteSettings.animals, "dog"));
+        setSizeId((current) => remoteSettings.sizes.some((option) => option.id === current) ? current : firstOption(remoteSettings.sizes, "medium"));
+        setPersonalityId((current) => remoteSettings.personalities.some((option) => option.id === current) ? current : firstOption(remoteSettings.personalities, "playful"));
+        setExtraIds((current) => current.filter((id) => remoteSettings.extras.some((option) => option.id === id)));
+      }
+    });
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

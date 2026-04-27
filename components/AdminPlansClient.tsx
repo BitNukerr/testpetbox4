@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Plan } from "@/data/products";
+import { deleteAdminPlan, loadAdminPlansForAdmin, saveAdminPlan } from "@/lib/admin-db";
 import { adminStore, slugify } from "@/lib/admin-store";
 
 const emptyPlan: Plan = {
@@ -31,6 +32,17 @@ export default function AdminPlansClient() {
 
   const sortedPlans = useMemo(() => [...plans].sort((a, b) => a.price - b.price), [plans]);
 
+  useEffect(() => {
+    loadAdminPlansForAdmin()
+      .then((items) => {
+        if (items.length) {
+          setPlans(items);
+          adminStore.plans.set(items);
+        }
+      })
+      .catch(() => null);
+  }, []);
+
   function startNew() {
     setEditing(null);
     setFormOpen(true);
@@ -53,7 +65,7 @@ export default function AdminPlansClient() {
     setMessage(text);
   }
 
-  function savePlan() {
+  async function savePlan() {
     const id = form.id || slugify(form.name);
     if (!id || !form.name || !form.description) {
       setMessage("Preencha pelo menos nome, id e descricao.");
@@ -66,16 +78,29 @@ export default function AdminPlansClient() {
       price: Number(form.price),
       perks: perksText.split(/\r?\n/).map((perk) => perk.trim()).filter(Boolean)
     };
+    let savedPlan = plan;
+    let remoteSaved = true;
+    try {
+      savedPlan = await saveAdminPlan(plan);
+    } catch {
+      remoteSaved = false;
+    }
     const exists = plans.some((item) => item.id === id);
-    const next = exists ? plans.map((item) => item.id === id ? plan : item) : [...plans, plan];
-    savePlans(next, exists ? "Plano actualizado." : "Plano criado.");
-    setEditing(plan);
-    setForm(plan);
+    const next = exists ? plans.map((item) => item.id === id ? savedPlan : item) : [...plans, savedPlan];
+    savePlans(next, remoteSaved ? (exists ? "Plano actualizado." : "Plano criado.") : "Plano guardado localmente. Confirme que o Supabase/RLS esta configurado.");
+    setEditing(savedPlan);
+    setForm(savedPlan);
     setFormOpen(false);
   }
 
-  function deletePlan(id: string) {
-    savePlans(plans.filter((plan) => plan.id !== id), "Plano removido.");
+  async function deletePlan(id: string) {
+    let remoteDeleted = true;
+    try {
+      await deleteAdminPlan(id);
+    } catch {
+      remoteDeleted = false;
+    }
+    savePlans(plans.filter((plan) => plan.id !== id), remoteDeleted ? "Plano removido." : "Plano removido localmente. Confirme que o Supabase/RLS esta configurado.");
     startNew();
   }
 

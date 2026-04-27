@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/data/products";
+import { loadAdminProducts } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
@@ -14,8 +15,10 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setProducts(adminStore.products.get());
-    setLoaded(true);
+    loadAdminProducts()
+      .then((items) => setProducts(items.length ? items : adminStore.products.get()))
+      .catch(() => setProducts(adminStore.products.get()))
+      .finally(() => setLoaded(true));
   }, []);
 
   const product = products.find((item) => item.slug === slug) || null;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminImageField } from "@/components/AdminImageField";
+import { deleteAdminProduct, loadAdminProductsForAdmin, saveAdminProduct } from "@/lib/admin-db";
 import { adminStore, slugify } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
 
@@ -46,6 +47,17 @@ export default function AdminProductsClient() {
 
   const sortedProducts = useMemo(() => [...products].sort((a, b) => a.title.localeCompare(b.title)), [products]);
 
+  useEffect(() => {
+    loadAdminProductsForAdmin()
+      .then((items) => {
+        if (items.length) {
+          setProducts(items);
+          adminStore.products.set(items);
+        }
+      })
+      .catch(() => null);
+  }, []);
+
   function saveProducts(next: Product[], text: string) {
     setProducts(next);
     adminStore.products.set(next);
@@ -66,7 +78,7 @@ export default function AdminProductsClient() {
     setMessage("");
   }
 
-  function saveProduct() {
+  async function saveProduct() {
     const slug = form.slug || slugify(form.title);
     if (!slug || !form.title || !form.category) {
       setMessage("Preencha pelo menos nome, slug e categoria.");
@@ -74,16 +86,29 @@ export default function AdminProductsClient() {
     }
 
     const product = { ...form, slug, price: Number(form.price), rating: Number(form.rating) };
+    let savedProduct = product;
+    let remoteSaved = true;
+    try {
+      savedProduct = await saveAdminProduct(product);
+    } catch {
+      remoteSaved = false;
+    }
     const exists = products.some((item) => item.slug === slug);
-    const next = exists ? products.map((item) => item.slug === slug ? product : item) : [...products, product];
-    saveProducts(next, exists ? "Produto actualizado." : "Produto criado.");
-    setEditing(product);
-    setForm(product);
+    const next = exists ? products.map((item) => item.slug === slug ? savedProduct : item) : [...products, savedProduct];
+    saveProducts(next, remoteSaved ? (exists ? "Produto actualizado." : "Produto criado.") : "Produto guardado localmente. Confirme que o Supabase/RLS esta configurado.");
+    setEditing(savedProduct);
+    setForm(savedProduct);
     setFormOpen(false);
   }
 
-  function deleteProduct(slug: string) {
-    saveProducts(products.filter((item) => item.slug !== slug), "Produto removido.");
+  async function deleteProduct(slug: string) {
+    let remoteDeleted = true;
+    try {
+      await deleteAdminProduct(slug);
+    } catch {
+      remoteDeleted = false;
+    }
+    saveProducts(products.filter((item) => item.slug !== slug), remoteDeleted ? "Produto removido." : "Produto removido localmente. Confirme que o Supabase/RLS esta configurado.");
     startNew();
     setFormOpen(false);
   }

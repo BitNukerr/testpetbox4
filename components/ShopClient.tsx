@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
+import { loadAdminProducts } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
 
@@ -32,6 +33,14 @@ export default function ShopClient() {
   useEffect(() => {
     const refresh = () => setItems(adminStore.products.get());
     refresh();
+    loadAdminProducts()
+      .then((products) => {
+        if (products.length) {
+          setItems(products);
+          adminStore.products.set(products);
+        }
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

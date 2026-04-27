@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/data/products";
+import { loadAdminProducts } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 
 export default function HomeFeaturedProductsClient() {
@@ -11,6 +12,14 @@ export default function HomeFeaturedProductsClient() {
   useEffect(() => {
     const refresh = () => setProducts(adminStore.products.get());
     refresh();
+    loadAdminProducts()
+      .then((items) => {
+        if (items.length) {
+          setProducts(items);
+          adminStore.products.set(items);
+        }
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

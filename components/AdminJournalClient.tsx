@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BlogContent from "@/components/BlogContent";
+import { deleteAdminPost, loadAdminPostsForAdmin, saveAdminPost } from "@/lib/admin-db";
 import { adminStore, slugify, type EditablePost } from "@/lib/admin-store";
 import { prepareAdminImage } from "@/lib/admin-image";
 
@@ -22,6 +23,17 @@ export default function AdminJournalClient() {
   const [form, setForm] = useState<EditablePost>(emptyPost);
   const [imageAlt, setImageAlt] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    loadAdminPostsForAdmin()
+      .then((items) => {
+        if (items.length) {
+          setPosts(items);
+          adminStore.posts.set(items);
+        }
+      })
+      .catch(() => null);
+  }, []);
 
   function save(next: EditablePost[], text: string) {
     setPosts(next);
@@ -54,12 +66,19 @@ export default function AdminJournalClient() {
     return { ...form, slug, status };
   }
 
-  function upsertPost(post: EditablePost, createdMessage: string, updatedMessage: string) {
+  async function upsertPost(post: EditablePost, createdMessage: string, updatedMessage: string) {
+    let savedPost = post;
+    let remoteSaved = true;
+    try {
+      savedPost = await saveAdminPost(post);
+    } catch {
+      remoteSaved = false;
+    }
     const exists = posts.some((item) => item.slug === post.slug);
-    const next = exists ? posts.map((item) => item.slug === post.slug ? post : item) : [post, ...posts];
-    save(next, exists ? updatedMessage : createdMessage);
-    setEditing(post);
-    setForm(post);
+    const next = exists ? posts.map((item) => item.slug === post.slug ? savedPost : item) : [savedPost, ...posts];
+    save(next, remoteSaved ? (exists ? updatedMessage : createdMessage) : "Artigo guardado localmente. Confirme que o Supabase/RLS esta configurado.");
+    setEditing(savedPost);
+    setForm(savedPost);
     setFormOpen(false);
   }
 
@@ -75,9 +94,15 @@ export default function AdminJournalClient() {
     upsertPost(post, status === "Publicado" ? "Artigo publicado." : "Artigo guardado como rascunho.", status === "Publicado" ? "Artigo publicado." : "Artigo guardado como rascunho.");
   }
 
-  function updatePostStatus(post: EditablePost, status: EditablePost["status"]) {
+  async function updatePostStatus(post: EditablePost, status: EditablePost["status"]) {
     const nextPost = { ...post, status };
-    save(posts.map((item) => item.slug === post.slug ? nextPost : item), status === "Publicado" ? "Artigo publicado." : "Artigo passou a rascunho.");
+    let remoteSaved = true;
+    try {
+      await saveAdminPost(nextPost);
+    } catch {
+      remoteSaved = false;
+    }
+    save(posts.map((item) => item.slug === post.slug ? nextPost : item), remoteSaved ? (status === "Publicado" ? "Artigo publicado." : "Artigo passou a rascunho.") : "Estado guardado localmente. Confirme que o Supabase/RLS esta configurado.");
     if (editing?.slug === post.slug) {
       setEditing(nextPost);
       setForm(nextPost);
@@ -112,8 +137,14 @@ export default function AdminJournalClient() {
     }
   }
 
-  function deletePost(slug: string) {
-    save(posts.filter((item) => item.slug !== slug), "Artigo removido.");
+  async function deletePost(slug: string) {
+    let remoteDeleted = true;
+    try {
+      await deleteAdminPost(slug);
+    } catch {
+      remoteDeleted = false;
+    }
+    save(posts.filter((item) => item.slug !== slug), remoteDeleted ? "Artigo removido." : "Artigo removido localmente. Confirme que o Supabase/RLS esta configurado.");
     startNew();
   }
 

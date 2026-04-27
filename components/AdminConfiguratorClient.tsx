@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminImageField } from "@/components/AdminImageField";
+import { loadRemoteConfiguratorSettings, saveRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, slugify, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
 
 type OptionGroup = "animals" | "sizes" | "personalities" | "extras";
@@ -42,6 +43,15 @@ export default function AdminConfiguratorClient() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [optionForm, setOptionForm] = useState<ConfigOption>(emptyOption);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    loadRemoteConfiguratorSettings(adminStore.configurator.get())
+      .then((settings) => {
+        setForm(settings);
+        adminStore.configurator.set(settings);
+      })
+      .catch(() => null);
+  }, []);
 
   function update(field: keyof ConfiguratorSettings, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -97,9 +107,15 @@ export default function AdminConfiguratorClient() {
     setMessage("Opcao removida. Clique em Guardar configurador para publicar.");
   }
 
-  function saveAll() {
+  async function saveAll() {
+    let remoteSaved = true;
+    try {
+      await saveRemoteConfiguratorSettings(form);
+    } catch {
+      remoteSaved = false;
+    }
     adminStore.configurator.set(form);
-    setMessage("Configurador actualizado.");
+    setMessage(remoteSaved ? "Configurador actualizado." : "Configurador guardado localmente. Confirme que o Supabase/RLS esta configurado.");
   }
 
   function resetAll() {
