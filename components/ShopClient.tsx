@@ -66,22 +66,29 @@ export default function ShopClient() {
             {categories.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}><b>{categoryIcons[item] || "•"}</b>{item}</button>)}
           </div>
         </div>
-        <div className="filter-control">
-          <b>♧</b>
-          <label><span>Animal</span><select value={species} onChange={(event) => setSpecies(event.target.value as SpeciesFilter)}><option value="all">Todos</option><option value="dog">Cao</option><option value="cat">Gato</option><option value="both">Cao + gato</option></select></label>
+        <div className="filter-group">
+          <span>Animal</span>
+          <div className="filter-options compact">
+            <button className={species === "all" ? "active" : ""} onClick={() => setSpecies("all")}><b>✦</b>Todos</button>
+            <button className={species === "dog" ? "active" : ""} onClick={() => setSpecies("dog")}><b>♧</b>Cao</button>
+            <button className={species === "cat" ? "active" : ""} onClick={() => setSpecies("cat")}><b>◌</b>Gato</button>
+            <button className={species === "both" ? "active" : ""} onClick={() => setSpecies("both")}><b>◇</b>Cao + gato</button>
+          </div>
         </div>
-        <div className="filter-control">
-          <b>↕</b>
-          <label><span>Ordenar</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="featured">Destaques</option><option value="rating">Melhor avaliacao</option><option value="price-asc">Preco mais baixo</option><option value="price-desc">Preco mais alto</option></select></label>
+        <div className="filter-group">
+          <span>Ordenar</span>
+          <div className="filter-options compact">
+            <button className={sort === "featured" ? "active" : ""} onClick={() => setSort("featured")}><b>★</b>Destaques</button>
+            <button className={sort === "rating" ? "active" : ""} onClick={() => setSort("rating")}><b>↟</b>Melhor avaliacao</button>
+            <button className={sort === "price-asc" ? "active" : ""} onClick={() => setSort("price-asc")}><b>€</b>Preco baixo</button>
+            <button className={sort === "price-desc" ? "active" : ""} onClick={() => setSort("price-desc")}><b>€</b>Preco alto</button>
+          </div>
         </div>
       </aside>
 
       <div>
         <div className="shop-toolbar">
           <p className="muted">{filtered.length} produto{filtered.length === 1 ? "" : "s"} encontrados</p>
-          <div className="shop-chips">
-            {categories.slice(0, 5).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}
-          </div>
         </div>
         {filtered.length ? <div className="grid three">{filtered.map((product) => <ProductCard key={product.slug} product={product} />)}</div> : <div className="card"><div className="card-body"><h2>Sem resultados</h2><p className="muted">Tente outra categoria, animal ou pesquisa.</p></div></div>}
       </div>
