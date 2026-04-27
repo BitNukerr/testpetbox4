@@ -80,8 +80,18 @@ export function setCart(items: CartItem[]) {
 
 export function addToCart(item: CartItem) {
   const cart = getCart();
-  cart.push(item);
-  setCart(cart);
+  const existingIndex = cart.findIndex((cartItem) => {
+    if (item.type === "custom-box" || cartItem.type === "custom-box") return false;
+    return cartItem.type === item.type && cartItem.slug === item.slug && cartItem.cadence === item.cadence;
+  });
+
+  if (existingIndex >= 0) {
+    const nextCart = cart.map((cartItem, index) => index === existingIndex ? { ...cartItem, quantity: cartItem.quantity + item.quantity } : cartItem);
+    setCart(nextCart);
+    return;
+  }
+
+  setCart([...cart, item]);
 }
 
 export function getOrders(): SavedOrder[] {
