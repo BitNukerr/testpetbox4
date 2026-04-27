@@ -15,6 +15,46 @@ function clientOrResponse(request: NextRequest) {
   return { client };
 }
 
+async function ordersWithProfiles(client: NonNullable<ReturnType<typeof getSupabaseAdmin>>) {
+  const { data: orders, error: ordersError } = await client
+    .from("orders")
+    .select("id,user_id,title,status,total,payment_method,easypay_checkout_id,easypay_payment_id,created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (ordersError) throw ordersError;
+
+  const orderIds = (orders || []).map((order: any) => order.id);
+  const userIds = [...new Set((orders || []).map((order: any) => order.user_id).filter(Boolean))];
+
+  const [{ data: items, error: itemsError }, { data: profiles, error: profilesError }] = await Promise.all([
+    orderIds.length
+      ? client.from("order_items").select("order_id,title,quantity,unit_price,product_slug,plan_id").in("order_id", orderIds)
+      : Promise.resolve({ data: [], error: null }),
+    userIds.length
+      ? client.from("profiles").select("user_id,email,full_name,phone").in("user_id", userIds)
+      : Promise.resolve({ data: [], error: null })
+  ]);
+
+  if (itemsError) throw itemsError;
+  if (profilesError) throw profilesError;
+
+  const itemsByOrder = new Map<string, any[]>();
+  for (const item of items || []) {
+    const list = itemsByOrder.get(item.order_id) || [];
+    list.push(item);
+    itemsByOrder.set(item.order_id, list);
+  }
+
+  const profilesByUser = new Map((profiles || []).map((profile: any) => [profile.user_id, profile]));
+
+  return (orders || []).map((order: any) => ({
+    ...order,
+    profile: profilesByUser.get(order.user_id) || null,
+    items: itemsByOrder.get(order.id) || []
+  }));
+}
+
 export async function GET(request: NextRequest) {
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
@@ -37,6 +77,15 @@ export async function GET(request: NextRequest) {
     const { data, error } = await client.from("journal_posts").select("slug,title,excerpt,body,status,author,published_at,created_at").order("created_at", { ascending: false });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ data });
+  }
+
+  if (resource === "orders") {
+    try {
+      const data = await ordersWithProfiles(client);
+      return NextResponse.json({ data });
+    } catch (error: any) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ error: "Recurso invalido." }, { status: 400 });
@@ -79,6 +128,24 @@ export async function POST(request: NextRequest) {
     const { error } = await client.from("configurator_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
+  }
+
+  if (body.resource === "orders") {
+    const item = body.item || {};
+    if (!item.id) return NextResponse.json({ error: "ID em falta." }, { status: 400 });
+
+    const status = typeof item.status === "string" ? item.status.trim().slice(0, 40) : "";
+    if (!status) return NextResponse.json({ error: "Estado em falta." }, { status: 400 });
+
+    const { error } = await client.from("orders").update({ status }).eq("id", item.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    try {
+      const data = await ordersWithProfiles(client);
+      return NextResponse.json({ data: data.find((order: any) => order.id === item.id) || null });
+    } catch (readError: any) {
+      return NextResponse.json({ error: readError.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ error: "Recurso invalido." }, { status: 400 });

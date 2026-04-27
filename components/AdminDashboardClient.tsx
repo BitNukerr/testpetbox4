@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { loadAdminOrdersForAdmin } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 import type { AdminOrder, AdminSubscription } from "@/data/admin";
 
@@ -16,7 +17,7 @@ function money(value: number) {
 }
 
 function StatusPill({ status }: { status: string }) {
-  const cls = status === "Pago" || status === "Ativa" || status === "Enviado" ? "admin-pill-success" : status === "Pendente" || status === "Pausada" ? "admin-pill-warning" : "admin-pill-danger";
+  const cls = status === "Confirmada" || status === "Pago" || status === "Ativa" || status === "Enviado" ? "admin-pill-success" : status === "Pendente" || status === "Pausada" ? "admin-pill-warning" : "admin-pill-danger";
   return <span className={`admin-pill ${cls}`}>{status}</span>;
 }
 
@@ -51,8 +52,19 @@ export default function AdminDashboardClient() {
     }
   }
 
+  async function loadRemoteOrders() {
+    try {
+      const remoteOrders = await loadAdminOrdersForAdmin();
+      setOrders(remoteOrders);
+      adminStore.orders.set(remoteOrders);
+    } catch {
+      setOrders(adminStore.orders.get());
+    }
+  }
+
   useEffect(() => {
     refresh();
+    loadRemoteOrders();
     loadRegisteredUsers();
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);

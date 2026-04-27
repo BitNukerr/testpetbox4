@@ -4,7 +4,7 @@ export type AdminOrder = {
   email: string;
   pet: "Cão" | "Gato";
   plan: "Mensal" | "Trimestral" | "Compra única";
-  status: "Pago" | "Pendente" | "Enviado" | "Cancelado";
+  status: "Confirmada" | "Pago" | "Pendente" | "Enviado" | "Cancelado";
   total: number;
   date: string;
 };
