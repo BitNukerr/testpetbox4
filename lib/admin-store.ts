@@ -27,6 +27,34 @@ export type HomeSettings = {
   plansTitle: string;
   productsEyebrow: string;
   productsTitle: string;
+  showcaseLeadTitle: string;
+  showcaseLeadText: string;
+  showcaseLeadHref: string;
+  showcaseLeadImages: string;
+  showcasePromoLabel: string;
+  showcasePromoTitle: string;
+  showcasePromoText: string;
+  showcasePromoCta: string;
+  showcasePromoHref: string;
+  showcasePromoImage: string;
+  showcaseTileOneLabel: string;
+  showcaseTileOneTitle: string;
+  showcaseTileOneText: string;
+  showcaseTileOneCta: string;
+  showcaseTileOneHref: string;
+  showcaseTileOneImage: string;
+  showcaseTileTwoLabel: string;
+  showcaseTileTwoTitle: string;
+  showcaseTileTwoText: string;
+  showcaseTileTwoCta: string;
+  showcaseTileTwoHref: string;
+  showcaseTileTwoImage: string;
+  showcaseTileThreeLabel: string;
+  showcaseTileThreeTitle: string;
+  showcaseTileThreeText: string;
+  showcaseTileThreeCta: string;
+  showcaseTileThreeHref: string;
+  showcaseTileThreeImage: string;
 };
 
 export type ConfigOption = {
@@ -67,8 +95,8 @@ const KEYS = {
 
 const defaultHomeSettings: HomeSettings = {
   eyebrow: "PetBox",
-  title: "Caixas de subscricao para caes e gatos",
-  subtitle: "Receba brinquedos, snacks e cuidados escolhidos para o perfil do seu animal.",
+  title: "Caixas misterio para caes e gatos",
+  subtitle: "Receba brinquedos, snacks e cuidados surpresa escolhidos para o perfil do seu animal.",
   primaryCta: "Criar caixa",
   primaryHref: "/configure",
   secondaryCta: "Loja",
@@ -81,9 +109,37 @@ const defaultHomeSettings: HomeSettings = {
   statThreeTitle: "MB WAY",
   statThreeText: "Pagamento por Easypay",
   plansEyebrow: "Planos",
-  plansTitle: "Caixas mensais e trimestrais",
+  plansTitle: "Caixas misterio mensais e trimestrais",
   productsEyebrow: "Extras",
-  productsTitle: "Produtos para juntar a caixa"
+  productsTitle: "Produtos para juntar a caixa",
+  showcaseLeadTitle: "Caixas misterio PetBox",
+  showcaseLeadText: "Uma experiencia surpresa com produtos escolhidos para caes e gatos felizes.",
+  showcaseLeadHref: "/configure",
+  showcaseLeadImages: "/images/dog-treats.svg\n/images/cat-toy.svg\n/images/paw-balm.svg\n/images/rope-toy.svg\n/images/cat-treats.svg",
+  showcasePromoLabel: "Novo",
+  showcasePromoTitle: "Caixa misterio para o seu melhor amigo",
+  showcasePromoText: "Snacks, brinquedos e cuidados numa caixa preparada com carinho.",
+  showcasePromoCta: "Criar caixa",
+  showcasePromoHref: "/configure",
+  showcasePromoImage: "/images/hero-pets.svg",
+  showcaseTileOneLabel: "Subscricao",
+  showcaseTileOneTitle: "Misterio todos os meses",
+  showcaseTileOneText: "Receba uma caixa nova com produtos escolhidos por perfil.",
+  showcaseTileOneCta: "Criar caixa",
+  showcaseTileOneHref: "/configure",
+  showcaseTileOneImage: "/images/dog-box.svg",
+  showcaseTileTwoLabel: "Loja",
+  showcaseTileTwoTitle: "Brinquedos, snacks e cuidado",
+  showcaseTileTwoText: "Escolha produtos avulsos ou junte extras a sua caixa.",
+  showcaseTileTwoCta: "Ver loja",
+  showcaseTileTwoHref: "/shop",
+  showcaseTileTwoImage: "/images/cat-box.svg",
+  showcaseTileThreeLabel: "PetBox",
+  showcaseTileThreeTitle: "Feito para animais felizes",
+  showcaseTileThreeText: "Uma experiencia simples, segura e com entregas em Portugal.",
+  showcaseTileThreeCta: "Saber mais",
+  showcaseTileThreeHref: "/about",
+  showcaseTileThreeImage: "/dog-paw.png"
 };
 
 const defaultConfiguratorSettings: ConfiguratorSettings = {

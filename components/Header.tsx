@@ -84,7 +84,6 @@ export default function Header() {
           <img src="/dog-paw.png" alt="" className="brand-logo" />
           <span>
             <strong><span>Pet</span>Box</strong>
-            <small>{pt.brand.tagline}</small>
           </span>
         </Link>
 

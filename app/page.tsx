@@ -1,11 +1,5 @@
-import Hero from "@/components/Hero";
-import HomeContentClient from "@/components/HomeContentClient";
+import HomeShowcaseClient from "@/components/HomeShowcaseClient";
 
 export default function HomePage() {
-  return (
-    <>
-      <Hero />
-      <HomeContentClient />
-    </>
-  );
+  return <HomeShowcaseClient />;
 }
