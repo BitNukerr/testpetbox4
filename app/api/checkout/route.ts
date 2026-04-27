@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getEasypayCheckoutApiUrl, getEasypayCredentials } from "@/lib/easypay";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 type CartItem = {
@@ -38,13 +39,6 @@ type ConfigOption = {
 };
 
 const EASYPAY_METHODS = new Set(["cc", "mbw", "mb", "dd", "vi", "ap", "gp", "sw"]);
-
-function getEasypayApiUrl() {
-  if (process.env.EASYPAY_CHECKOUT_API_URL) return process.env.EASYPAY_CHECKOUT_API_URL;
-  return process.env.EASYPAY_ENVIRONMENT === "production"
-    ? "https://api.prod.easypay.pt/2.0/checkout"
-    : "https://api.test.easypay.pt/2.0/checkout";
-}
 
 function getPaymentMethods() {
   const configured = process.env.EASYPAY_PAYMENT_METHODS || "mbw";
@@ -244,10 +238,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Carrinho invalido." }, { status: 400 });
     }
 
-    const accountId = process.env.EASYPAY_ACCOUNT_ID;
-    const apiKey = process.env.EASYPAY_API_KEY;
+    const credentials = getEasypayCredentials();
 
-    if (!accountId || !apiKey) {
+    if (!credentials) {
       return NextResponse.json(
         { error: "Faltam as variáveis EASYPAY_ACCOUNT_ID e EASYPAY_API_KEY no Vercel." },
         { status: 500 }
@@ -283,11 +276,11 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const response = await fetch(getEasypayApiUrl(), {
+    const response = await fetch(getEasypayCheckoutApiUrl(), {
       method: "POST",
       headers: {
-        AccountId: accountId,
-        ApiKey: apiKey,
+        AccountId: credentials.accountId,
+        ApiKey: credentials.apiKey,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)

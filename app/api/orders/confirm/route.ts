@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
 
 function clean(value: unknown, maxLength = 160) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function moneyMatches(expected: unknown, actual: unknown) {
+  const expectedNumber = Number(expected);
+  const actualNumber = Number(actual);
+  return Number.isFinite(expectedNumber) && Number.isFinite(actualNumber) && Math.abs(expectedNumber - actualNumber) < 0.01;
 }
 
 async function userIdFromAccessToken(accessToken: unknown) {
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const { data: order, error: readError } = await admin
       .from("orders")
-      .select("id,user_id,easypay_checkout_id")
+      .select("id,user_id,total,easypay_checkout_id")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -47,12 +54,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Encomenda nao pertence a este utilizador." }, { status: 403 });
     }
 
+    const paymentDetails = await fetchEasypayCheckout(checkoutId);
+    if (!isEasypayCheckoutPaid(paymentDetails)) {
+      return NextResponse.json({ error: "O pagamento ainda nao esta confirmado na Easypay." }, { status: 409 });
+    }
+
+    const verifiedPaymentId = clean(paymentDetails.payment?.id, 160);
+    const verifiedMethod = clean(paymentDetails.payment?.method, 40);
+    const verifiedValue = easypayPaymentValue(paymentDetails);
+
+    if (verifiedPaymentId && paymentId && verifiedPaymentId !== paymentId) {
+      return NextResponse.json({ error: "O pagamento nao corresponde a esta encomenda." }, { status: 409 });
+    }
+    if (!moneyMatches(order.total, verifiedValue)) {
+      return NextResponse.json({ error: "O valor pago nao corresponde ao total da encomenda." }, { status: 409 });
+    }
+
     const { error: updateError } = await admin
       .from("orders")
       .update({
         status: "Confirmada",
-        easypay_payment_id: paymentId,
-        payment_method: paymentMethod || null
+        easypay_payment_id: verifiedPaymentId || paymentId,
+        payment_method: verifiedMethod || paymentMethod || null
       })
       .eq("id", orderId)
       .eq("easypay_checkout_id", checkoutId);

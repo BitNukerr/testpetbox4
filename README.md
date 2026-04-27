@@ -30,7 +30,11 @@ EASYPAY_ACCOUNT_ID=your_easypay_account_id
 EASYPAY_API_KEY=your_easypay_api_key
 EASYPAY_ENVIRONMENT=sandbox
 EASYPAY_PAYMENT_METHODS=mbw
+EASYPAY_WEBHOOK_USER=choose_a_webhook_user
+EASYPAY_WEBHOOK_PASSWORD=choose_a_webhook_password
 NEXT_PUBLIC_ADMIN_ACCESS_CODE=petbox-admin
 ```
 
 Para aceitar cartão pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`.
+
+Configure o webhook da Easypay para `https://your-domain.com/api/easypay/webhook` e use as mesmas credenciais Basic Auth das variaveis `EASYPAY_WEBHOOK_USER` e `EASYPAY_WEBHOOK_PASSWORD`.
