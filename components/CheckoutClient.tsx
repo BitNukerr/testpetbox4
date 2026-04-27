@@ -75,10 +75,12 @@ export default function CheckoutClient() {
     setError("");
     setCheckoutReady(false);
     try {
+      const { data: authData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+      const accessToken = authData.session?.access_token;
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, customer, shippingPrice: shipping })
+        body: JSON.stringify({ items, customer, shippingPrice: shipping, accessToken })
       });
       const data = await res.json();
       if (!res.ok || !data.manifest) throw new Error(data.error || "Não foi possível iniciar o pagamento.");
@@ -101,9 +103,20 @@ export default function CheckoutClient() {
         buttonBoxShadow: false,
         onSuccess: async (info: CheckoutOutput) => {
           const paymentId = info.payment.id || info.id;
-          const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+          const { data: latestAuthData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+          await fetch("/api/orders/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: data.orderId,
+              checkoutId: info.id,
+              paymentId,
+              paymentMethod: info.payment.method,
+              accessToken: latestAuthData.session?.access_token
+            })
+          }).catch(() => null);
           saveOrder({
-            id: paymentId,
+            id: data.orderId || paymentId,
             title: "Encomenda PetBox",
             total: info.payment.value || total,
             date: new Date().toLocaleDateString("pt-PT"),
@@ -111,7 +124,7 @@ export default function CheckoutClient() {
             easypayCheckoutId: info.id,
             easypayPaymentId: paymentId,
             paymentMethod: info.payment.method
-          }, data.session?.user.id || data.session?.user.email || undefined);
+          }, latestAuthData.session?.user.id || latestAuthData.session?.user.email || undefined);
           setCart([]);
           router.push(`/success?payment_id=${encodeURIComponent(paymentId)}`);
         },

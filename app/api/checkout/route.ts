@@ -20,6 +20,15 @@ type CheckoutCustomer = {
   phone?: string;
 };
 
+type BuiltOrderItem = {
+  description: string;
+  quantity: number;
+  key: string;
+  value: number;
+  productSlug?: string | null;
+  planId?: string | null;
+};
+
 const EASYPAY_METHODS = new Set(["cc", "mbw", "mb", "dd", "vi", "ap", "gp", "sw"]);
 
 function getEasypayApiUrl() {
@@ -63,7 +72,15 @@ function shippingPriceFromRequest(value: unknown) {
   return safeMoney(value);
 }
 
-async function buildOrderItems(items: CartItem[]) {
+async function userIdFromAccessToken(accessToken: unknown) {
+  const admin = getSupabaseAdmin();
+  if (!admin || typeof accessToken !== "string" || !accessToken.trim()) return null;
+  const { data, error } = await admin.auth.getUser(accessToken.trim());
+  if (error) return null;
+  return data.user?.id || null;
+}
+
+async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
   const admin = getSupabaseAdmin();
   const productSlugs = items.filter((item) => item.type !== "plan").map((item) => cleanString(item.slug)).filter(Boolean);
   const planIds = items.filter((item) => item.type === "plan").map((item) => cleanString(item.slug || item.id)).filter(Boolean);
@@ -73,7 +90,9 @@ async function buildOrderItems(items: CartItem[]) {
       description: cleanString(item.description || item.title, "Produto PetBox"),
       quantity: safeQuantity(item.quantity),
       key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
-      value: toMoney(safeMoney(item.price))
+      value: toMoney(safeMoney(item.price)),
+      productSlug: item.type === "product" ? cleanString(item.slug) : null,
+      planId: item.type === "plan" ? cleanString(item.slug || item.id) : null
     }));
   }
 
@@ -94,22 +113,70 @@ async function buildOrderItems(items: CartItem[]) {
     if (item.type === "plan") {
       const plan = plans.get(cleanString(item.slug || item.id));
       if (plan) {
-        return { description: plan.name, quantity, key: plan.id, value: toMoney(Number(plan.price)) };
+        return { description: plan.name, quantity, key: plan.id, value: toMoney(Number(plan.price)), productSlug: null, planId: plan.id };
       }
     }
 
     const product = products.get(cleanString(item.slug));
     if (product) {
-      return { description: product.title, quantity, key: product.slug, value: toMoney(Number(product.price)) };
+      return { description: product.title, quantity, key: product.slug, value: toMoney(Number(product.price)), productSlug: product.slug, planId: null };
     }
 
     return {
       description: cleanString(item.description || item.title, "Produto PetBox"),
       quantity,
       key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
-      value: toMoney(safeMoney(item.price))
+      value: toMoney(safeMoney(item.price)),
+      productSlug: item.type === "product" ? cleanString(item.slug) : null,
+      planId: item.type === "plan" ? cleanString(item.slug || item.id) : null
     };
   });
+}
+
+async function savePendingOrder(params: {
+  orderId: string;
+  userId: string | null;
+  total: number;
+  checkoutId: string;
+  orderItems: BuiltOrderItem[];
+  shipping: number;
+}) {
+  const admin = getSupabaseAdmin();
+  if (!admin) return false;
+
+  const { error: orderError } = await admin.from("orders").upsert({
+    id: params.orderId,
+    user_id: params.userId,
+    title: "Encomenda PetBox",
+    status: "Pendente",
+    total: params.total,
+    easypay_checkout_id: params.checkoutId
+  }, { onConflict: "id" });
+
+  if (orderError) throw orderError;
+
+  const rows = [
+    ...params.orderItems.map((item) => ({
+      order_id: params.orderId,
+      product_slug: item.productSlug || null,
+      plan_id: item.planId || null,
+      title: item.description,
+      quantity: item.quantity,
+      unit_price: item.value
+    })),
+    ...(params.shipping > 0 ? [{
+      order_id: params.orderId,
+      product_slug: null,
+      plan_id: null,
+      title: "Envio",
+      quantity: 1,
+      unit_price: toMoney(params.shipping)
+    }] : [])
+  ];
+
+  const { error: itemsError } = await admin.from("order_items").insert(rows);
+  if (itemsError) throw itemsError;
+  return true;
 }
 
 export async function POST(req: NextRequest) {
@@ -118,6 +185,7 @@ export async function POST(req: NextRequest) {
     const items: CartItem[] = body.items ?? [];
     const customer: CheckoutCustomer = body.customer ?? {};
     const requestedShipping = shippingPriceFromRequest(body.shippingPrice);
+    const userId = await userIdFromAccessToken(body.accessToken);
 
     if (!items.length) {
       return NextResponse.json({ error: "Não foram enviados artigos para pagamento." }, { status: 400 });
@@ -153,8 +221,8 @@ export async function POST(req: NextRequest) {
       },
       order: {
         items: shipping > 0
-          ? [...orderItems, { description: "Envio", quantity: 1, key: "shipping", value: toMoney(shipping) }]
-          : orderItems,
+          ? [...orderItems.map(({ productSlug, planId, ...item }) => item), { description: "Envio", quantity: 1, key: "shipping", value: toMoney(shipping) }]
+          : orderItems.map(({ productSlug, planId, ...item }) => item),
         key: orderKey,
         value: total
       },
@@ -185,7 +253,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let orderSaved = false;
+    try {
+      orderSaved = await savePendingOrder({ orderId: orderKey, userId, total, checkoutId: data.id, orderItems, shipping });
+    } catch (orderError) {
+      console.error("Erro ao gravar encomenda Supabase:", orderError);
+    }
+
     return NextResponse.json({
+      orderId: orderKey,
+      orderSaved,
       manifest: data,
       testing: process.env.EASYPAY_ENVIRONMENT !== "production"
     });
