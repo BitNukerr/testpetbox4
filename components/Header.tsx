@@ -56,7 +56,7 @@ export default function Header() {
         <Link href="/" className="brand">
           <img src="/favicon.svg" alt="" className="brand-logo brand-logo-badge" />
           <span>
-            <strong>PetBox</strong>
+            <strong><span>Pet</span>Box</strong>
             <small>{pt.brand.tagline}</small>
           </span>
         </Link>

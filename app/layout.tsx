@@ -4,8 +4,17 @@ import Footer from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
-  title: "PetBox - Caixa de Subscrição para Animais",
-  description: "Caixas mensais e trimestrais para cães e gatos com brinquedos, snacks e acessórios personalizados.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")),
+  title: "PetBox - Caixas de subscricao para caes e gatos",
+  description: "Caixas mensais e trimestrais para caes e gatos com brinquedos, snacks e acessorios personalizados em Portugal.",
+  keywords: ["PetBox", "caixa subscricao caes", "caixa subscricao gatos", "produtos para animais Portugal", "MB WAY pets"],
+  openGraph: {
+    title: "PetBox - Caixas de subscricao para caes e gatos",
+    description: "Brinquedos, snacks e acessorios escolhidos para o perfil do seu animal.",
+    images: ["/images/hero-pets.svg"],
+    locale: "pt_PT",
+    type: "website"
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
