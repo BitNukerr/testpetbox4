@@ -5,16 +5,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./admin.css";
 
 const adminNav = [
-  ["Dashboard", "/admin", "⌂"],
-  ["Pagina inicial", "/admin/home", "✦"],
-  ["Criar caixa", "/admin/configurator", "□"],
-  ["Encomendas", "/admin/orders", "▣"],
-  ["Produtos", "/admin/products", "◇"],
-  ["Planos", "/admin/plans", "◎"],
-  ["Clientes", "/admin/customers", "○"],
-  ["Subscricoes", "/admin/subscriptions", "↻"],
-  ["Blog", "/admin/journal", "✎"],
-  ["Definicoes", "/admin/settings", "⚙"]
+  ["Dashboard", "/admin", "D"],
+  ["Pagina inicial", "/admin/home", "I"],
+  ["Criar caixa", "/admin/configurator", "C"],
+  ["Encomendas", "/admin/orders", "E"],
+  ["Produtos", "/admin/products", "P"],
+  ["Planos", "/admin/plans", "PL"],
+  ["Utilizadores", "/admin/users", "U"],
+  ["Clientes", "/admin/customers", "CL"],
+  ["Subscricoes", "/admin/subscriptions", "S"],
+  ["Blog", "/admin/journal", "B"],
+  ["Definicoes", "/admin/settings", "DF"]
 ] as const;
 
 export const metadata = {

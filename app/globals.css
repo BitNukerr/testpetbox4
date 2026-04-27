@@ -90,7 +90,7 @@ p{line-height:1.65}
 .product-card .btn-secondary.small{box-shadow:none}
 .product-price{font-size:1.25rem;color:var(--accent);font-weight:900}
 .shop-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;align-items:start}
-.shop-filters{position:sticky;top:92px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:14px;box-shadow:0 16px 34px rgba(6,75,43,.05)}
+.shop-filters{position:sticky;top:92px;max-height:calc(100vh - 112px);overflow:auto;align-self:start;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:14px;box-shadow:0 16px 34px rgba(6,75,43,.05)}
 .filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .filter-head h2{font-size:1.15rem;margin:2px 0 0}
 .shop-filters label{display:grid;gap:7px;font-weight:700;color:#3b4639}
@@ -268,7 +268,7 @@ p{line-height:1.65}
   .account-side{position:static}
   .choice-grid,.choice-grid.two-choice{grid-template-columns:1fr}
   .hero-stats{grid-template-columns:1fr}
-  .summary-card,.preview-card,.config-summary,.shop-filters{position:static}
+  .summary-card,.preview-card,.config-summary,.shop-filters{position:static;max-height:none}
   .footer-grid{grid-template-columns:1fr}
 }
 @media (max-width: 640px){
