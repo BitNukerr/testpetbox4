@@ -21,7 +21,7 @@ import { money } from "@/lib/helpers";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
-type UserState = { email?: string } | null;
+type UserState = { id: string; email?: string; name?: string; createdAt?: string } | null;
 
 const emptyPet: AccountPet = {
   id: "",
@@ -31,6 +31,16 @@ const emptyPet: AccountPet = {
   birthday: "",
   allergies: "",
   preferences: ""
+};
+
+const emptyAddress: AccountAddress = {
+  name: "",
+  phone: "",
+  mbwayPhone: "",
+  address: "",
+  city: "",
+  zip: "",
+  nif: ""
 };
 
 function todayPlus(days: number) {
@@ -62,19 +72,32 @@ function subscriptionPill(value?: AccountSubscription["status"]) {
 }
 
 export default function AccountClient() {
-  const [orders, setOrders] = useState(() => getOrders());
-  const [pets, setPetsState] = useState<AccountPet[]>(() => getPets());
+  const [orders, setOrders] = useState<ReturnType<typeof getOrders>>([]);
+  const [pets, setPetsState] = useState<AccountPet[]>([]);
   const [petForm, setPetForm] = useState<AccountPet>(emptyPet);
   const [editingPetId, setEditingPetId] = useState<string | null>(null);
-  const [address, setAddressState] = useState<AccountAddress>(() => getAddress());
-  const [subscription, setSubscriptionState] = useState<AccountSubscription | null>(() => getSubscription());
+  const [address, setAddressState] = useState<AccountAddress>(emptyAddress);
+  const [subscription, setSubscriptionState] = useState<AccountSubscription | null>(null);
   const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
   const [user, setUser] = useState<UserState>(null);
+  const [profileName, setProfileName] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   const [message, setMessage] = useState("");
 
+  const accountScope = user?.id || user?.email || "";
   const selectedPlan = useMemo(() => plans.find((plan) => plan.id === subscription?.plan) || plans[0], [plans, subscription?.plan]);
   const selectedPet = useMemo(() => pets.find((pet) => pet.id === subscription?.petId), [pets, subscription?.petId]);
+  const profileCompletion = useMemo(() => {
+    const checks = [
+      Boolean(profileName.trim()),
+      Boolean(address.name.trim()),
+      Boolean(address.phone.trim()),
+      Boolean(address.address.trim() && address.city.trim() && address.zip.trim()),
+      pets.length > 0,
+      Boolean(subscription)
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }, [address, pets.length, profileName, subscription]);
 
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) {
@@ -87,7 +110,10 @@ export default function AccountClient() {
 
     const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
       if (!mounted) return;
-      setUser(session?.user ? { email: session.user.email || "" } : null);
+      const metadata = session?.user.user_metadata || {};
+      const name = typeof metadata.full_name === "string" ? metadata.full_name : typeof metadata.name === "string" ? metadata.name : "";
+      setUser(session?.user ? { id: session.user.id, email: session.user.email || "", name, createdAt: session.user.created_at } : null);
+      setProfileName(name);
       setAuthChecked(true);
     };
 
@@ -108,11 +134,11 @@ export default function AccountClient() {
   }, []);
 
   useEffect(() => {
-    const refreshOrders = () => setOrders(getOrders());
+    const refreshOrders = () => setOrders(getOrders(accountScope));
     const refreshAccount = () => {
-      setPetsState(getPets());
-      setAddressState(getAddress());
-      setSubscriptionState(getSubscription());
+      setPetsState(getPets(accountScope));
+      setAddressState(getAddress(accountScope));
+      setSubscriptionState(getSubscription(accountScope));
     };
     const refreshAdmin = () => setPlans(adminStore.plans.get());
 
@@ -127,7 +153,7 @@ export default function AccountClient() {
       window.removeEventListener("petbox-account-changed", refreshAccount);
       window.removeEventListener("petbox-admin-changed", refreshAdmin);
     };
-  }, []);
+  }, [accountScope]);
 
   function savePet() {
     if (!petForm.name.trim()) {
@@ -140,7 +166,7 @@ export default function AccountClient() {
       ? pets.map((item) => item.id === editingPetId ? pet : item)
       : [...pets, pet];
 
-    setPets(nextPets);
+    setPets(nextPets, accountScope);
     setPetForm(emptyPet);
     setEditingPetId(null);
     setMessage("Perfil do animal guardado.");
@@ -154,9 +180,9 @@ export default function AccountClient() {
 
   function deletePet(id: string) {
     const nextPets = pets.filter((pet) => pet.id !== id);
-    setPets(nextPets);
+    setPets(nextPets, accountScope);
     if (subscription?.petId === id) {
-      setSubscription(null);
+      setSubscription(null, accountScope);
     }
     setPetForm(emptyPet);
     setEditingPetId(null);
@@ -164,8 +190,24 @@ export default function AccountClient() {
   }
 
   function saveAddress() {
-    setAddress(address);
+    setAddress(address, accountScope);
     setMessage("Dados de entrega guardados.");
+  }
+
+  async function saveProfile() {
+    if (!profileName.trim()) {
+      setMessage("Adicione o nome do perfil.");
+      return;
+    }
+    if (supabase) {
+      const { error } = await supabase.auth.updateUser({ data: { full_name: profileName.trim() } });
+      if (error) {
+        setMessage("Nao foi possivel actualizar o perfil.");
+        return;
+      }
+    }
+    setUser((current) => current ? { ...current, name: profileName.trim() } : current);
+    setMessage("Perfil actualizado.");
   }
 
   function createOrUpdateSubscription() {
@@ -187,14 +229,14 @@ export default function AccountClient() {
       price: plan.price,
       extras: subscription?.extras || ""
     };
-    setSubscription(nextSubscription);
+    setSubscription(nextSubscription, accountScope);
     setMessage("Subscricao guardada.");
   }
 
   function updateSubscription(patch: Partial<AccountSubscription>) {
     if (!subscription) return;
     const next = { ...subscription, ...patch };
-    setSubscription(next);
+    setSubscription(next, accountScope);
     setMessage("Subscricao actualizada.");
   }
 
@@ -271,6 +313,26 @@ export default function AccountClient() {
         <div className="account-stat"><span>Animais</span><strong>{pets.length}</strong></div>
         <div className="account-stat"><span>Subscricao</span><strong>{subscription ? subscriptionStatusLabel(subscription.status) : "Sem plano"}</strong></div>
         <div className="account-stat"><span>Encomendas</span><strong>{orders.length}</strong></div>
+      </div>
+
+      <div className="container">
+        <section className="card account-profile-card"><div className="card-body">
+          <div className="account-card-heading">
+            <div>
+              <span className="tag">Perfil</span>
+              <h2>{profileName || user.email}</h2>
+              <p className="muted mb-0">{user.email}{user.createdAt ? ` | Cliente desde ${new Date(user.createdAt).toLocaleDateString("pt-PT")}` : ""}</p>
+            </div>
+            <div className="profile-progress" aria-label={`Perfil ${profileCompletion}% completo`}>
+              <span>{profileCompletion}%</span>
+              <div><i style={{ width: `${profileCompletion}%` }} /></div>
+            </div>
+          </div>
+          <div className="form-grid account-form">
+            <input placeholder="Nome para a conta" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
+            <button className="btn btn-secondary" onClick={saveProfile}>Guardar perfil</button>
+          </div>
+        </div></section>
       </div>
 
       <div className="container account-layout">

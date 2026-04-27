@@ -32,6 +32,7 @@ export default function ContactPage() {
           <input name="email" type="email" placeholder="Email" required />
           <input name="subject" placeholder="Assunto" className="span-2" required />
           <textarea name="message" placeholder="Como podemos ajudar?" className="span-2 textarea" required />
+          <input name="website" tabIndex={-1} autoComplete="off" className="honeypot-field" aria-hidden="true" />
           <button className="btn span-2" disabled={loading}>{loading ? "A enviar..." : "Enviar mensagem"}</button>
           {status ? <p className="success-text span-2">{status}</p> : null}
         </form>

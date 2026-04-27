@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requestHasAdminSession } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,6 @@ type SupabaseUsersResponse = {
   message?: string;
 };
 
-function adminAccessAllowed(request: NextRequest) {
-  const expected = process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE || "petbox-admin";
-  return request.headers.get("x-admin-access-code") === expected;
-}
-
 function displayName(metadata: Record<string, unknown> | null | undefined) {
   if (!metadata) return "";
   const fullName = metadata.full_name || metadata.name;
@@ -34,7 +30,7 @@ function displayName(metadata: Record<string, unknown> | null | undefined) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!adminAccessAllowed(request)) {
+  if (!requestHasAdminSession(request)) {
     return NextResponse.json({ error: "Acesso nao autorizado." }, { status: 401 });
   }
 

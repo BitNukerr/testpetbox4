@@ -245,6 +245,7 @@ p{line-height:1.65}
 .form-grid input,.form-grid textarea,.form-grid select{
   width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff
 }
+.honeypot-field{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;left:-10000px!important}
 .auth-card{box-shadow:0 16px 34px rgba(35,31,27,.06)}
 .auth-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:18px;padding:6px;margin-bottom:18px}
 .auth-tabs button{border:0;border-radius:14px;background:transparent;padding:10px 12px;font-weight:800;color:var(--muted)}
@@ -265,6 +266,10 @@ p{line-height:1.65}
 .account-stat{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px}
 .account-stat span{display:block;color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .account-stat strong{display:block;font-size:1.35rem;margin-top:5px}
+.account-profile-card{margin-bottom:20px}
+.profile-progress{min-width:180px;display:grid;gap:7px;text-align:right;font-weight:900;color:var(--blue-dark)}
+.profile-progress div{height:10px;border-radius:999px;background:#edf6d8;overflow:hidden;border:1px solid var(--line)}
+.profile-progress i{display:block;height:100%;border-radius:999px;background:var(--sky)}
 .account-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
 .account-main,.account-side,.account-stack{display:grid;gap:18px}
 .account-side{position:sticky;top:92px}

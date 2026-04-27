@@ -63,6 +63,10 @@ const PETS_KEY = "petbox-account-pets";
 const ADDRESS_KEY = "petbox-account-address";
 const SUBSCRIPTION_KEY = "petbox-account-subscription";
 
+function scopedKey(key: string, scope?: string) {
+  return scope ? `${key}:${scope}` : key;
+}
+
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
@@ -94,19 +98,19 @@ export function addToCart(item: CartItem) {
   setCart([...cart, item]);
 }
 
-export function getOrders(): SavedOrder[] {
+export function getOrders(scope?: string): SavedOrder[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(scopedKey(ORDERS_KEY, scope)) || "[]");
   } catch {
     return [];
   }
 }
 
-export function saveOrder(order: SavedOrder) {
-  const orders = getOrders();
+export function saveOrder(order: SavedOrder, scope?: string) {
+  const orders = getOrders(scope);
   orders.unshift(order);
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+  localStorage.setItem(scopedKey(ORDERS_KEY, scope), JSON.stringify(orders));
   window.dispatchEvent(new Event("petbox-orders-changed"));
 }
 
@@ -125,15 +129,15 @@ function writeValue<T>(key: string, value: T) {
   window.dispatchEvent(new Event("petbox-account-changed"));
 }
 
-export function getPets() {
-  return readArray<AccountPet>(PETS_KEY);
+export function getPets(scope?: string) {
+  return readArray<AccountPet>(scopedKey(PETS_KEY, scope));
 }
 
-export function setPets(pets: AccountPet[]) {
-  writeValue(PETS_KEY, pets);
+export function setPets(pets: AccountPet[], scope?: string) {
+  writeValue(scopedKey(PETS_KEY, scope), pets);
 }
 
-export function getAddress(): AccountAddress {
+export function getAddress(scope?: string): AccountAddress {
   if (typeof window === "undefined") {
     return { name: "", phone: "", mbwayPhone: "", address: "", city: "", zip: "", nif: "" };
   }
@@ -146,26 +150,26 @@ export function getAddress(): AccountAddress {
       city: "",
       zip: "",
       nif: "",
-      ...(JSON.parse(localStorage.getItem(ADDRESS_KEY) || "{}") || {})
+      ...(JSON.parse(localStorage.getItem(scopedKey(ADDRESS_KEY, scope)) || "{}") || {})
     };
   } catch {
     return { name: "", phone: "", mbwayPhone: "", address: "", city: "", zip: "", nif: "" };
   }
 }
 
-export function setAddress(address: AccountAddress) {
-  writeValue(ADDRESS_KEY, address);
+export function setAddress(address: AccountAddress, scope?: string) {
+  writeValue(scopedKey(ADDRESS_KEY, scope), address);
 }
 
-export function getSubscription(): AccountSubscription | null {
+export function getSubscription(scope?: string): AccountSubscription | null {
   if (typeof window === "undefined") return null;
   try {
-    return JSON.parse(localStorage.getItem(SUBSCRIPTION_KEY) || "null");
+    return JSON.parse(localStorage.getItem(scopedKey(SUBSCRIPTION_KEY, scope)) || "null");
   } catch {
     return null;
   }
 }
 
-export function setSubscription(subscription: AccountSubscription | null) {
-  writeValue(SUBSCRIPTION_KEY, subscription);
+export function setSubscription(subscription: AccountSubscription | null, scope?: string) {
+  writeValue(scopedKey(SUBSCRIPTION_KEY, scope), subscription);
 }

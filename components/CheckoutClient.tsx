@@ -6,6 +6,7 @@ import type { CheckoutError, CheckoutInstance, CheckoutOutput, CheckoutPaymentEr
 import { type CartItem, getCart, saveOrder, setCart } from "@/lib/client-store";
 import { adminStore } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
+import { supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
 export default function CheckoutClient() {
@@ -98,8 +99,9 @@ export default function CheckoutClient() {
         buttonBorderRadius: 24,
         inputBorderRadius: 16,
         buttonBoxShadow: false,
-        onSuccess: (info: CheckoutOutput) => {
+        onSuccess: async (info: CheckoutOutput) => {
           const paymentId = info.payment.id || info.id;
+          const { data } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
           saveOrder({
             id: paymentId,
             title: "Encomenda PetBox",
@@ -109,7 +111,7 @@ export default function CheckoutClient() {
             easypayCheckoutId: info.id,
             easypayPaymentId: paymentId,
             paymentMethod: info.payment.method
-          });
+          }, data.session?.user.id || data.session?.user.email || undefined);
           setCart([]);
           router.push(`/success?payment_id=${encodeURIComponent(paymentId)}`);
         },

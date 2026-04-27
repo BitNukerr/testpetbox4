@@ -1,10 +1,8 @@
 "use client";
 
-const STORAGE_KEY = "petbox-admin-unlocked";
-
 export default function AdminLogoutButton() {
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
+  async function logout() {
+    await fetch("/api/admin/session", { method: "DELETE" }).catch(() => null);
     window.location.href = "/admin";
   }
 

@@ -36,11 +36,7 @@ export default function AdminDashboardClient() {
 
   async function loadRegisteredUsers() {
     try {
-      const response = await fetch("/api/admin/registered-users", {
-        headers: {
-          "x-admin-access-code": process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE || "petbox-admin"
-        }
-      });
+      const response = await fetch("/api/admin/registered-users");
       const data: RegisteredUsersResponse = await response.json();
 
       if (!response.ok) {

@@ -42,15 +42,38 @@ function toMoney(value: number) {
   return Number(value.toFixed(2));
 }
 
+function cleanString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value.trim().slice(0, 160) : fallback;
+}
+
+function safeMoney(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.min(number, 500)) : 0;
+}
+
+function safeQuantity(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(1, Math.min(Math.floor(number), 20)) : 1;
+}
+
+function shippingPriceFromRequest(value: unknown) {
+  const serverValue = process.env.SHIPPING_PRICE_EUR;
+  if (serverValue !== undefined && serverValue !== "") return safeMoney(serverValue);
+  return safeMoney(value);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const items: CartItem[] = body.items ?? [];
     const customer: CheckoutCustomer = body.customer ?? {};
-    const requestedShipping = Math.max(0, Number(body.shippingPrice) || 0);
+    const requestedShipping = shippingPriceFromRequest(body.shippingPrice);
 
     if (!items.length) {
       return NextResponse.json({ error: "Não foram enviados artigos para pagamento." }, { status: 400 });
+    }
+    if (!Array.isArray(items) || items.length > 25) {
+      return NextResponse.json({ error: "Carrinho invalido." }, { status: 400 });
     }
 
     const accountId = process.env.EASYPAY_ACCOUNT_ID;
@@ -64,12 +87,12 @@ export async function POST(req: NextRequest) {
     }
 
     const orderItems = items.map((item) => ({
-      description: item.description || item.title,
-      quantity: item.quantity ?? 1,
-      key: item.slug || item.id || item.title.slice(0, 50),
-      value: toMoney(item.price)
+      description: cleanString(item.description || item.title, "Produto PetBox"),
+      quantity: safeQuantity(item.quantity),
+      key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
+      value: toMoney(safeMoney(item.price))
     }));
-    const subtotal = items.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0);
+    const subtotal = items.reduce((sum, item) => sum + safeMoney(item.price) * safeQuantity(item.quantity), 0);
     const shipping = subtotal > 0 ? requestedShipping : 0;
     const total = toMoney(subtotal + shipping);
     const orderKey = `petbox-${Date.now()}`;
@@ -91,9 +114,9 @@ export async function POST(req: NextRequest) {
         value: total
       },
       customer: {
-        name: [customer.firstName, customer.lastName].filter(Boolean).join(" ") || undefined,
-        email: customer.email || undefined,
-        phone: customer.phone || undefined
+        name: [cleanString(customer.firstName), cleanString(customer.lastName)].filter(Boolean).join(" ") || undefined,
+        email: cleanString(customer.email) || undefined,
+        phone: cleanString(customer.phone) || undefined
       }
     };
 
