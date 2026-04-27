@@ -49,6 +49,14 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  if (serviceRoleKey.startsWith("sb_secret_")) {
+    return NextResponse.json({
+      configured: false,
+      users: [],
+      error: "Esta chave e uma Supabase Secret Key nova (sb_secret_...). Para listar utilizadores do Auth, use a chave legacy service_role JWT, que normalmente comeca por eyJ..., em SUPABASE_SERVICE_ROLE_KEY."
+    });
+  }
+
   const response = await fetch(`${supabaseUrl}/auth/v1/admin/users?page=1&per_page=1000`, {
     headers: {
       apikey: serviceRoleKey,
