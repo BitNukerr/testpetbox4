@@ -175,9 +175,12 @@ export default function CheckoutClient() {
         <div className="card-body">
           <h3>{pt.common.summary}</h3>
           {items.map((item) => (
-            <div key={item.id} className="summary-line">
-              <span>{item.title} × {item.quantity}</span>
-              <strong>{money(item.price * item.quantity)}</strong>
+            <div key={item.id} className="checkout-summary-item">
+              <div className="summary-line">
+                <span>{item.title} × {item.quantity}</span>
+                <strong>{money(item.price * item.quantity)}</strong>
+              </div>
+              {item.metadata ? <div className="checkout-summary-meta">{Object.entries(item.metadata).map(([key, value]) => value ? <span key={key}><strong>{key}</strong>: {value}</span> : null)}</div> : null}
             </div>
           ))}
           <div className="summary-line"><span>{pt.common.subtotal}</span><strong>{money(subtotal)}</strong></div>

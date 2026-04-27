@@ -7,6 +7,7 @@ export type AdminOrder = {
   status: "Confirmada" | "Pago" | "Pendente" | "Enviado" | "Cancelado";
   total: number;
   date: string;
+  details?: string;
 };
 
 export type AdminCustomer = {

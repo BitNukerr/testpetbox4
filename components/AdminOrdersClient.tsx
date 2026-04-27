@@ -112,6 +112,7 @@ export default function AdminOrdersClient() {
           <div className="col-md-3"><label className="form-label fw-bold">Total</label><input className="admin-form-control" value={money(form.total)} readOnly /></div>
           <div className="col-md-3"><label className="form-label fw-bold">Data</label><input className="admin-form-control" value={form.date} readOnly /></div>
           <div className="col-md-3"><label className="form-label fw-bold">Tipo</label><input className="admin-form-control" value={`${form.pet} - ${form.plan}`} readOnly /></div>
+          <div className="col-12"><label className="form-label fw-bold">Itens e observacoes</label><textarea className="admin-form-control" rows={3} value={form.details || ""} readOnly /></div>
           <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={saveOrder}>{editing ? "Guardar estado" : "Guardar"}</button><button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyOrder); }}>Fechar</button></div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
@@ -124,7 +125,7 @@ export default function AdminOrdersClient() {
               <tr key={order.id}>
                 <td className="fw-bold">{order.id}</td>
                 <td>{order.customer}<div className="text-muted small">{order.email}</div></td>
-                <td>{order.pet}</td><td>{order.plan}</td><td>{order.date}</td><td><StatusPill status={order.status} /></td><td className="fw-bold">{money(order.total)}</td>
+                <td>{order.pet}</td><td>{order.plan}<div className="text-muted small">{order.details}</div></td><td>{order.date}</td><td><StatusPill status={order.status} /></td><td className="fw-bold">{money(order.total)}</td>
                 <td className="d-flex justify-content-end gap-2"><button className="admin-action-btn" onClick={() => startEdit(order)}>Estado</button><button className="admin-action-btn" onClick={() => cancelOrder(order)}>Cancelar</button></td>
               </tr>
             ))}

@@ -67,7 +67,8 @@ function orderFromRow(row: any): AdminOrder {
     plan,
     status: row.status || "Pendente",
     total: Number(row.total || 0),
-    date: row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10)
+    date: row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+    details: items.map((item: any) => `${item.quantity}x ${item.title}`).join(", ")
   };
 }
 

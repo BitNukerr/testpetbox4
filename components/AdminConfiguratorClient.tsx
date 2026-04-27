@@ -5,7 +5,7 @@ import { AdminImageField } from "@/components/AdminImageField";
 import { loadRemoteConfiguratorSettings, saveRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, slugify, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
 
-type OptionGroup = "animals" | "sizes" | "personalities" | "extras";
+type OptionGroup = "animals" | "sizes" | "ages" | "personalities" | "extras";
 
 const emptyOption: ConfigOption = {
   id: "",
@@ -18,6 +18,7 @@ const emptyOption: ConfigOption = {
 const groups: { key: OptionGroup; title: string; text: string; allowImage?: boolean }[] = [
   { key: "animals", title: "Animais", text: "Cards do primeiro passo.", allowImage: true },
   { key: "sizes", title: "Tamanhos", text: "Opcoes de tamanho e acrescimos de preco." },
+  { key: "ages", title: "Idades", text: "Opcoes de idade/fase de vida do animal." },
   { key: "personalities", title: "Personalidades", text: "Estilos da caixa." },
   { key: "extras", title: "Extras", text: "Produtos extra com preco proprio." }
 ];
@@ -25,6 +26,7 @@ const groups: { key: OptionGroup; title: string; text: string; allowImage?: bool
 function titleField(group: OptionGroup): keyof ConfiguratorSettings {
   if (group === "animals") return "animalTitle";
   if (group === "sizes") return "sizeTitle";
+  if (group === "ages") return "ageTitle";
   if (group === "personalities") return "personalityTitle";
   return "extrasTitle";
 }
@@ -32,6 +34,7 @@ function titleField(group: OptionGroup): keyof ConfiguratorSettings {
 function textField(group: OptionGroup): keyof ConfiguratorSettings {
   if (group === "animals") return "animalText";
   if (group === "sizes") return "sizeText";
+  if (group === "ages") return "ageText";
   if (group === "personalities") return "personalityText";
   return "extrasText";
 }

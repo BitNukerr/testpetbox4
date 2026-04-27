@@ -76,6 +76,8 @@ export type ConfiguratorSettings = {
   animalText: string;
   sizeTitle: string;
   sizeText: string;
+  ageTitle: string;
+  ageText: string;
   planTitle: string;
   planText: string;
   personalityTitle: string;
@@ -84,6 +86,7 @@ export type ConfiguratorSettings = {
   extrasText: string;
   animals: ConfigOption[];
   sizes: ConfigOption[];
+  ages: ConfigOption[];
   personalities: ConfigOption[];
   extras: ConfigOption[];
 };
@@ -167,6 +170,8 @@ const defaultConfiguratorSettings: ConfiguratorSettings = {
   animalText: "Adaptamos os produtos ao perfil da caixa.",
   sizeTitle: "Escolha o tamanho",
   sizeText: "Use o tamanho para ajustar quantidade e resistencia dos produtos.",
+  ageTitle: "Escolha a idade",
+  ageText: "Ajustamos snacks, brinquedos e cuidados a fase de vida.",
   planTitle: "Escolha o plano",
   planText: "O preco base vem dos planos configurados no admin.",
   personalityTitle: "Personalidade da caixa",
@@ -181,6 +186,11 @@ const defaultConfiguratorSettings: ConfiguratorSettings = {
     { id: "small", label: "Pequeno", description: "Para animais pequenos ou jovens.", price: 0 },
     { id: "medium", label: "Medio", description: "O equilibrio ideal para a maioria.", price: 0 },
     { id: "large", label: "Grande", description: "Mais volume e brinquedos resistentes.", price: 8 }
+  ],
+  ages: [
+    { id: "young", label: "Jovem", description: "Produtos suaves e seguros para animais em crescimento.", price: 0 },
+    { id: "adult", label: "Adulto", description: "A seleccao equilibrada para rotinas activas.", price: 0 },
+    { id: "senior", label: "Senior", description: "Mais conforto, cuidado e snacks adequados.", price: 0 }
   ],
   personalities: [
     { id: "playful", label: "Brincalhao", description: "Mais brinquedos e snacks de recompensa.", price: 0 },

@@ -39,6 +39,11 @@ type ConfigOption = {
 };
 
 const EASYPAY_METHODS = new Set(["cc", "mbw", "mb", "dd", "vi", "ap", "gp", "sw"]);
+const DEFAULT_AGES: ConfigOption[] = [
+  { id: "young", label: "Jovem", price: 0 },
+  { id: "adult", label: "Adulto", price: 0 },
+  { id: "senior", label: "Senior", price: 0 }
+];
 
 function getPaymentMethods() {
   const configured = process.env.EASYPAY_PAYMENT_METHODS || "mbw";
@@ -56,6 +61,10 @@ function toMoney(value: number) {
 
 function cleanString(value: unknown, fallback = "") {
   return typeof value === "string" ? value.trim().slice(0, 160) : fallback;
+}
+
+function cleanNotes(value: unknown) {
+  return typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 240) : "";
 }
 
 function safeMoney(value: unknown) {
@@ -115,7 +124,7 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
   const configurator = (configuratorResult.data as any)?.settings || null;
 
   function findOption(group: string, id: string): ConfigOption | null {
-    const options = Array.isArray(configurator?.[group]) ? configurator[group] : [];
+    const options = Array.isArray(configurator?.[group]) ? configurator[group] : group === "ages" ? DEFAULT_AGES : [];
     return options.find((option: ConfigOption) => option.id === id) || null;
   }
 
@@ -132,7 +141,9 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
       const planId = cleanString(item.config?.planId);
       const animalId = cleanString(item.config?.animalId || item.species);
       const sizeId = cleanString(item.config?.sizeId);
+      const ageId = cleanString(item.config?.ageId, "adult") || "adult";
       const personalityId = cleanString(item.config?.personalityId);
+      const notes = cleanNotes(item.config?.notes);
       const extraIds = cleanString(item.config?.extraIds)
         .split(",")
         .map((id) => id.trim())
@@ -142,10 +153,11 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
       if (plan && configurator) {
         const animal = findOption("animals", animalId);
         const size = findOption("sizes", sizeId);
+        const age = findOption("ages", ageId);
         const personality = findOption("personalities", personalityId);
         const extras = extraIds.map((id) => findOption("extras", id)).filter(Boolean) as ConfigOption[];
 
-        if (!animal || !size || !personality || extras.length !== extraIds.length) {
+        if (!animal || !size || !age || !personality || extras.length !== extraIds.length) {
           throw new Error("A caixa personalizada tem opcoes invalidas. Volte a configurar a caixa.");
         }
 
@@ -153,11 +165,13 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
           Number(plan.price || 0) +
           Number(animal.price || 0) +
           Number(size.price || 0) +
+          Number(age.price || 0) +
           Number(personality.price || 0) +
           extras.reduce((sum, extra) => sum + Number(extra.price || 0), 0)
         );
-        const label = [plan.name, animal.label].filter(Boolean).join(" ");
-        return { description: label || "Caixa personalizada PetBox", quantity, key: `custom-${plan.id}-${animal.id}`, value: price, productSlug: null, planId: plan.id };
+        const label = [plan.name, animal.label, age.label].filter(Boolean).join(" ");
+        const description = (notes ? `${label} - ${notes}` : label).slice(0, 160);
+        return { description: description || "Caixa personalizada PetBox", quantity, key: `custom-${plan.id}-${animal.id}-${age.id}`, value: price, productSlug: null, planId: plan.id };
       }
     }
 
