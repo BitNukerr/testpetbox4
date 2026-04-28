@@ -5,7 +5,9 @@ export const ADMIN_SESSION_COOKIE = "petbox-admin-session";
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8;
 
 function adminCode() {
-  return process.env.ADMIN_ACCESS_CODE || process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE || "petbox-admin";
+  const code = process.env.ADMIN_ACCESS_CODE;
+  if (code) return code;
+  return process.env.NODE_ENV === "production" ? "" : "petbox-admin";
 }
 
 function adminSecret() {
@@ -24,7 +26,8 @@ function safeEqual(left: string, right: string) {
 }
 
 export function adminCodeMatches(value: string) {
-  return safeEqual(value.trim(), adminCode());
+  const code = adminCode();
+  return Boolean(code) && safeEqual(value.trim(), code);
 }
 
 export function createAdminSessionToken() {

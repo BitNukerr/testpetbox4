@@ -1,30 +1,35 @@
 # PetBox Admin Dashboard
 
-This version adds a Bootstrap-inspired admin area to the latest PetBox project.
+This document summarizes the current PetBox admin area.
 
-## New routes
+## Routes
 
 - `/admin`
+- `/admin/home`
+- `/admin/configurator`
 - `/admin/orders`
 - `/admin/products`
+- `/admin/plans`
+- `/admin/users`
 - `/admin/customers`
 - `/admin/subscriptions`
 - `/admin/journal`
 - `/admin/settings`
 
-## Bootstrap implementation
+## Implementation
 
 The admin section uses Bootstrap 5 layout classes and a dedicated admin stylesheet inspired by the OneUI admin template.
 
-The admin layout loads Bootstrap from CDN inside `app/admin/layout.tsx` and keeps custom admin styling isolated in `app/admin/admin.css`.
+The admin layout imports Bootstrap inside `app/admin/layout.tsx` and keeps custom admin styling isolated in `app/admin/admin.css`.
 
-## What can be connected next
+## Current Data Sources
 
-The UI currently uses mock admin data in `data/admin.ts`.
+- Products, plans, posts, homepage settings, configurator settings, registered users, and orders are connected to Supabase through protected admin API routes.
+- Orders are created by the checkout flow and can be updated from the admin orders page.
+- Local fallback data remains in `data/admin.ts` and `lib/admin-store.ts` so the UI still opens during local development before Supabase is configured.
 
-To make it fully dynamic, connect:
-- orders to Easypay webhooks + Supabase
-- products to Supabase tables
-- customers to Supabase Auth users
-- blog posts to a CMS or Supabase table
-- admin-only access through a role field in Supabase
+## Security Notes
+
+- Use `ADMIN_ACCESS_CODE`, not a `NEXT_PUBLIC_` variable, for admin access.
+- Keep `SUPABASE_SECRET_KEY` and `ADMIN_SESSION_SECRET` server-side only.
+- Use `supabase/petbox-rls-schema.sql` as the current database schema.

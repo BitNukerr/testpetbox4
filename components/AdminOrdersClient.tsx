@@ -94,14 +94,14 @@ export default function AdminOrdersClient() {
     setOrders(adminStore.orders.get());
     setFormOpen(false);
     setEditing(null);
-    setMessage("A mostrar dados demo locais.");
+    setMessage("A mostrar dados locais.");
   }
 
   return (
     <div className="admin-card">
       <div className="card-header d-flex flex-column flex-md-row justify-content-between gap-3">
         <div><h2 className="h4 mb-1">Encomendas</h2><div className="text-muted">Veja encomendas reais do checkout e actualize o estado operacional.</div></div>
-        <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={loadOrders} disabled={loading}>{loading ? "A carregar" : "Actualizar"}</button><button className="admin-action-btn" onClick={resetOrders}>Usar demo local</button></div>
+        <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={loadOrders} disabled={loading}>{loading ? "A carregar" : "Actualizar"}</button><button className="admin-action-btn" onClick={resetOrders}>Usar dados locais</button></div>
       </div>
       {formOpen ? <div className="card-body">
         <div className="row g-3">

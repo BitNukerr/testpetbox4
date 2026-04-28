@@ -75,7 +75,7 @@ export const pt = {
     customBox: "Caixa personalizada",
     product: "Produto",
     orderSummary: "Resumo da encomenda",
-    orderText: "O envio é calculado de forma simples para a demonstração. As caixas e produtos são pagos por MB WAY."
+    orderText: "O envio e calculado antes do pagamento. As caixas e produtos sao pagos por MB WAY."
   },
   configure: {
     dog: "Cão",

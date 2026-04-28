@@ -91,7 +91,7 @@ export default function AdminDashboardClient() {
   return (
     <div className="row g-4">
       <div className="col-12 d-flex justify-content-end">
-        <button className="admin-action-btn" onClick={resetAll}>Repor todos os dados demo</button>
+        <button className="admin-action-btn" onClick={resetAll}>Repor dados locais</button>
       </div>
       {message ? <div className="col-12"><div className="admin-card p-3 text-muted">{message}</div></div> : null}
       <div className="col-sm-6 col-xl-3"><div className="admin-card admin-stat"><div className="admin-stat-label">Receita</div><div className="admin-stat-value">{money(stats.revenue)}</div><div className="text-success fw-bold mt-2">Dados editaveis</div></div></div>

@@ -66,13 +66,13 @@ export default function AdminCustomersClient() {
     setCustomers(adminStore.customers.get());
     startNew();
     setFormOpen(false);
-    setMessage("Utilizadores repostos para os dados demo.");
+    setMessage("Utilizadores locais repostos.");
   }
 
   return (
     <div className="admin-card">
       <div className="card-header d-flex flex-column flex-md-row justify-content-between gap-3">
-        <div><h2 className="h4 mb-1">Clientes</h2><div className="text-muted">Adicione, edite, remova ou reponha utilizadores demo.</div></div>
+        <div><h2 className="h4 mb-1">Clientes</h2><div className="text-muted">Adicione, edite, remova ou reponha clientes locais.</div></div>
         <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={startNew}>Adicionar cliente</button><button className="admin-action-btn" onClick={resetUsers}>Repor utilizadores</button></div>
       </div>
       {formOpen ? <div className="card-body">

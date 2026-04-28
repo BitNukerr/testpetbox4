@@ -22,7 +22,7 @@ export default function AdminSettingsClient() {
   function resetAll() {
     adminStore.resetAll();
     setForm(adminStore.settings.get());
-    setMessage("Dados demo repostos em todo o painel.");
+    setMessage("Dados locais repostos em todo o painel.");
   }
 
   return (
@@ -55,7 +55,7 @@ export default function AdminSettingsClient() {
             </div>
             <div className="d-flex gap-2 flex-wrap mt-4">
               <button className="admin-action-btn" onClick={save}>Guardar alteracoes</button>
-              <button className="admin-action-btn" onClick={resetAll}>Repor dados demo</button>
+              <button className="admin-action-btn" onClick={resetAll}>Repor dados locais</button>
             </div>
             {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}
           </div>
