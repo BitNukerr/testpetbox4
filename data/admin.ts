@@ -8,6 +8,7 @@ export type AdminOrder = {
   total: number;
   date: string;
   details?: string;
+  delivery?: string;
 };
 
 export type AdminCustomer = {

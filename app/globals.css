@@ -314,11 +314,17 @@ p{line-height:1.65}
 .blog-image-block figcaption{margin-top:8px;color:var(--muted);font-size:14px;text-align:center}
 
 .site-footer{border-top:1px solid var(--line);margin-top:40px;background:rgba(255,255,255,.35)}
-.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:20px;padding:28px 0}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:20px;padding:28px 0}
 .footer-grid a{display:block;margin:8px 0;color:#514a43}
 .footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .footer-brand img{width:36px;height:32px}
 .footer-brand h3{margin:0}
+.legal-page h1{margin-bottom:14px}
+.legal-note{margin:20px 0;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:#fff8f1;color:#514a43;line-height:1.55}
+.legal-sections{display:grid;gap:16px;margin-top:22px}
+.legal-sections h2{font-size:1.35rem}
+.legal-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.legal-links a{border:1px solid var(--line);border-radius:999px;background:#fff;padding:9px 12px;font-weight:800;color:#514a43}
 
 @media (max-width: 900px){
   .desktop-nav{display:none}

@@ -113,6 +113,7 @@ export default function AdminOrdersClient() {
           <div className="col-md-3"><label className="form-label fw-bold">Data</label><input className="admin-form-control" value={form.date} readOnly /></div>
           <div className="col-md-3"><label className="form-label fw-bold">Tipo</label><input className="admin-form-control" value={`${form.pet} - ${form.plan}`} readOnly /></div>
           <div className="col-12"><label className="form-label fw-bold">Itens e observacoes</label><textarea className="admin-form-control" rows={3} value={form.details || ""} readOnly /></div>
+          <div className="col-12"><label className="form-label fw-bold">Entrega</label><textarea className="admin-form-control" rows={5} value={form.delivery || ""} readOnly /></div>
           <div className="col-12 d-flex gap-2 flex-wrap"><button className="admin-action-btn admin-action-primary" onClick={saveOrder}>{editing ? "Guardar estado" : "Guardar"}</button><button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyOrder); }}>Fechar</button></div>
         </div>
         {message ? <p className="text-muted mt-3 mb-0">{message}</p> : null}

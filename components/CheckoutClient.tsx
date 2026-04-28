@@ -24,7 +24,9 @@ export default function CheckoutClient() {
     phone: "",
     address: "",
     city: "",
-    zip: ""
+    zip: "",
+    nif: "",
+    notes: ""
   });
 
   useEffect(() => { setItems(getCart()); }, []);
@@ -162,6 +164,8 @@ export default function CheckoutClient() {
               <input required autoComplete="street-address" placeholder={pt.checkout.address} value={customer.address} onChange={(event) => updateCustomer("address", event.target.value)} className="span-2" />
               <input required autoComplete="address-level2" placeholder={pt.checkout.city} value={customer.city} onChange={(event) => updateCustomer("city", event.target.value)} />
               <input required autoComplete="postal-code" placeholder={pt.checkout.zip} value={customer.zip} onChange={(event) => updateCustomer("zip", event.target.value)} />
+              <input autoComplete="off" placeholder="NIF (opcional)" value={customer.nif} onChange={(event) => updateCustomer("nif", event.target.value)} />
+              <input placeholder="Notas de entrega (opcional)" value={customer.notes} onChange={(event) => updateCustomer("notes", event.target.value)} />
             </div>
             {error ? <p className="error-text">{error}</p> : null}
             <button className="btn checkout-pay-btn" disabled={items.length === 0 || loading} type="submit">

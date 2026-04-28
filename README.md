@@ -36,8 +36,11 @@ EASYPAY_WEBHOOK_PASSWORD=choose_a_webhook_password
 ADMIN_ACCESS_CODE=choose_a_private_admin_code
 ADMIN_SESSION_SECRET=choose_a_long_random_secret
 SHIPPING_PRICE_EUR=8
+SUPABASE_STORAGE_BUCKET=petbox-images
 ```
 
 Para aceitar cartao pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`.
 
 Configure o webhook da Easypay para `https://your-domain.com/api/easypay/webhook` e use as mesmas credenciais Basic Auth das variaveis `EASYPAY_WEBHOOK_USER` e `EASYPAY_WEBHOOK_PASSWORD`.
+
+Para guardar moradas de entrega e dados de encomenda completos, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.

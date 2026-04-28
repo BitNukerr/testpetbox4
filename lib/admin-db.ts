@@ -49,6 +49,7 @@ function postFromRow(row: any): EditablePost {
 
 function orderFromRow(row: any): AdminOrder {
   const profile = row.profile || {};
+  const delivery = row.delivery || {};
   const items = Array.isArray(row.items) ? row.items : [];
   const firstItem = items[0] || {};
   const title = firstItem.title || row.title || "";
@@ -61,14 +62,23 @@ function orderFromRow(row: any): AdminOrder {
 
   return {
     id: row.id,
-    customer: profile.full_name || row.customer || "Cliente",
-    email: profile.email || row.email || "",
+    customer: delivery.full_name || profile.full_name || row.customer || "Cliente",
+    email: delivery.email || profile.email || row.email || "",
     pet,
     plan,
     status: row.status || "Pendente",
     total: Number(row.total || 0),
     date: row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
-    details: items.map((item: any) => `${item.quantity}x ${item.title}`).join(", ")
+    details: items.map((item: any) => `${item.quantity}x ${item.title}`).join(", "),
+    delivery: [
+      delivery.full_name,
+      delivery.phone,
+      delivery.email,
+      delivery.address,
+      [delivery.zip, delivery.city].filter(Boolean).join(" "),
+      delivery.nif ? `NIF: ${delivery.nif}` : "",
+      delivery.notes ? `Notas: ${delivery.notes}` : ""
+    ].filter(Boolean).join("\n")
   };
 }
 

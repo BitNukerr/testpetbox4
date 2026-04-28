@@ -9,7 +9,7 @@ This setup moves customer data into Supabase with Row Level Security.
 3. Paste the full contents of `supabase/petbox-rls-schema.sql`.
 4. Click **Run**.
 
-The SQL creates tables for profiles, addresses, pets, subscriptions, orders, products, plans, posts, settings, and admin users. It enables RLS on every public table.
+The SQL creates tables for profiles, addresses, pets, subscriptions, orders, order delivery details, products, plans, posts, settings, and admin users. It enables RLS on every public table.
 
 ## 2. Add yourself as admin
 
@@ -34,6 +34,7 @@ Keep these in Vercel:
 - `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` only on the server
 - `ADMIN_ACCESS_CODE`
 - `ADMIN_SESSION_SECRET`
+- `SUPABASE_STORAGE_BUCKET` optional, defaults to `petbox-images`
 
 Never put a secret/service key in a `NEXT_PUBLIC_` variable.
 

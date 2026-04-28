@@ -27,17 +27,21 @@ async function ordersWithProfiles(client: NonNullable<ReturnType<typeof getSupab
   const orderIds = (orders || []).map((order: any) => order.id);
   const userIds = [...new Set((orders || []).map((order: any) => order.user_id).filter(Boolean))];
 
-  const [{ data: items, error: itemsError }, { data: profiles, error: profilesError }] = await Promise.all([
+  const [{ data: items, error: itemsError }, { data: profiles, error: profilesError }, deliveryResult] = await Promise.all([
     orderIds.length
       ? client.from("order_items").select("order_id,title,quantity,unit_price,product_slug,plan_id").in("order_id", orderIds)
       : Promise.resolve({ data: [], error: null }),
     userIds.length
       ? client.from("profiles").select("user_id,email,full_name,phone").in("user_id", userIds)
+      : Promise.resolve({ data: [], error: null }),
+    orderIds.length
+      ? client.from("order_delivery_details").select("order_id,full_name,email,phone,address,city,zip,nif,notes").in("order_id", orderIds)
       : Promise.resolve({ data: [], error: null })
   ]);
 
   if (itemsError) throw itemsError;
   if (profilesError) throw profilesError;
+  const deliveryRows = deliveryResult.error ? [] : deliveryResult.data || [];
 
   const itemsByOrder = new Map<string, any[]>();
   for (const item of items || []) {
@@ -47,11 +51,13 @@ async function ordersWithProfiles(client: NonNullable<ReturnType<typeof getSupab
   }
 
   const profilesByUser = new Map((profiles || []).map((profile: any) => [profile.user_id, profile]));
+  const deliveryByOrder = new Map(deliveryRows.map((delivery: any) => [delivery.order_id, delivery]));
 
   return (orders || []).map((order: any) => ({
     ...order,
     profile: profilesByUser.get(order.user_id) || null,
-    items: itemsByOrder.get(order.id) || []
+    items: itemsByOrder.get(order.id) || [],
+    delivery: deliveryByOrder.get(order.id) || null
   }));
 }
 

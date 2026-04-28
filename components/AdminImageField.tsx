@@ -22,13 +22,25 @@ function imageItems(value: string) {
   return value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
 }
 
+async function uploadPreparedImage(image: string, filename?: string) {
+  const response = await fetch("/api/admin/images", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image, filename })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.url) throw new Error(data.error || "Nao foi possivel guardar a imagem.");
+  return data.url as string;
+}
+
 export function AdminImageField({ value, onChange, onMessage, presets = [], options = { width: 900, height: 650, fit: "contain" } }: ImageFieldProps) {
   async function upload(file: File | undefined) {
     if (!file) return;
     try {
       const result = await prepareAdminImage(file, options);
-      onChange(result);
-      onMessage?.("Imagem adicionada e ajustada ao tamanho certo.");
+      const url = await uploadPreparedImage(result, file.name);
+      onChange(url);
+      onMessage?.("Imagem optimizada e guardada no Supabase Storage.");
     } catch (error) {
       onMessage?.(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
@@ -66,9 +78,12 @@ export function AdminImageListField({ value, onChange, onMessage, presets = [], 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
     try {
-      const prepared = await Promise.all(Array.from(files).map((file) => prepareAdminImage(file, options)));
+      const prepared = await Promise.all(Array.from(files).map(async (file) => {
+        const image = await prepareAdminImage(file, options);
+        return uploadPreparedImage(image, file.name);
+      }));
       updateItems([...items, ...prepared]);
-      onMessage?.(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} adicionada${prepared.length === 1 ? "" : "s"}.`);
+      onMessage?.(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} guardada${prepared.length === 1 ? "" : "s"} no Supabase Storage.`);
     } catch (error) {
       onMessage?.(error instanceof Error ? error.message : "Nao foi possivel preparar as imagens.");
     }

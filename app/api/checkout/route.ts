@@ -21,6 +21,11 @@ type CheckoutCustomer = {
   lastName?: string;
   email?: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  zip?: string;
+  nif?: string;
+  notes?: string;
 };
 
 type BuiltOrderItem = {
@@ -59,12 +64,27 @@ function toMoney(value: number) {
   return Number(value.toFixed(2));
 }
 
-function cleanString(value: unknown, fallback = "") {
-  return typeof value === "string" ? value.trim().slice(0, 160) : fallback;
+function cleanString(value: unknown, fallback = "", maxLength = 160) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : fallback;
 }
 
 function cleanNotes(value: unknown) {
   return typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 240) : "";
+}
+
+function buildDeliveryDetails(customer: CheckoutCustomer) {
+  const firstName = cleanString(customer.firstName, "", 80);
+  const lastName = cleanString(customer.lastName, "", 80);
+  return {
+    full_name: [firstName, lastName].filter(Boolean).join(" "),
+    email: cleanString(customer.email, "", 160),
+    phone: cleanString(customer.phone, "", 40),
+    address: cleanString(customer.address, "", 220),
+    city: cleanString(customer.city, "", 120),
+    zip: cleanString(customer.zip, "", 40),
+    nif: cleanString(customer.nif, "", 40),
+    notes: cleanNotes(customer.notes)
+  };
 }
 
 function safeMoney(value: unknown) {
@@ -198,6 +218,7 @@ async function savePendingOrder(params: {
   checkoutId: string;
   orderItems: BuiltOrderItem[];
   shipping: number;
+  customer: CheckoutCustomer;
 }) {
   const admin = getSupabaseAdmin();
   if (!admin) return false;
@@ -212,6 +233,17 @@ async function savePendingOrder(params: {
   }, { onConflict: "id" });
 
   if (orderError) throw orderError;
+
+  const delivery = buildDeliveryDetails(params.customer);
+  const { error: deliveryError } = await admin.from("order_delivery_details").upsert({
+    order_id: params.orderId,
+    user_id: params.userId,
+    ...delivery
+  }, { onConflict: "order_id" });
+
+  if (deliveryError) {
+    console.error("Erro ao gravar dados de entrega:", deliveryError);
+  }
 
   const rows = [
     ...params.orderItems.map((item) => ({
@@ -312,7 +344,7 @@ export async function POST(req: NextRequest) {
 
     let orderSaved = false;
     try {
-      orderSaved = await savePendingOrder({ orderId: orderKey, userId, total, checkoutId: data.id, orderItems, shipping });
+      orderSaved = await savePendingOrder({ orderId: orderKey, userId, total, checkoutId: data.id, orderItems, shipping, customer });
     } catch (orderError) {
       console.error("Erro ao gravar encomenda Supabase:", orderError);
     }

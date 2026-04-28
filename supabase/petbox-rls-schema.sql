@@ -123,6 +123,21 @@ create table if not exists public.order_items (
   unit_price numeric(10,2) not null check (unit_price >= 0)
 );
 
+create table if not exists public.order_delivery_details (
+  order_id text primary key references public.orders(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  full_name text,
+  email text,
+  phone text,
+  address text,
+  city text,
+  zip text,
+  nif text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.journal_posts (
   slug text primary key,
   title text not null,
@@ -177,6 +192,7 @@ begin
     'products',
     'plans',
     'customer_subscriptions',
+    'order_delivery_details',
     'journal_posts',
     'store_settings',
     'home_settings',
@@ -216,6 +232,7 @@ alter table public.plans enable row level security;
 alter table public.customer_subscriptions enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.order_delivery_details enable row level security;
 alter table public.journal_posts enable row level security;
 alter table public.store_settings enable row level security;
 alter table public.home_settings enable row level security;
@@ -333,6 +350,27 @@ using (
 drop policy if exists "Admins manage order items" on public.order_items;
 create policy "Admins manage order items"
 on public.order_items for all
+to authenticated
+using (public.is_petbox_admin())
+with check (public.is_petbox_admin());
+
+drop policy if exists "Users read own delivery details" on public.order_delivery_details;
+create policy "Users read own delivery details"
+on public.order_delivery_details for select
+to authenticated
+using (
+  user_id = (select auth.uid())
+  or public.is_petbox_admin()
+  or exists (
+    select 1 from public.orders
+    where orders.id = order_delivery_details.order_id
+    and (orders.user_id = (select auth.uid()) or public.is_petbox_admin())
+  )
+);
+
+drop policy if exists "Admins manage delivery details" on public.order_delivery_details;
+create policy "Admins manage delivery details"
+on public.order_delivery_details for all
 to authenticated
 using (public.is_petbox_admin())
 with check (public.is_petbox_admin());

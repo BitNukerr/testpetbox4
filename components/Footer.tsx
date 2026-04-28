@@ -26,6 +26,13 @@ export default function Footer() {
           <Link href="/contact">Contacto</Link>
           <Link href="/login">Entrar</Link>
         </div>
+        <div>
+          <h4>Legal</h4>
+          <Link href="/legal/termos">Termos</Link>
+          <Link href="/legal/privacidade">Privacidade</Link>
+          <Link href="/legal/envios-devolucoes">Envios e devolucoes</Link>
+          <Link href="/legal/cookies">Cookies</Link>
+        </div>
       </div>
     </footer>
   );
