@@ -65,6 +65,20 @@ export default function HomeShowcaseClient() {
 
   return (
     <main className="home-showcase container">
+      <section className="home-news-ticker" aria-label="Novidades PetBox">
+        <div className="news-ticker-track" aria-hidden="true">
+          {[0, 1].map((group) => (
+            <div className="news-ticker-group" key={group}>
+              <span>Caixas misterio para caes e gatos</span>
+              <span>Produtos escolhidos por perfil</span>
+              <span>MB WAY e cartao por Easypay</span>
+              <span>Snacks, brinquedos e cuidados numa so caixa</span>
+              <span>Entregas em Portugal</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="home-campaign-grid" aria-label="PetBox em destaque">
         <Link href={settings.showcaseLeadHref || "/configure"} className="campaign-video-card">
           <div className="petbox-video-word" aria-hidden="true">
@@ -126,6 +140,19 @@ export default function HomeShowcaseClient() {
           <em>{settings.showcaseTileFourCta}</em>
           <img src={settings.showcaseTileFourImage} alt="" />
         </Link>
+
+        <article className="campaign-info-card">
+          <div>
+            <span>Como funciona</span>
+            <h2>Uma caixa pensada para o seu animal, sem complicar.</h2>
+            <p>A PetBox ajuda donos de caes e gatos a receber produtos uteis, divertidos e escolhidos com criterio, sem ter de procurar tudo separadamente.</p>
+          </div>
+          <div className="info-steps">
+            <div><strong>1. Crie o perfil</strong><p>Escolha animal, tamanho, idade, personalidade e detalhes importantes como alergias ou preferencias.</p></div>
+            <div><strong>2. Montamos a caixa</strong><p>Combinamos snacks, brinquedos e cuidados de acordo com o perfil e com o plano escolhido.</p></div>
+            <div><strong>3. Receba em casa</strong><p>A encomenda segue para a morada indicada, com extras opcionais e pagamento simples por Easypay.</p></div>
+          </div>
+        </article>
       </section>
 
       <section className="home-offer-grid" aria-label="Produtos e vantagens">

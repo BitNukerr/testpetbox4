@@ -64,6 +64,14 @@ p{line-height:1.65}
 .mobile-logout{padding:12px 0;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);font-weight:700;color:var(--accent)}
 
 .home-showcase{padding:36px 0 46px}
+.home-news-ticker{position:relative;overflow:hidden;border:1px solid #bce1f5;border-radius:16px;background:#fff;box-shadow:0 12px 26px rgba(26,90,111,.05);margin-bottom:18px;color:#063150}
+.home-news-ticker:before,.home-news-ticker:after{content:"";position:absolute;top:0;bottom:0;width:54px;z-index:2;pointer-events:none}
+.home-news-ticker:before{left:0;background:linear-gradient(90deg,#fff,rgba(255,255,255,0))}
+.home-news-ticker:after{right:0;background:linear-gradient(270deg,#fff,rgba(255,255,255,0))}
+.news-ticker-track{display:flex;width:max-content;animation:newsTicker 34s linear infinite;will-change:transform}
+.news-ticker-group{display:flex;align-items:center;gap:18px;flex:0 0 auto;padding:11px 18px}
+.news-ticker-group span{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:.88rem;font-weight:900;letter-spacing:.01em}
+.news-ticker-group span:before{content:"";width:7px;height:7px;border-radius:999px;background:#79c7e7;box-shadow:0 0 0 3px rgba(121,199,231,.18)}
 .home-campaign-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px;align-items:stretch}
 .campaign-video-card,.campaign-promo-card,.campaign-tile,.offer-card{border:1px solid #bce1f5;border-radius:20px;overflow:hidden;box-shadow:0 16px 34px rgba(26,90,111,.06)}
 .campaign-video-card{position:relative;grid-column:span 2;min-height:390px;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:24px;isolation:isolate}
@@ -103,6 +111,13 @@ p{line-height:1.65}
 .tile-blog strong{max-width:62%;font-size:clamp(1.55rem,2.4vw,2.15rem)}
 .tile-blog p{max-width:58%;font-size:.95rem;line-height:1.25}
 .tile-blog img{width:26%;max-height:100px;right:20px;bottom:12px}
+.campaign-info-card{grid-column:span 3;display:grid;grid-template-columns:.85fr 1.55fr;gap:22px;align-items:start;border:1px solid #bce1f5;border-radius:20px;background:linear-gradient(120deg,#ffffff,#eef9ff 54%,#fffaf1);padding:24px;box-shadow:0 16px 34px rgba(26,90,111,.06);color:#063150}
+.campaign-info-card span{display:inline-flex;width:max-content;border-radius:999px;padding:7px 11px;background:#d9f1ff;color:#063150;font-size:13px;font-weight:900;margin-bottom:12px}
+.campaign-info-card h2{font-size:clamp(1.75rem,3vw,2.35rem);line-height:1;margin-bottom:10px;color:#07324e}
+.campaign-info-card p{margin:0;color:#2e596b;line-height:1.45}
+.info-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.info-steps div{border:1px solid rgba(188,225,245,.9);border-radius:16px;background:rgba(255,255,255,.72);padding:16px}
+.info-steps strong{display:block;margin-bottom:7px;color:#063150}
 .home-offer-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;margin-top:24px}
 .offer-card{display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;min-height:230px;padding:14px;background:#fff;color:#063150}
 .offer-card img{width:100%;height:104px;object-fit:contain;border-radius:18px;background:#fff7ec;padding:10px}
@@ -111,6 +126,7 @@ p{line-height:1.65}
 .offer-card p{margin:0;color:#47616b;font-size:.9rem;line-height:1.3;align-self:end}
 .offer-card-strong{background:#eff8df;border-color:#cde7ac}
 @keyframes assetDrift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@keyframes newsTicker{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @keyframes videoPulse{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.02)}}
 
 .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;padding:40px 0 20px}
@@ -340,6 +356,8 @@ p{line-height:1.65}
   .campaign-promo-card{grid-row:auto}
   .campaign-tile strong,.campaign-tile p{max-width:76%}
   .tile-wide{grid-column:auto}
+  .campaign-info-card{grid-column:auto;grid-template-columns:1fr}
+  .info-steps{grid-template-columns:1fr}
   .home-offer-grid{grid-template-columns:1fr 1fr}
   .offer-card{min-height:220px}
   .offer-card img{height:100px}
@@ -359,6 +377,8 @@ p{line-height:1.65}
   .header-row{padding:10px 0}
   .home-showcase{padding-top:20px}
   .campaign-video-card{min-height:300px;padding:18px}
+  .news-ticker-group{gap:14px;padding:10px 14px}
+  .news-ticker-group span{font-size:.82rem}
   .petbox-video-word{font-size:clamp(3.3rem,16vw,5.4rem)}
   .video-caption{position:static;display:block;margin-top:28px}
   .video-caption p{font-size:.9rem}
