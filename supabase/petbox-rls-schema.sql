@@ -110,8 +110,12 @@ create table if not exists public.orders (
   payment_method text,
   easypay_checkout_id text,
   easypay_payment_id text,
+  confirmation_email_sent_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+alter table public.orders
+add column if not exists confirmation_email_sent_at timestamptz;
 
 alter table public.customer_subscriptions
 add column if not exists source_order_id text references public.orders(id) on delete set null;

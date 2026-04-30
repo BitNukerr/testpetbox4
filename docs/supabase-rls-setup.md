@@ -9,7 +9,7 @@ This setup moves customer data into Supabase with Row Level Security.
 3. Paste the full contents of `supabase/petbox-rls-schema.sql`.
 4. Click **Run**.
 
-The SQL creates tables for profiles, addresses, pets, subscriptions, orders, order delivery details, products, plans, posts, settings, and admin users. It also links paid plan orders to subscriptions through `customer_subscriptions.source_order_id`. It enables RLS on every public table.
+The SQL creates tables for profiles, addresses, pets, subscriptions, orders, order delivery details, products, plans, posts, settings, and admin users. It also links paid plan orders to subscriptions through `customer_subscriptions.source_order_id` and marks orders after confirmation emails through `orders.confirmation_email_sent_at`. It enables RLS on every public table.
 
 ## 2. Add yourself as admin
 
@@ -35,6 +35,8 @@ Keep these in Vercel:
 - `ADMIN_ACCESS_CODE`
 - `ADMIN_SESSION_SECRET`
 - `SUPABASE_STORAGE_BUCKET` optional, defaults to `petbox-images`
+- `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`
+- `ORDER_NOTIFICATION_EMAIL` optional, falls back to `CONTACT_TO_EMAIL`
 
 Never put a secret/service key in a `NEXT_PUBLIC_` variable.
 

@@ -27,6 +27,10 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 SUPABASE_SECRET_KEY=your_supabase_secret_key
+RESEND_API_KEY=your_resend_api_key
+CONTACT_FROM_EMAIL=PetBox <onboarding@resend.dev>
+CONTACT_TO_EMAIL=your_admin_email@example.com
+ORDER_NOTIFICATION_EMAIL=optional_orders_email@example.com
 EASYPAY_ACCOUNT_ID=your_easypay_account_id
 EASYPAY_API_KEY=your_easypay_api_key
 EASYPAY_ENVIRONMENT=sandbox
@@ -43,4 +47,4 @@ Para aceitar cartao pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`
 
 Configure o webhook da Easypay para `https://your-domain.com/api/easypay/webhook` e use as mesmas credenciais Basic Auth das variaveis `EASYPAY_WEBHOOK_USER` e `EASYPAY_WEBHOOK_PASSWORD`.
 
-Para guardar moradas de entrega, dados de encomenda completos e subscricoes criadas por encomendas pagas, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.
+Para guardar moradas de entrega, dados de encomenda completos, emails de confirmacao e subscricoes criadas por encomendas pagas, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.

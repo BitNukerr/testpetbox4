@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
+import { sendOrderConfirmationEmails } from "@/lib/order-emails";
 import { createSubscriptionForPaidOrder } from "@/lib/order-subscriptions";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
     if (updateError) throw updateError;
 
     await createSubscriptionForPaidOrder(orderId, order.user_id || userId);
+    await sendOrderConfirmationEmails(orderId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

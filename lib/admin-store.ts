@@ -61,6 +61,15 @@ export type HomeSettings = {
   showcaseTileFourCta: string;
   showcaseTileFourHref: string;
   showcaseTileFourImage: string;
+  infoLabel: string;
+  infoTitle: string;
+  infoText: string;
+  infoStepOneTitle: string;
+  infoStepOneText: string;
+  infoStepTwoTitle: string;
+  infoStepTwoText: string;
+  infoStepThreeTitle: string;
+  infoStepThreeText: string;
 };
 
 export type ConfigOption = {
@@ -162,7 +171,16 @@ const defaultHomeSettings: HomeSettings = {
   showcaseTileFourText: "Leia ideias sobre snacks, brinquedos, rotinas e caixas misterio.",
   showcaseTileFourCta: "Ler blog",
   showcaseTileFourHref: "/journal",
-  showcaseTileFourImage: "/images/about-pets.svg"
+  showcaseTileFourImage: "/images/about-pets.svg",
+  infoLabel: "Como funciona",
+  infoTitle: "Uma caixa pensada para o seu animal, sem complicar.",
+  infoText: "A PetBox ajuda donos de caes e gatos a receber produtos uteis, divertidos e escolhidos com criterio, sem ter de procurar tudo separadamente.",
+  infoStepOneTitle: "1. Crie o perfil",
+  infoStepOneText: "Escolha animal, tamanho, idade, personalidade e detalhes importantes como alergias ou preferencias.",
+  infoStepTwoTitle: "2. Montamos a caixa",
+  infoStepTwoText: "Combinamos snacks, brinquedos e cuidados de acordo com o perfil e com o plano escolhido.",
+  infoStepThreeTitle: "3. Receba em casa",
+  infoStepThreeText: "A encomenda segue para a morada indicada, com extras opcionais e pagamento simples por Easypay."
 };
 
 const defaultConfiguratorSettings: ConfiguratorSettings = {

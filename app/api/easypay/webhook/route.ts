@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { easypayOrderKey, easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
+import { sendOrderConfirmationEmails } from "@/lib/order-emails";
 import { createSubscriptionForPaidOrder } from "@/lib/order-subscriptions";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
     if (checkoutError) throw checkoutError;
     if (byCheckout?.length) {
       await Promise.all(byCheckout.map((order) => createSubscriptionForPaidOrder(order.id, order.user_id || null)));
+      await Promise.all(byCheckout.map((order) => sendOrderConfirmationEmails(order.id)));
       return NextResponse.json({ ok: true });
     }
     if (!orderKey) return NextResponse.json({ ok: true });
@@ -106,6 +108,7 @@ export async function POST(request: NextRequest) {
 
     if (keyError) throw keyError;
     await Promise.all((byKey || []).map((order) => createSubscriptionForPaidOrder(order.id, order.user_id || null)));
+    await Promise.all((byKey || []).map((order) => sendOrderConfirmationEmails(order.id)));
 
     return NextResponse.json({ ok: true });
   } catch (error) {

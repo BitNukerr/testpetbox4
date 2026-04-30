@@ -195,11 +195,37 @@ export default function AdminHomeClient() {
                 <PreviewTile box={campaignBoxes[2]} variant="cream" />
                 <PreviewTile box={campaignBoxes[3]} variant="blue" />
                 <PreviewTile box={campaignBoxes[4]} variant="blog" />
+                <div className="admin-home-preview-info">
+                  <span>{form.infoLabel}</span>
+                  <strong>{form.infoTitle}</strong>
+                  <p>{form.infoText}</p>
+                  <div>
+                    <small>{form.infoStepOneTitle}</small>
+                    <small>{form.infoStepTwoTitle}</small>
+                    <small>{form.infoStepThreeTitle}</small>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="col-12"><hr /></div>
+
+          <div className="col-12">
+            <div className="admin-config-group">
+              <div className="admin-config-group-head">
+                <div><h3>Bloco Como funciona</h3><p>Texto da caixa informativa que explica o objectivo do site e o processo de compra.</p></div>
+              </div>
+              <div className="row g-3">
+                <div className="col-md-4"><label className="form-label fw-bold">Etiqueta</label><input className="admin-form-control" value={form.infoLabel} onChange={(event) => update("infoLabel", event.target.value)} /></div>
+                <div className="col-md-8"><label className="form-label fw-bold">Titulo</label><input className="admin-form-control" value={form.infoTitle} onChange={(event) => update("infoTitle", event.target.value)} /></div>
+                <div className="col-12"><label className="form-label fw-bold">Texto principal</label><textarea className="admin-form-control" rows={3} value={form.infoText} onChange={(event) => update("infoText", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">Passo 1</label><input className="admin-form-control mb-2" value={form.infoStepOneTitle} onChange={(event) => update("infoStepOneTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepOneText} onChange={(event) => update("infoStepOneText", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">Passo 2</label><input className="admin-form-control mb-2" value={form.infoStepTwoTitle} onChange={(event) => update("infoStepTwoTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepTwoText} onChange={(event) => update("infoStepTwoText", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">Passo 3</label><input className="admin-form-control mb-2" value={form.infoStepThreeTitle} onChange={(event) => update("infoStepThreeTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepThreeText} onChange={(event) => update("infoStepThreeText", event.target.value)} /></div>
+              </div>
+            </div>
+          </div>
 
           {campaignBoxes.map((box) => (
             <div className="col-xl-6" key={box.title}>

@@ -129,14 +129,14 @@ export default function HomeShowcaseClient() {
 
         <article className="campaign-info-card">
           <div>
-            <span>Como funciona</span>
-            <h2>Uma caixa pensada para o seu animal, sem complicar.</h2>
-            <p>A PetBox ajuda donos de caes e gatos a receber produtos uteis, divertidos e escolhidos com criterio, sem ter de procurar tudo separadamente.</p>
+            <span>{settings.infoLabel}</span>
+            <h2>{settings.infoTitle}</h2>
+            <p>{settings.infoText}</p>
           </div>
           <div className="info-steps">
-            <div><strong>1. Crie o perfil</strong><p>Escolha animal, tamanho, idade, personalidade e detalhes importantes como alergias ou preferencias.</p></div>
-            <div><strong>2. Montamos a caixa</strong><p>Combinamos snacks, brinquedos e cuidados de acordo com o perfil e com o plano escolhido.</p></div>
-            <div><strong>3. Receba em casa</strong><p>A encomenda segue para a morada indicada, com extras opcionais e pagamento simples por Easypay.</p></div>
+            <div><strong>{settings.infoStepOneTitle}</strong><p>{settings.infoStepOneText}</p></div>
+            <div><strong>{settings.infoStepTwoTitle}</strong><p>{settings.infoStepTwoText}</p></div>
+            <div><strong>{settings.infoStepThreeTitle}</strong><p>{settings.infoStepThreeText}</p></div>
           </div>
         </article>
       </section>
