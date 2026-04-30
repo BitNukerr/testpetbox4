@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { easypayOrderKey, easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
+import { createSubscriptionForPaidOrder } from "@/lib/order-subscriptions";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -87,18 +88,24 @@ export async function POST(request: NextRequest) {
       .update(update)
       .eq("easypay_checkout_id", checkoutId)
       .eq("total", paidValue)
-      .select("id");
+      .select("id,user_id");
 
     if (checkoutError) throw checkoutError;
-    if (byCheckout?.length || !orderKey) return NextResponse.json({ ok: true });
+    if (byCheckout?.length) {
+      await Promise.all(byCheckout.map((order) => createSubscriptionForPaidOrder(order.id, order.user_id || null)));
+      return NextResponse.json({ ok: true });
+    }
+    if (!orderKey) return NextResponse.json({ ok: true });
 
-    const { error: keyError } = await admin
+    const { data: byKey, error: keyError } = await admin
       .from("orders")
       .update(update)
       .eq("id", orderKey)
-      .eq("total", paidValue);
+      .eq("total", paidValue)
+      .select("id,user_id");
 
     if (keyError) throw keyError;
+    await Promise.all((byKey || []).map((order) => createSubscriptionForPaidOrder(order.id, order.user_id || null)));
 
     return NextResponse.json({ ok: true });
   } catch (error) {

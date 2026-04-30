@@ -10,7 +10,7 @@ Loja em Next.js para caixas de subscricao para caes e gatos, com Supabase Auth, 
 - Login/criacao de conta via Supabase
 - Checkout Easypay com MB WAY
 - Painel `/admin` protegido por codigo de acesso e sessao assinada
-- Vercel Analytics
+- Vercel Analytics carregado apenas depois de consentimento de cookies
 
 ## Correr localmente
 
@@ -43,4 +43,4 @@ Para aceitar cartao pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`
 
 Configure o webhook da Easypay para `https://your-domain.com/api/easypay/webhook` e use as mesmas credenciais Basic Auth das variaveis `EASYPAY_WEBHOOK_USER` e `EASYPAY_WEBHOOK_PASSWORD`.
 
-Para guardar moradas de entrega e dados de encomenda completos, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.
+Para guardar moradas de entrega, dados de encomenda completos e subscricoes criadas por encomendas pagas, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.

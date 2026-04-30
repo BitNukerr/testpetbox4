@@ -325,6 +325,11 @@ p{line-height:1.65}
 .legal-sections h2{font-size:1.35rem}
 .legal-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 .legal-links a{border:1px solid var(--line);border-radius:999px;background:#fff;padding:9px 12px;font-weight:800;color:#514a43}
+.cookie-consent{position:fixed;left:50%;bottom:18px;z-index:60;transform:translateX(-50%);width:min(920px,calc(100% - 28px));display:flex;align-items:center;justify-content:space-between;gap:18px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:22px;padding:16px 18px;box-shadow:0 20px 48px rgba(35,31,27,.16);backdrop-filter:blur(12px)}
+.cookie-consent strong{display:block;margin-bottom:4px}
+.cookie-consent p{margin:0;color:var(--muted);line-height:1.45;font-size:.95rem}
+.cookie-consent a{display:inline-flex;margin-top:8px;font-weight:800;color:var(--accent)}
+.cookie-actions{display:flex;gap:10px;flex:0 0 auto}
 
 @media (max-width: 900px){
   .desktop-nav{display:none}
@@ -347,6 +352,7 @@ p{line-height:1.65}
   .hero-stats{grid-template-columns:1fr}
   .summary-card,.preview-card,.config-summary,.shop-filters{position:static;max-height:none}
   .footer-grid{grid-template-columns:1fr}
+  .cookie-consent{align-items:flex-start;flex-direction:column}
 }
 @media (max-width: 640px){
   .container{width:min(1120px,calc(100% - 20px))}
@@ -378,4 +384,5 @@ p{line-height:1.65}
   .password-field button{border-left:0;border-top:1px solid var(--line);padding:10px 12px}
   .account-action-grid{grid-template-columns:1fr}
   .pet-profile{flex-direction:column}
+  .cookie-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
 }

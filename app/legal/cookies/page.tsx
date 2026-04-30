@@ -29,13 +29,13 @@ export default function CookiesPage() {
           title: "Analytics",
           body: [
             "A PetBox usa Vercel Analytics para compreender visitas e desempenho das paginas.",
-            "Estes dados ajudam a melhorar o website e devem ser configurados de acordo com as opcoes de privacidade e consentimento aplicaveis."
+            "O componente de Analytics so e carregado depois de aceitar essa opcao no aviso de cookies."
           ]
         },
         {
           title: "Gestao",
           body: [
-            "Pode apagar cookies e dados locais nas definicoes do browser.",
+            "Pode recusar analytics no aviso inicial ou apagar cookies e dados locais nas definicoes do browser para voltar a escolher.",
             "Se forem activados cookies nao essenciais adicionais, deve ser apresentado um mecanismo de consentimento antes da sua utilizacao."
           ]
         }

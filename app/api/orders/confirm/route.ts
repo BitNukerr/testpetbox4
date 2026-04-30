@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
+import { createSubscriptionForPaidOrder } from "@/lib/order-subscriptions";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +82,8 @@ export async function POST(request: NextRequest) {
       .eq("easypay_checkout_id", checkoutId);
 
     if (updateError) throw updateError;
+
+    await createSubscriptionForPaidOrder(orderId, order.user_id || userId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

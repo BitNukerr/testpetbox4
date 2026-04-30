@@ -22,12 +22,20 @@ export type AdminCustomer = {
 
 export type AdminSubscription = {
   id: string;
+  userId?: string;
+  userEmail?: string;
+  petId?: string;
+  planId?: string;
+  cadence?: "monthly" | "quarterly";
   customer: string;
   plan: "Mensal" | "Trimestral";
   pet: "Cão" | "Gato";
+  nextBoxDate?: string;
   renewal: string;
   status: "Ativa" | "Pausada" | "Cancelamento agendado";
   value: number;
+  extras?: string;
+  sourceOrderId?: string;
 };
 
 export type AdminJournalPost = {

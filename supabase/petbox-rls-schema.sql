@@ -113,6 +113,13 @@ create table if not exists public.orders (
   created_at timestamptz not null default now()
 );
 
+alter table public.customer_subscriptions
+add column if not exists source_order_id text references public.orders(id) on delete set null;
+
+create unique index if not exists idx_customer_subscriptions_source_order_id
+on public.customer_subscriptions(source_order_id)
+where source_order_id is not null;
+
 create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),
   order_id text not null references public.orders(id) on delete cascade,
