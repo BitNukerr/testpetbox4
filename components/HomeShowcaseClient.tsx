@@ -65,20 +65,6 @@ export default function HomeShowcaseClient() {
 
   return (
     <main className="home-showcase container">
-      <section className="home-news-ticker" aria-label="Novidades PetBox">
-        <div className="news-ticker-track" aria-hidden="true">
-          {[0, 1].map((group) => (
-            <div className="news-ticker-group" key={group}>
-              <span>Caixas misterio para caes e gatos</span>
-              <span>Produtos escolhidos por perfil</span>
-              <span>MB WAY e cartao por Easypay</span>
-              <span>Snacks, brinquedos e cuidados numa so caixa</span>
-              <span>Entregas em Portugal</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <section className="home-campaign-grid" aria-label="PetBox em destaque">
         <Link href={settings.showcaseLeadHref || "/configure"} className="campaign-video-card">
           <div className="petbox-video-word" aria-hidden="true">
