@@ -3,7 +3,14 @@ type BlogBlock =
   | { type: "image"; alt: string; src: string };
 
 function isSafeImageSource(src: string) {
-  return src.startsWith("/") || src.startsWith("https://") || src.startsWith("http://") || src.startsWith("data:image/");
+  if (src.startsWith("/")) return true;
+  if (/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(src)) return true;
+
+  try {
+    return new URL(src).protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 export function parseBlogContent(body: string): BlogBlock[] {

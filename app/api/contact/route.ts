@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -8,6 +9,15 @@ function clean(value: unknown, maxLength: number) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!requestIsSameOrigin(req)) {
+      return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+    }
+
+    const limited = rateLimit(req, "contact", { limit: 5, windowMs: 60 * 60 * 1000 });
+    if (limited.limited) {
+      return NextResponse.json({ error: "Demasiadas mensagens. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+    }
+
     const body = await req.json();
     const name = clean(body.name, 80);
     const email = clean(body.email, 160);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestHasAdminSession } from "@/lib/admin-auth";
+import { requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -221,6 +222,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!requestIsSameOrigin(request)) {
+    return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+  }
+
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
   const client = setup.client!;
@@ -334,6 +339,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!requestIsSameOrigin(request)) {
+    return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+  }
+
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
   const client = setup.client!;

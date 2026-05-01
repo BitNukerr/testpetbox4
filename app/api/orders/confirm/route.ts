@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { easypayPaymentValue, fetchEasypayCheckout, isEasypayCheckoutPaid } from "@/lib/easypay";
 import { sendOrderConfirmationEmails } from "@/lib/order-emails";
 import { createSubscriptionForPaidOrder } from "@/lib/order-subscriptions";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,15 @@ async function userIdFromAccessToken(accessToken: unknown) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!requestIsSameOrigin(request)) {
+      return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+    }
+
+    const limited = rateLimit(request, "order-confirm", { limit: 30, windowMs: 10 * 60 * 1000 });
+    if (limited.limited) {
+      return NextResponse.json({ error: "Demasiadas tentativas. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+    }
+
     const admin = getSupabaseAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Configure SUPABASE_SECRET_KEY no Vercel." }, { status: 500 });

@@ -33,7 +33,7 @@ export async function prepareAdminImage(file: File, options: AdminImageOptions) 
   }
 
   if (file.type === "image/svg+xml") {
-    return readFileAsDataUrl(file);
+    throw new Error("Por seguranca, carregue PNG, JPG ou WebP em vez de SVG.");
   }
 
   const source = await readFileAsDataUrl(file);

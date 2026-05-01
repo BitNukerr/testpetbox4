@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestHasAdminSession } from "@/lib/admin-auth";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -19,15 +20,24 @@ function cleanFilename(value: unknown) {
 
 function parseDataUrl(value: unknown) {
   if (typeof value !== "string") return null;
-  const match = value.match(/^data:(image\/(?:png|webp|jpeg|jpg|svg\+xml));base64,(.+)$/);
+  const match = value.match(/^data:(image\/(?:png|webp|jpeg|jpg));base64,(.+)$/);
   if (!match) return null;
   const mimeType = match[1] === "image/jpg" ? "image/jpeg" : match[1];
-  const extension = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : mimeType === "image/svg+xml" ? "svg" : "jpg";
+  const extension = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
   return { bytes: Buffer.from(match[2], "base64"), mimeType, extension };
 }
 
 export async function POST(request: NextRequest) {
   try {
+    if (!requestIsSameOrigin(request)) {
+      return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+    }
+
+    const limited = rateLimit(request, "admin-images", { limit: 40, windowMs: 10 * 60 * 1000 });
+    if (limited.limited) {
+      return NextResponse.json({ error: "Demasiados uploads. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+    }
+
     if (!requestHasAdminSession(request)) {
       return NextResponse.json({ error: "Acesso nao autorizado." }, { status: 401 });
     }
@@ -55,7 +65,7 @@ export async function POST(request: NextRequest) {
       const createResult = await admin.storage.createBucket(bucket, {
         public: true,
         fileSizeLimit: "2MB",
-        allowedMimeTypes: ["image/png", "image/webp", "image/jpeg", "image/svg+xml"]
+        allowedMimeTypes: ["image/png", "image/webp", "image/jpeg"]
       });
       if (createResult.error) throw createResult.error;
     }

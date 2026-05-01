@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEasypayCheckoutApiUrl, getEasypayCredentials } from "@/lib/easypay";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 type CartItem = {
@@ -44,6 +45,8 @@ type ConfigOption = {
 };
 
 const EASYPAY_METHODS = new Set(["cc", "mbw", "mb", "dd", "vi", "ap", "gp", "sw"]);
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const PHONE_RE = /^\+?\d[\d\s]{8,}$/;
 const DEFAULT_AGES: ConfigOption[] = [
   { id: "young", label: "Jovem", price: 0 },
   { id: "adult", label: "Adulto", price: 0 },
@@ -100,7 +103,17 @@ function safeQuantity(value: unknown) {
 function shippingPriceFromRequest(value: unknown) {
   const serverValue = process.env.SHIPPING_PRICE_EUR;
   if (serverValue !== undefined && serverValue !== "") return safeMoney(serverValue);
+  if (process.env.NODE_ENV === "production") return 0;
   return safeMoney(value);
+}
+
+function validateCustomer(customer: CheckoutCustomer) {
+  const delivery = buildDeliveryDetails(customer);
+  if (!delivery.full_name) return "Preencha o nome e apelido.";
+  if (!EMAIL_RE.test(delivery.email)) return "Escreva um email valido.";
+  if (!PHONE_RE.test(delivery.phone)) return "Escreva um numero de telemovel valido.";
+  if (!delivery.address || !delivery.city || !delivery.zip) return "Preencha a morada completa.";
+  return "";
 }
 
 async function userIdFromAccessToken(accessToken: unknown) {
@@ -113,6 +126,10 @@ async function userIdFromAccessToken(accessToken: unknown) {
 
 async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
   const admin = getSupabaseAdmin();
+  if (!admin && process.env.NODE_ENV === "production") {
+    throw new Error("Configure SUPABASE_SECRET_KEY para validar precos no servidor.");
+  }
+
   const productSlugs = items.filter((item) => item.type === "product").map((item) => cleanString(item.slug)).filter(Boolean);
   const planIds = items
     .map((item) => item.type === "plan" ? cleanString(item.slug || item.id) : item.type === "custom-box" ? cleanString(item.config?.planId) : "")
@@ -271,6 +288,15 @@ async function savePendingOrder(params: {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!requestIsSameOrigin(req)) {
+      return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+    }
+
+    const limited = rateLimit(req, "checkout", { limit: 20, windowMs: 10 * 60 * 1000 });
+    if (limited.limited) {
+      return NextResponse.json({ error: "Demasiadas tentativas de pagamento. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+    }
+
     const body = await req.json();
     const items: CartItem[] = body.items ?? [];
     const customer: CheckoutCustomer = body.customer ?? {};
@@ -282,6 +308,11 @@ export async function POST(req: NextRequest) {
     }
     if (!Array.isArray(items) || items.length > 25) {
       return NextResponse.json({ error: "Carrinho invalido." }, { status: 400 });
+    }
+
+    const customerError = validateCustomer(customer);
+    if (customerError) {
+      return NextResponse.json({ error: customerError }, { status: 400 });
     }
 
     const credentials = getEasypayCredentials();
