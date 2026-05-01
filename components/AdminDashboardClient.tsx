@@ -45,7 +45,7 @@ export default function AdminDashboardClient() {
       }
 
       setRegisteredUsers(data.users.length);
-      setRegisteredUsersNote(data.configured ? "Contas Supabase" : "Configure a service role key");
+      setRegisteredUsersNote(data.configured ? "Contas Supabase" : "Configure a chave service role");
     } catch (error) {
       setRegisteredUsers(null);
       setRegisteredUsersNote(error instanceof Error ? error.message : "Sem acesso aos utilizadores registados.");

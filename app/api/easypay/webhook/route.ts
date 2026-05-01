@@ -22,7 +22,7 @@ function timingSafeTextEqual(a: string, b: string) {
 function basicAuthIsValid(request: NextRequest) {
   const expectedUser = process.env.EASYPAY_WEBHOOK_USER;
   const expectedPassword = process.env.EASYPAY_WEBHOOK_PASSWORD;
-  if (!expectedUser || !expectedPassword) return true;
+  if (!expectedUser || !expectedPassword) return process.env.NODE_ENV !== "production";
 
   const header = request.headers.get("authorization") || "";
   if (!header.toLowerCase().startsWith("basic ")) return false;

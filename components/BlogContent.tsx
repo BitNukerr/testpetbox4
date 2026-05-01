@@ -3,7 +3,7 @@ type BlogBlock =
   | { type: "image"; alt: string; src: string };
 
 function isSafeImageSource(src: string) {
-  if (src.startsWith("/")) return true;
+  if (src.startsWith("/") && !src.startsWith("//")) return true;
   if (/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(src)) return true;
 
   try {

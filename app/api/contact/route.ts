@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
     }
 
     const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.CONTACT_FROM_EMAIL || "PetBox <onboarding@resend.dev>";
+    const from = process.env.CONTACT_FROM_EMAIL || (process.env.NODE_ENV === "production" ? "" : "PetBox <onboarding@resend.dev>");
     const to = process.env.CONTACT_TO_EMAIL;
 
-    if (!apiKey || !to) {
-      return NextResponse.json({ error: "Faltam as variáveis RESEND_API_KEY ou CONTACT_TO_EMAIL no Vercel." }, { status: 500 });
+    if (!apiKey || !from || !to) {
+      return NextResponse.json({ error: "Faltam as variaveis RESEND_API_KEY, CONTACT_FROM_EMAIL ou CONTACT_TO_EMAIL no Vercel." }, { status: 500 });
     }
 
     const response = await fetch("https://api.resend.com/emails", {

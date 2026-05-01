@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_MAX_AGE, adminCodeMatches, createAdminSessionToken, requestHasAdminSession } from "@/lib/admin-auth";
+import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_MAX_AGE, adminCodeMatches, adminSessionCanBeCreated, createAdminSessionToken, requestHasAdminSession } from "@/lib/admin-auth";
 import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
@@ -29,10 +29,14 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const code = typeof body.code === "string" ? body.code : "";
+  const code = typeof body.code === "string" ? body.code.slice(0, 240) : "";
 
   if (!adminCodeMatches(code)) {
     return NextResponse.json({ error: "Codigo de acesso invalido." }, { status: 401 });
+  }
+
+  if (!adminSessionCanBeCreated()) {
+    return NextResponse.json({ error: "Configure ADMIN_SESSION_SECRET no Vercel." }, { status: 500 });
   }
 
   const response = NextResponse.json({ authenticated: true });

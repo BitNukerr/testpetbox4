@@ -126,12 +126,26 @@ export default function AdminJournalClient() {
     setMessage("Imagem adicionada ao conteudo.");
   }
 
+  async function uploadPreparedImage(image: string, filename?: string) {
+    const response = await fetch("/api/admin/images", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, filename })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url) {
+      throw new Error(data.error || "Nao foi possivel guardar a imagem.");
+    }
+    return data.url as string;
+  }
+
   async function handleImageFile(file: File | undefined) {
     if (!file) return;
     try {
       const result = await prepareAdminImage(file, { width: 1400, height: 900, fit: "max" });
-      insertImage(result, imageAlt || file.name.replace(/\.[^.]+$/, ""));
-      setMessage("Imagem ajustada e adicionada ao conteudo.");
+      const url = await uploadPreparedImage(result, file.name);
+      insertImage(url, imageAlt || file.name.replace(/\.[^.]+$/, ""));
+      setMessage("Imagem ajustada, guardada e adicionada ao conteudo.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }

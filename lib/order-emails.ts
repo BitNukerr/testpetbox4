@@ -127,11 +127,11 @@ export async function sendOrderConfirmationEmails(orderId: string) {
   let markerClient: Awaited<ReturnType<typeof getOrder>>["admin"] = null;
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.CONTACT_FROM_EMAIL || "PetBox <onboarding@resend.dev>";
+    const from = process.env.CONTACT_FROM_EMAIL || (process.env.NODE_ENV === "production" ? "" : "PetBox <onboarding@resend.dev>");
     const adminTo = process.env.ORDER_NOTIFICATION_EMAIL || process.env.CONTACT_TO_EMAIL;
 
-    if (!apiKey) {
-      console.warn("RESEND_API_KEY em falta. Emails de encomenda nao enviados.");
+    if (!apiKey || !from) {
+      console.warn("RESEND_API_KEY ou CONTACT_FROM_EMAIL em falta. Emails de encomenda nao enviados.");
       return;
     }
 

@@ -47,6 +47,6 @@ Never put a secret/service key in a `NEXT_PUBLIC_` variable.
 - Only users in `admin_users` can manage store data.
 - The service/secret key stays server-side.
 
-## 5. Next recommended migration
+## 5. Seguranca do checkout
 
-The checkout should eventually send only product IDs and quantities to `/api/checkout`. The server should load prices from Supabase before creating the Easypay checkout.
+The checkout validates active products, plans, and custom box options on the server before creating the Easypay payment when `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` is configured. Keep that key server-only in Vercel, never in a `NEXT_PUBLIC_` variable.

@@ -135,7 +135,7 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
     .map((item) => item.type === "plan" ? cleanString(item.slug || item.id) : item.type === "custom-box" ? cleanString(item.config?.planId) : "")
     .filter(Boolean);
 
-  if (!admin || (!productSlugs.length && !planIds.length)) {
+  if (!admin) {
     return items.map((item) => ({
       description: cleanString(item.description || item.title, "Produto PetBox"),
       quantity: safeQuantity(item.quantity),
@@ -172,6 +172,7 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
       if (plan) {
         return { description: plan.name, quantity, key: plan.id, value: toMoney(Number(plan.price)), productSlug: null, planId: plan.id };
       }
+      throw new Error("Plano invalido ou indisponivel.");
     }
 
     if (item.type === "custom-box") {
@@ -187,44 +188,42 @@ async function buildOrderItems(items: CartItem[]): Promise<BuiltOrderItem[]> {
         .filter(Boolean);
       const plan = plans.get(planId);
 
-      if (plan && configurator) {
-        const animal = findOption("animals", animalId);
-        const size = findOption("sizes", sizeId);
-        const age = findOption("ages", ageId);
-        const personality = findOption("personalities", personalityId);
-        const extras = extraIds.map((id) => findOption("extras", id)).filter(Boolean) as ConfigOption[];
-
-        if (!animal || !size || !age || !personality || extras.length !== extraIds.length) {
-          throw new Error("A caixa personalizada tem opcoes invalidas. Volte a configurar a caixa.");
-        }
-
-        const price = toMoney(
-          Number(plan.price || 0) +
-          Number(animal.price || 0) +
-          Number(size.price || 0) +
-          Number(age.price || 0) +
-          Number(personality.price || 0) +
-          extras.reduce((sum, extra) => sum + Number(extra.price || 0), 0)
-        );
-        const label = [plan.name, animal.label, age.label].filter(Boolean).join(" ");
-        const description = (notes ? `${label} - ${notes}` : label).slice(0, 160);
-        return { description: description || "Caixa personalizada PetBox", quantity, key: `custom-${plan.id}-${animal.id}-${age.id}`, value: price, productSlug: null, planId: plan.id };
+      if (!plan || !configurator) {
+        throw new Error("Caixa personalizada invalida. Volte a configurar a caixa.");
       }
+
+      const animal = findOption("animals", animalId);
+      const size = findOption("sizes", sizeId);
+      const age = findOption("ages", ageId);
+      const personality = findOption("personalities", personalityId);
+      const extras = extraIds.map((id) => findOption("extras", id)).filter(Boolean) as ConfigOption[];
+
+      if (!animal || !size || !age || !personality || extras.length !== extraIds.length) {
+        throw new Error("A caixa personalizada tem opcoes invalidas. Volte a configurar a caixa.");
+      }
+
+      const price = toMoney(
+        Number(plan.price || 0) +
+        Number(animal.price || 0) +
+        Number(size.price || 0) +
+        Number(age.price || 0) +
+        Number(personality.price || 0) +
+        extras.reduce((sum, extra) => sum + Number(extra.price || 0), 0)
+      );
+      const label = [plan.name, animal.label, age.label].filter(Boolean).join(" ");
+      const description = (notes ? `${label} - ${notes}` : label).slice(0, 160);
+      return { description: description || "Caixa personalizada PetBox", quantity, key: `custom-${plan.id}-${animal.id}-${age.id}`, value: price, productSlug: null, planId: plan.id };
     }
 
-    const product = products.get(cleanString(item.slug));
-    if (product) {
-      return { description: product.title, quantity, key: product.slug, value: toMoney(Number(product.price)), productSlug: product.slug, planId: null };
+    if (item.type === "product") {
+      const product = products.get(cleanString(item.slug));
+      if (product) {
+        return { description: product.title, quantity, key: product.slug, value: toMoney(Number(product.price)), productSlug: product.slug, planId: null };
+      }
+      throw new Error("Produto invalido ou indisponivel.");
     }
 
-    return {
-      description: cleanString(item.description || item.title, "Produto PetBox"),
-      quantity,
-      key: cleanString(item.slug || item.id || item.title, "item").slice(0, 50),
-      value: toMoney(safeMoney(item.price)),
-      productSlug: item.type === "product" ? cleanString(item.slug) : null,
-      planId: item.type === "plan" ? cleanString(item.slug || item.id) : null
-    };
+    throw new Error("Artigo invalido no carrinho.");
   });
 }
 

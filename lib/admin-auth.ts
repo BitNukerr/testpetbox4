@@ -11,11 +11,15 @@ function adminCode() {
 }
 
 function adminSecret() {
-  return process.env.ADMIN_SESSION_SECRET || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.EASYPAY_API_KEY || adminCode();
+  const secureSecret = process.env.ADMIN_SESSION_SECRET || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (secureSecret) return secureSecret;
+  return process.env.NODE_ENV === "production" ? "" : adminCode();
 }
 
 function sign(value: string) {
-  return createHmac("sha256", adminSecret()).update(value).digest("hex");
+  const secret = adminSecret();
+  if (!secret) throw new Error("Admin session secret is not configured.");
+  return createHmac("sha256", secret).update(value).digest("hex");
 }
 
 function safeEqual(left: string, right: string) {
@@ -30,6 +34,10 @@ export function adminCodeMatches(value: string) {
   return Boolean(code) && safeEqual(value.trim(), code);
 }
 
+export function adminSessionCanBeCreated() {
+  return Boolean(adminSecret());
+}
+
 export function createAdminSessionToken() {
   const issuedAt = String(Date.now());
   return `${issuedAt}.${sign(issuedAt)}`;
@@ -37,6 +45,7 @@ export function createAdminSessionToken() {
 
 export function isValidAdminSessionToken(token?: string) {
   if (!token) return false;
+  if (!adminSecret()) return false;
   const [issuedAt, signature] = token.split(".");
   if (!issuedAt || !signature) return false;
   if (!safeEqual(signature, sign(issuedAt))) return false;
