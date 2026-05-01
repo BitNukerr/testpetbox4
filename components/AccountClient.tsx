@@ -380,7 +380,7 @@ export default function AccountClient() {
     <>
       <div className="container section-heading">
         <div><span className="eyebrow">{pt.nav.account}</span><h1>A sua conta PetBox</h1></div>
-        <Link href="/configure" className="btn btn-secondary">Criar nova caixa</Link>
+        <Link href="/criar-caixa" className="btn btn-secondary">Criar nova caixa</Link>
       </div>
 
       <div className="container account-overview">
@@ -471,7 +471,7 @@ export default function AccountClient() {
             {orders.length === 0 ? (
               <div className="empty-account-block">
                 <p className="muted">{pt.account.noOrders}</p>
-                <Link href="/shop" className="btn btn-secondary small">Ir para a loja</Link>
+                <Link href="/loja" className="btn btn-secondary small">Ir para a loja</Link>
               </div>
             ) : orders.map((order) => (
               <div className="order-row" key={order.id}>
@@ -527,9 +527,9 @@ export default function AccountClient() {
             <span className="tag">Ajuda</span>
             <h2>Suporte rapido</h2>
             <div className="account-action-grid">
-              <Link href="/contact" className="btn btn-secondary small">Contactar suporte</Link>
-              <Link href="/shop" className="btn btn-secondary small">Adicionar produtos</Link>
-              <Link href="/configure" className="btn btn-secondary small">Alterar caixa</Link>
+              <Link href="/contacto" className="btn btn-secondary small">Contactar suporte</Link>
+              <Link href="/loja" className="btn btn-secondary small">Adicionar produtos</Link>
+              <Link href="/criar-caixa" className="btn btn-secondary small">Alterar caixa</Link>
             </div>
           </div></section>
         </aside>

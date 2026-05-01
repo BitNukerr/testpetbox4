@@ -2,6 +2,7 @@
 
 import { adminCustomers, adminJournalPosts, adminOrders, adminStats, adminSubscriptions, type AdminCustomer, type AdminJournalPost, type AdminOrder, type AdminSubscription } from "@/data/admin";
 import { plans, products, journalPosts, type Plan, type Product } from "@/data/products";
+import { defaultLegalSettings, mergeLegalSettings, type LegalSettings } from "@/lib/legal-content";
 
 export type EditablePost = AdminJournalPost & {
   excerpt: string;
@@ -116,7 +117,8 @@ const KEYS = {
   subscriptions: "petbox-admin-subscriptions",
   home: "petbox-admin-home",
   configurator: "petbox-admin-configurator",
-  settings: "petbox-admin-settings"
+  settings: "petbox-admin-settings",
+  legal: "petbox-admin-legal"
 };
 
 const defaultHomeSettings: HomeSettings = {
@@ -124,9 +126,9 @@ const defaultHomeSettings: HomeSettings = {
   title: "Caixas misterio para caes e gatos",
   subtitle: "Receba brinquedos, snacks e cuidados surpresa escolhidos para o perfil do seu animal.",
   primaryCta: "Criar caixa",
-  primaryHref: "/configure",
+  primaryHref: "/criar-caixa",
   secondaryCta: "Loja",
-  secondaryHref: "/shop",
+  secondaryHref: "/loja",
   heroImage: "/images/hero-pets.svg",
   statOneTitle: "2 planos",
   statOneText: "Mensal + trimestral",
@@ -140,37 +142,37 @@ const defaultHomeSettings: HomeSettings = {
   productsTitle: "Produtos para juntar a caixa",
   showcaseLeadTitle: "Caixas misterio PetBox",
   showcaseLeadText: "Uma experiencia surpresa com produtos escolhidos para caes e gatos felizes.",
-  showcaseLeadHref: "/configure",
+  showcaseLeadHref: "/criar-caixa",
   showcaseLeadImages: "/images/dog-treats.svg\n/images/cat-toy.svg\n/images/paw-balm.svg\n/images/rope-toy.svg\n/images/cat-treats.svg",
   showcasePromoLabel: "Novo",
   showcasePromoTitle: "Caixa misterio para o seu melhor amigo",
   showcasePromoText: "Snacks, brinquedos e cuidados numa caixa preparada com carinho.",
   showcasePromoCta: "Criar caixa",
-  showcasePromoHref: "/configure",
+  showcasePromoHref: "/criar-caixa",
   showcasePromoImage: "/images/hero-pets.svg",
   showcaseTileOneLabel: "Subscricao",
   showcaseTileOneTitle: "Misterio todos os meses",
   showcaseTileOneText: "Receba uma caixa nova com produtos escolhidos por perfil.",
   showcaseTileOneCta: "Criar caixa",
-  showcaseTileOneHref: "/configure",
+  showcaseTileOneHref: "/criar-caixa",
   showcaseTileOneImage: "/images/dog-box.svg",
   showcaseTileTwoLabel: "Loja",
   showcaseTileTwoTitle: "Brinquedos, snacks e cuidado",
   showcaseTileTwoText: "Escolha produtos avulsos ou junte extras a sua caixa.",
   showcaseTileTwoCta: "Ver loja",
-  showcaseTileTwoHref: "/shop",
+  showcaseTileTwoHref: "/loja",
   showcaseTileTwoImage: "/images/cat-box.svg",
   showcaseTileThreeLabel: "PetBox",
   showcaseTileThreeTitle: "Feito para animais felizes",
   showcaseTileThreeText: "Uma experiencia simples, segura e com entregas em Portugal.",
   showcaseTileThreeCta: "Saber mais",
-  showcaseTileThreeHref: "/about",
+  showcaseTileThreeHref: "/sobre",
   showcaseTileThreeImage: "/dog-paw.png",
   showcaseTileFourLabel: "Blog",
   showcaseTileFourTitle: "Guias e novidades para cuidar melhor",
   showcaseTileFourText: "Leia ideias sobre snacks, brinquedos, rotinas e caixas misterio.",
   showcaseTileFourCta: "Ler blog",
-  showcaseTileFourHref: "/journal",
+  showcaseTileFourHref: "/blog",
   showcaseTileFourImage: "/images/about-pets.svg",
   infoLabel: "Como funciona",
   infoTitle: "Uma caixa pensada para o seu animal, sem complicar.",
@@ -288,7 +290,8 @@ export const defaults = {
   stats: adminStats,
   home: defaultHomeSettings,
   configurator: defaultConfiguratorSettings,
-  settings: defaultStoreSettings
+  settings: defaultStoreSettings,
+  legal: defaultLegalSettings
 };
 
 export const adminStore = {
@@ -337,6 +340,11 @@ export const adminStore = {
     set: (settings: StoreSettings) => writeObject(KEYS.settings, settings),
     reset: () => writeObject(KEYS.settings, defaults.settings)
   },
+  legal: {
+    get: () => mergeLegalSettings(readObject<LegalSettings>(KEYS.legal, defaults.legal)),
+    set: (settings: LegalSettings) => writeObject(KEYS.legal, settings),
+    reset: () => writeObject(KEYS.legal, defaults.legal)
+  },
   resetAll() {
     adminStore.products.reset();
     adminStore.plans.reset();
@@ -347,5 +355,6 @@ export const adminStore = {
     adminStore.home.reset();
     adminStore.configurator.reset();
     adminStore.settings.reset();
+    adminStore.legal.reset();
   }
 };

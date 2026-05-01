@@ -26,7 +26,7 @@ export default function JournalClient() {
   return (
     <div className="grid two">
       {posts.filter((post) => post.status === "Publicado").map((post) => (
-        <Link href={`/journal/${post.slug}`} key={post.slug} className="card journal-card">
+        <Link href={`/blog/${post.slug}`} key={post.slug} className="card journal-card">
           <div className="card-body">
             <span className="tag">{post.date}</span>
             <h3>{post.title}</h3>

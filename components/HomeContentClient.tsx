@@ -28,14 +28,14 @@ export default function HomeContentClient() {
       <section className="container section">
         <div className="section-heading">
           <div><span className="eyebrow">{settings.plansEyebrow}</span><h2>{settings.plansTitle}</h2></div>
-          <Link href="/configure" className="btn btn-secondary">Personalizar</Link>
+          <Link href="/criar-caixa" className="btn btn-secondary">Personalizar</Link>
         </div>
         <HomePlansClient />
       </section>
       <section className="container section">
         <div className="section-heading">
           <div><span className="eyebrow">{settings.productsEyebrow}</span><h2>{settings.productsTitle}</h2></div>
-          <Link href="/shop" className="btn btn-secondary">Ver todos</Link>
+          <Link href="/loja" className="btn btn-secondary">Ver todos</Link>
         </div>
         <HomeFeaturedProductsClient />
       </section>

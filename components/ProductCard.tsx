@@ -40,7 +40,7 @@ export default function ProductCard({ product }: { product: Product }) {
             >
               {pt.common.addToCart}
             </button>
-            <Link href={`/product/${product.slug}`} className="btn btn-secondary small">{pt.common.view}</Link>
+            <Link href={`/produto/${product.slug}`} className="btn btn-secondary small">{pt.common.view}</Link>
           </div>
         </div>
       </div>

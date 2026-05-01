@@ -92,7 +92,7 @@ export default function AuthClient() {
 
     if (mode === "signin" || result.data.session) {
       setNotice("Sessão iniciada.", "success");
-      router.replace("/account");
+      router.replace("/conta");
       return;
     }
 
@@ -111,7 +111,7 @@ export default function AuthClient() {
 
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/login`
+      redirectTo: `${window.location.origin}/entrar`
     });
     setLoading(false);
 
@@ -126,7 +126,7 @@ export default function AuthClient() {
     if (!supabase) return;
     await supabase.auth.signOut();
     setNotice("Sessão terminada.", "success");
-    router.replace("/login");
+    router.replace("/entrar");
   }
 
   if (userEmail) {

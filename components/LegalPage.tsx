@@ -1,9 +1,5 @@
 import Link from "next/link";
-
-type LegalSection = {
-  title: string;
-  body: string[];
-};
+import type { LegalSection } from "@/lib/legal-content";
 
 export function LegalPage({ title, intro, sections }: { title: string; intro: string; sections: LegalSection[] }) {
   return (

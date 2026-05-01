@@ -111,7 +111,7 @@ export default function Configurator() {
       },
       metadata: { animal: animal.label, tamanho: size.label, idade: age.label, personalidade: personality.label, extras: summaryExtras, observacoes: cleanPetNotes }
     });
-    router.push(goCheckout ? "/checkout" : "/cart");
+    router.push(goCheckout ? "/pagamento" : "/carrinho");
   }
 
   return (

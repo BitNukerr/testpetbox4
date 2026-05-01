@@ -35,7 +35,7 @@ A PetBox é uma plataforma de e-commerce para caixas de subscrição para cães 
 ### Técnicas usadas
 - Título optimizado: “PetBox - Caixa de Subscrição para Animais”.
 - Descrição meta com palavras-chave relevantes.
-- URLs simples e claras: `/shop`, `/configure`, `/contact`.
+- URLs simples e claras: `/loja`, `/criar-caixa`, `/contacto`.
 - Conteúdo em português de Portugal.
 - Estrutura responsiva e mobile-friendly.
 

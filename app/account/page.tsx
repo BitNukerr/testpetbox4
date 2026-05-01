@@ -1,9 +1,5 @@
-import AccountClient from "@/components/AccountClient";
+import { redirect } from "next/navigation";
 
 export default function AccountPage() {
-  return (
-    <section className="section">
-      <AccountClient />
-    </section>
-  );
+  redirect("/conta");
 }

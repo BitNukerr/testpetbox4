@@ -8,11 +8,11 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
 const publicNav = [
-  [pt.nav.shop, "/shop"],
-  [pt.nav.build, "/configure"],
-  [pt.nav.journal, "/journal"],
-  [pt.nav.about, "/about"],
-  [pt.nav.contact, "/contact"]
+  [pt.nav.shop, "/loja"],
+  [pt.nav.build, "/criar-caixa"],
+  [pt.nav.journal, "/blog"],
+  [pt.nav.about, "/sobre"],
+  [pt.nav.contact, "/contacto"]
 ] as const;
 
 function CartIcon() {
@@ -94,12 +94,12 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <Link href="/cart" className="icon-btn cart-icon-btn" aria-label={`${pt.nav.cart}: ${count} item${count === 1 ? "" : "s"}`}>
+          <Link href="/carrinho" className="icon-btn cart-icon-btn" aria-label={`${pt.nav.cart}: ${count} item${count === 1 ? "" : "s"}`}>
             <CartIcon />
             {count ? <span>{count}</span> : null}
           </Link>
           {authChecked ? (
-            <Link href={signedIn ? "/account" : "/login"} className="icon-btn" aria-label={accountLabel}>
+            <Link href={signedIn ? "/conta" : "/entrar"} className="icon-btn" aria-label={accountLabel}>
               <AccountIcon />
             </Link>
           ) : null}
@@ -120,8 +120,8 @@ export default function Header() {
             {publicNav.map(([label, href]) => (
               <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>
             ))}
-            {authChecked ? <Link href={signedIn ? "/account" : "/login"} onClick={() => setOpen(false)}>{accountLabel}</Link> : null}
-            <Link href="/cart" onClick={() => setOpen(false)}>{pt.nav.cart} ({count})</Link>
+            {authChecked ? <Link href={signedIn ? "/conta" : "/entrar"} onClick={() => setOpen(false)}>{accountLabel}</Link> : null}
+            <Link href="/carrinho" onClick={() => setOpen(false)}>{pt.nav.cart} ({count})</Link>
             {signedIn ? <button className="mobile-logout" onClick={() => { setOpen(false); signOut(); }}>{pt.account.signOut}</button> : null}
           </div>
         </div>

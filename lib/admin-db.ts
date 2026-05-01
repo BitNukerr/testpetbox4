@@ -3,6 +3,7 @@
 import type { Plan, Product } from "@/data/products";
 import type { AdminOrder } from "@/data/admin";
 import type { ConfiguratorSettings, EditablePost, HomeSettings } from "@/lib/admin-store";
+import { mergeLegalSettings, type LegalSettings } from "@/lib/legal-content";
 import { supabase } from "@/lib/supabase-client";
 
 function requireSupabase() {
@@ -240,5 +241,24 @@ export async function saveRemoteConfiguratorSettings(settings: ConfiguratorSetti
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ resource: "configurator_settings", settings })
+  });
+}
+
+export async function loadRemoteLegalSettings(fallback: LegalSettings) {
+  const { data, error } = await requireSupabase().from("legal_settings").select("settings").eq("id", true).maybeSingle();
+  if (error) throw error;
+  return mergeLegalSettings({ ...fallback, ...(data?.settings || {}) });
+}
+
+export async function loadRemoteLegalSettingsForAdmin(fallback: LegalSettings) {
+  const result = await adminFetch("/api/admin/store?resource=legal_settings");
+  return mergeLegalSettings({ ...fallback, ...(result.settings || {}) });
+}
+
+export async function saveRemoteLegalSettings(settings: LegalSettings) {
+  await adminFetch("/api/admin/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resource: "legal_settings", settings })
   });
 }

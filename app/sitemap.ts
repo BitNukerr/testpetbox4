@@ -7,10 +7,10 @@ function baseUrl() {
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = baseUrl();
-  const staticRoutes = ["", "/shop", "/configure", "/journal", "/about", "/contact", "/login", "/legal/termos", "/legal/privacidade", "/legal/envios-devolucoes", "/legal/cookies"];
+  const staticRoutes = ["", "/loja", "/criar-caixa", "/blog", "/sobre", "/contacto", "/entrar", "/legal/termos", "/legal/privacidade", "/legal/envios-devolucoes", "/legal/cookies"];
   return [
     ...staticRoutes.map((route) => ({ url: `${base}${route}`, lastModified: new Date() })),
-    ...products.map((product) => ({ url: `${base}/product/${product.slug}`, lastModified: new Date() })),
-    ...journalPosts.map((post) => ({ url: `${base}/journal/${post.slug}`, lastModified: new Date() }))
+    ...products.map((product) => ({ url: `${base}/produto/${product.slug}`, lastModified: new Date() })),
+    ...journalPosts.map((post) => ({ url: `${base}/blog/${post.slug}`, lastModified: new Date() }))
   ];
 }

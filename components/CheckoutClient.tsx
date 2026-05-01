@@ -128,7 +128,7 @@ export default function CheckoutClient() {
             paymentMethod: info.payment.method
           }, latestAuthData.session?.user.id || latestAuthData.session?.user.email || undefined);
           setCart([]);
-          router.push(`/success?payment_id=${encodeURIComponent(paymentId)}`);
+          router.push(`/sucesso?payment_id=${encodeURIComponent(paymentId)}`);
         },
         onError: (checkoutError: CheckoutError) => {
           setError(getCheckoutErrorMessage(checkoutError));

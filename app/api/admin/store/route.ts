@@ -211,6 +211,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  if (resource === "legal_settings") {
+    const { data, error } = await client.from("legal_settings").select("settings").eq("id", true).maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ settings: data?.settings || {} });
+  }
+
   return NextResponse.json({ error: "Recurso invalido." }, { status: 400 });
 }
 
@@ -249,6 +255,12 @@ export async function POST(request: NextRequest) {
 
   if (body.resource === "configurator_settings") {
     const { error } = await client.from("configurator_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.resource === "legal_settings") {
+    const { error } = await client.from("legal_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }

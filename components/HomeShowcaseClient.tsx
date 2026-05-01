@@ -66,7 +66,7 @@ export default function HomeShowcaseClient() {
   return (
     <main className="home-showcase container">
       <section className="home-campaign-grid" aria-label="PetBox em destaque">
-        <Link href={settings.showcaseLeadHref || "/configure"} className="campaign-video-card">
+        <Link href={settings.showcaseLeadHref || "/criar-caixa"} className="campaign-video-card">
           <div className="petbox-video-word" aria-hidden="true">
             <span>P</span><span>E</span><span>T</span><span>B</span><span>O</span><span>X</span>
           </div>
@@ -90,12 +90,12 @@ export default function HomeShowcaseClient() {
             <span className="tag light">{settings.showcasePromoLabel}</span>
             <h1>{settings.showcasePromoTitle}</h1>
             <p>{settings.showcasePromoText}</p>
-            <Link href={settings.showcasePromoHref || "/configure"} className="btn campaign-btn">{settings.showcasePromoCta}</Link>
+            <Link href={settings.showcasePromoHref || "/criar-caixa"} className="btn campaign-btn">{settings.showcasePromoCta}</Link>
           </div>
           <img src={settings.showcasePromoImage || settings.heroImage} alt="" />
         </aside>
 
-        <Link href={settings.showcaseTileOneHref || "/configure"} className="campaign-tile tile-large tile-green">
+        <Link href={settings.showcaseTileOneHref || "/criar-caixa"} className="campaign-tile tile-large tile-green">
           <span>{settings.showcaseTileOneLabel}</span>
           <strong>{settings.showcaseTileOneTitle}</strong>
           <p>{settings.showcaseTileOneText}</p>
@@ -103,7 +103,7 @@ export default function HomeShowcaseClient() {
           <img src={settings.showcaseTileOneImage} alt="" />
         </Link>
 
-        <Link href={settings.showcaseTileTwoHref || "/shop"} className="campaign-tile tile-large tile-cream">
+        <Link href={settings.showcaseTileTwoHref || "/loja"} className="campaign-tile tile-large tile-cream">
           <span>{settings.showcaseTileTwoLabel}</span>
           <strong>{settings.showcaseTileTwoTitle}</strong>
           <p>{settings.showcaseTileTwoText}</p>
@@ -111,7 +111,7 @@ export default function HomeShowcaseClient() {
           <img src={settings.showcaseTileTwoImage} alt="" />
         </Link>
 
-        <Link href={settings.showcaseTileThreeHref || "/about"} className="campaign-tile tile-side tile-blue">
+        <Link href={settings.showcaseTileThreeHref || "/sobre"} className="campaign-tile tile-side tile-blue">
           <span>{settings.showcaseTileThreeLabel}</span>
           <strong>{settings.showcaseTileThreeTitle}</strong>
           <p>{settings.showcaseTileThreeText}</p>
@@ -119,7 +119,7 @@ export default function HomeShowcaseClient() {
           <img src={settings.showcaseTileThreeImage} alt="" />
         </Link>
 
-        <Link href={settings.showcaseTileFourHref || "/journal"} className="campaign-tile tile-wide tile-blog">
+        <Link href={settings.showcaseTileFourHref || "/blog"} className="campaign-tile tile-wide tile-blog">
           <span>{settings.showcaseTileFourLabel}</span>
           <strong>{settings.showcaseTileFourTitle}</strong>
           <p>{settings.showcaseTileFourText}</p>
@@ -143,7 +143,7 @@ export default function HomeShowcaseClient() {
 
       <section className="home-offer-grid" aria-label="Produtos e vantagens">
         {featuredProducts.map((product) => (
-          <Link href={`/product/${product.slug}`} className="offer-card" key={product.slug}>
+          <Link href={`/produto/${product.slug}`} className="offer-card" key={product.slug}>
             <img src={product.image} alt={product.title} />
             <span>{product.category}</span>
             <strong>{product.title}</strong>
@@ -151,7 +151,7 @@ export default function HomeShowcaseClient() {
           </Link>
         ))}
         {quarterlyPlan ? (
-          <Link href="/configure" className="offer-card offer-card-strong">
+          <Link href="/criar-caixa" className="offer-card offer-card-strong">
             <img src="/images/box-generic.svg" alt="" />
             <span>Melhor valor</span>
             <strong>{quarterlyPlan.name}</strong>

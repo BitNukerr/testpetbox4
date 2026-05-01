@@ -51,7 +51,7 @@ export default function CartClient() {
     <div className="container section-grid cart-layout">
       <div>
         {items.length === 0 ? (
-          <div className="card"><div className="card-body empty-cart"><h2>{pt.cart.emptyTitle}</h2><p className="muted">{pt.cart.emptyText}</p><Link href="/shop" className="btn">{pt.cart.shopNow}</Link></div></div>
+          <div className="card"><div className="card-body empty-cart"><h2>{pt.cart.emptyTitle}</h2><p className="muted">{pt.cart.emptyText}</p><Link href="/loja" className="btn">{pt.cart.shopNow}</Link></div></div>
         ) : items.map((item) => (
           <article key={item.id} className="card cart-item-card">
             <div className="cart-media-wrap"><img src={getCartImage(item)} alt={item.title} className="cart-thumb" /></div>
@@ -71,7 +71,7 @@ export default function CartClient() {
           </article>
         ))}
       </div>
-      <aside className="card summary-card"><div className="card-body"><h3>{pt.cart.orderSummary}</h3><p className="muted">{pt.cart.orderText}</p><div className="summary-line"><span>{pt.common.subtotal}</span><strong>{money(subtotal)}</strong></div><div className="summary-line"><span>{pt.common.shipping}</span><strong>{money(shipping)}</strong></div><div className="summary-line total"><span>{pt.common.total}</span><strong>{money(subtotal + shipping)}</strong></div><Link href="/checkout" className="btn full">{pt.common.checkout}</Link></div></aside>
+      <aside className="card summary-card"><div className="card-body"><h3>{pt.cart.orderSummary}</h3><p className="muted">{pt.cart.orderText}</p><div className="summary-line"><span>{pt.common.subtotal}</span><strong>{money(subtotal)}</strong></div><div className="summary-line"><span>{pt.common.shipping}</span><strong>{money(shipping)}</strong></div><div className="summary-line total"><span>{pt.common.total}</span><strong>{money(subtotal + shipping)}</strong></div><Link href="/pagamento" className="btn full">{pt.common.checkout}</Link></div></aside>
     </div>
   );
 }

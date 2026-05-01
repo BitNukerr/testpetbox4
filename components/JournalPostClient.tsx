@@ -18,7 +18,7 @@ export default function JournalPostClient({ slug }: { slug: string }) {
 
   if (!loaded) return null;
 
-  if (!post) return <section className="container section narrow"><h1>Artigo nao encontrado</h1><a href="/journal" className="btn">Voltar ao blog</a></section>;
+  if (!post) return <section className="container section narrow"><h1>Artigo nao encontrado</h1><a href="/blog" className="btn">Voltar ao blog</a></section>;
 
   return <section className="container section narrow"><span className="eyebrow">{post.date}</span><h1>{post.title}</h1><p className="muted">{post.excerpt}</p><BlogContent body={post.body} /></section>;
 }

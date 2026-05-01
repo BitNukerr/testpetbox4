@@ -56,7 +56,7 @@ export const pt = {
   checkout: {
     title: "Pagamento por MB WAY",
     intro: "O pagamento é processado pela Easypay com o número de telemóvel associado ao MB WAY.",
-    mbWayAvailable: "Só aceitamos MB WAY neste checkout.",
+    mbWayAvailable: "So aceitamos MB WAY nesta fase de pagamento.",
     firstName: "Nome",
     lastName: "Apelido",
     email: "Email",

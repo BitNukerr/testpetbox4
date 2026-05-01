@@ -182,6 +182,12 @@ create table if not exists public.configurator_settings (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.legal_settings (
+  id boolean primary key default true check (id),
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
@@ -207,7 +213,8 @@ begin
     'journal_posts',
     'store_settings',
     'home_settings',
-    'configurator_settings'
+    'configurator_settings',
+    'legal_settings'
   ]
   loop
     execute format('drop trigger if exists trg_%s_touch_updated_at on public.%I', table_name, table_name);
@@ -248,6 +255,7 @@ alter table public.journal_posts enable row level security;
 alter table public.store_settings enable row level security;
 alter table public.home_settings enable row level security;
 alter table public.configurator_settings enable row level security;
+alter table public.legal_settings enable row level security;
 
 drop policy if exists "Admins can read admin users" on public.admin_users;
 create policy "Admins can read admin users"
@@ -434,6 +442,19 @@ using (true);
 drop policy if exists "Admins manage configurator settings" on public.configurator_settings;
 create policy "Admins manage configurator settings"
 on public.configurator_settings for all
+to authenticated
+using (public.is_petbox_admin())
+with check (public.is_petbox_admin());
+
+drop policy if exists "Public reads legal settings" on public.legal_settings;
+create policy "Public reads legal settings"
+on public.legal_settings for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Admins manage legal settings" on public.legal_settings;
+create policy "Admins manage legal settings"
+on public.legal_settings for all
 to authenticated
 using (public.is_petbox_admin())
 with check (public.is_petbox_admin());

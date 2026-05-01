@@ -16,15 +16,15 @@ export default function Footer() {
         </div>
         <div>
           <h4>Explorar</h4>
-          <Link href="/shop">Loja</Link>
-          <Link href="/configure">Criar Caixa</Link>
-          <Link href="/journal">Blog</Link>
+          <Link href="/loja">Loja</Link>
+          <Link href="/criar-caixa">Criar Caixa</Link>
+          <Link href="/blog">Blog</Link>
         </div>
         <div>
           <h4>Empresa</h4>
-          <Link href="/about">Sobre</Link>
-          <Link href="/contact">Contacto</Link>
-          <Link href="/login">Entrar</Link>
+          <Link href="/sobre">Sobre</Link>
+          <Link href="/contacto">Contacto</Link>
+          <Link href="/entrar">Entrar</Link>
         </div>
         <div>
           <h4>Legal</h4>

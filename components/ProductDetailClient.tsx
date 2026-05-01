@@ -26,7 +26,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   if (!loaded) return null;
 
-  if (!product) return <section className="container section narrow"><h1>Produto nao encontrado</h1><Link href="/shop" className="btn">Voltar a loja</Link></section>;
+  if (!product) return <section className="container section narrow"><h1>Produto nao encontrado</h1><Link href="/loja" className="btn">Voltar a loja</Link></section>;
 
   const species = product.species === "dog" ? pt.configure.dog : product.species === "cat" ? pt.configure.cat : pt.configure.both;
 
@@ -47,7 +47,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           <p className="price">{money(product.price)}</p>
           <div className="action-row wrap">
             <button className="btn" onClick={() => addToCart({ id: `${product.slug}-${Date.now()}`, slug: product.slug, title: product.title, price: product.price, quantity: 1, image: product.image, category: product.category, type: "product", species: product.species })}>Adicionar ao carrinho</button>
-            <Link href="/shop" className="btn btn-secondary">Voltar a loja</Link>
+            <Link href="/loja" className="btn btn-secondary">Voltar a loja</Link>
           </div>
         </div></div>
       </div>
