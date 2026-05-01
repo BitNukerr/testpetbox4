@@ -123,6 +123,8 @@ async function getOrder(orderId: string) {
 }
 
 export async function sendOrderConfirmationEmails(orderId: string) {
+  let claimedEmailMarker = false;
+  let markerClient: Awaited<ReturnType<typeof getOrder>>["admin"] = null;
   try {
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.CONTACT_FROM_EMAIL || "PetBox <onboarding@resend.dev>";
@@ -135,6 +137,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
 
     const { admin, order, supportsEmailMarker } = await getOrder(orderId);
     if (!admin || !order) return;
+    markerClient = admin;
     if (order.confirmation_email_sent_at) return;
 
     const [{ data: items, error: itemsError }, deliveryResult, profileResult] = await Promise.all([
@@ -173,6 +176,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
         return;
       }
       if (!claimed) return;
+      claimedEmailMarker = true;
     }
 
     const orderItems = (items || []) as OrderItem[];
@@ -261,6 +265,16 @@ export async function sendOrderConfirmationEmails(orderId: string) {
 
     await Promise.all(sends);
   } catch (error) {
+    if (claimedEmailMarker && markerClient) {
+      try {
+        await markerClient
+          .from("orders")
+          .update({ confirmation_email_sent_at: null })
+          .eq("id", orderId);
+      } catch {
+        // Keep the original email error visible below.
+      }
+    }
     console.error("Erro ao enviar emails da encomenda:", error);
   }
 }
