@@ -291,7 +291,18 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
     setMessage("Perfil actualizado.");
   }
 
-  if (!authChecked || (requireAuth && !user)) {
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+    router.replace("/entrar");
+  }
+
+  if (requireAuth && (!authChecked || !user)) {
+    return <div className="account-auth-guard" aria-hidden="true" />;
+  }
+
+  if (!authChecked) {
     return (
       <div className="container narrow">
         <div className="card"><div className="card-body">
@@ -432,7 +443,14 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
         </div>
 
         <aside className="account-side">
-          <AuthClient />
+          <section className="card auth-card"><div className="card-body auth-signed-in">
+            <span className="tag">Conta activa</span>
+            <h2>{pt.account.authTitle}</h2>
+            <p className="muted">{pt.account.signedInAs} <strong>{user.email}</strong></p>
+            <div className="action-row wrap">
+              <button className="btn btn-secondary" onClick={signOut}>{pt.account.signOut}</button>
+            </div>
+          </div></section>
 
           <section className="card"><div className="card-body">
             <div className="account-card-heading">
