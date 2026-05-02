@@ -99,7 +99,7 @@ export default function Header() {
             {count ? <span>{count}</span> : null}
           </Link>
           {authChecked ? (
-            <Link href={signedIn ? "/conta" : "/entrar"} className="icon-btn" aria-label={accountLabel}>
+            <Link href="/conta" className="icon-btn" aria-label={accountLabel}>
               <AccountIcon />
             </Link>
           ) : null}
@@ -120,7 +120,7 @@ export default function Header() {
             {publicNav.map(([label, href]) => (
               <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>
             ))}
-            {authChecked ? <Link href={signedIn ? "/conta" : "/entrar"} onClick={() => setOpen(false)}>{accountLabel}</Link> : null}
+            {authChecked ? <Link href="/conta" onClick={() => setOpen(false)}>{accountLabel}</Link> : null}
             <Link href="/carrinho" onClick={() => setOpen(false)}>{pt.nav.cart} ({count})</Link>
             {signedIn ? <button className="mobile-logout" onClick={() => { setOpen(false); signOut(); }}>{pt.account.signOut}</button> : null}
           </div>

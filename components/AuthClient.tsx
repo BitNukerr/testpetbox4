@@ -28,6 +28,7 @@ export default function AuthClient() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "info">("info");
   const [userEmail, setUserEmail] = useState("");
+  const [authChecked, setAuthChecked] = useState(!isSupabaseConfigured());
   const [loading, setLoading] = useState(false);
 
   const passwordReady = password.length >= 6;
@@ -38,12 +39,25 @@ export default function AuthClient() {
   }, [confirmPassword, email, mode, password, passwordReady]);
 
   useEffect(() => {
-    if (!supabase) return;
-    supabase.auth.getSession().then(({ data }) => setUserEmail(data.session?.user.email || ""));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user.email || "");
+    if (!supabase) {
+      setAuthChecked(true);
+      return;
+    }
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setUserEmail(data.session?.user.email || "");
+      setAuthChecked(true);
     });
-    return () => listener.subscription.unsubscribe();
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setUserEmail(session?.user.email || "");
+      setAuthChecked(true);
+    });
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   function setNotice(text: string, type: "success" | "error" | "info" = "info") {
@@ -127,6 +141,18 @@ export default function AuthClient() {
     await supabase.auth.signOut();
     setNotice("Sessão terminada.", "success");
     router.replace("/entrar");
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="card auth-card">
+        <div className="card-body auth-signed-in" aria-busy="true">
+          <span className="tag">Conta PetBox</span>
+          <h2>{pt.common.loading}</h2>
+          <p className="muted">{pt.account.checkingSession}</p>
+        </div>
+      </div>
+    );
   }
 
   if (userEmail) {
