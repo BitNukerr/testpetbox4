@@ -183,24 +183,3 @@ export async function saveRemoteAddress(userId: string, address: AccountAddress)
   }, { onConflict: "user_id" });
   if (error) throw error;
 }
-
-export async function saveRemoteSubscription(userId: string, subscription: AccountSubscription) {
-  const client = requireSupabase();
-  const payload = {
-    user_id: userId,
-    status: subscription.status,
-    plan_id: subscription.plan || null,
-    cadence: subscription.cadence,
-    pet_id: subscription.petId && !subscription.petId.startsWith("pet-") ? subscription.petId : null,
-    next_box_date: subscription.nextBoxDate || null,
-    renewal_date: subscription.renewalDate || null,
-    price: subscription.price,
-    extras: subscription.extras || null
-  };
-  const query = subscription.id && !subscription.id.startsWith("sub-")
-    ? client.from("customer_subscriptions").update(payload).eq("id", subscription.id).select("id,status,plan_id,cadence,pet_id,next_box_date,renewal_date,price,extras").single()
-    : client.from("customer_subscriptions").insert(payload).select("id,status,plan_id,cadence,pet_id,next_box_date,renewal_date,price,extras").single();
-  const { data, error } = await query;
-  if (error) throw error;
-  return subscriptionFromRow(data as SubscriptionRow);
-}

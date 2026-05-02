@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     if (!order || order.easypay_checkout_id !== checkoutId) {
       return NextResponse.json({ error: "Encomenda nao encontrada." }, { status: 404 });
     }
-    if (order.user_id && userId && order.user_id !== userId) {
+    if (order.user_id && order.user_id !== userId) {
       return NextResponse.json({ error: "Encomenda nao pertence a este utilizador." }, { status: 403 });
     }
 

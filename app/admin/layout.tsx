@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                 </div>
 
-                <nav className="admin-nav" aria-label="Admin navigation">
+                <nav className="admin-nav" aria-label="Navegacao administrativa">
                   {adminNav.map(([label, href, icon]) => (
                     <Link key={href} href={href}><span>{icon}</span>{label}</Link>
                   ))}

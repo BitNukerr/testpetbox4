@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestHasAdminSession } from "@/lib/admin-auth";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,15 @@ function displayName(metadata: Record<string, unknown> | null | undefined) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!requestIsSameOrigin(request)) {
+    return NextResponse.json({ error: "Pedido invalido." }, { status: 403 });
+  }
+
+  const limited = rateLimit(request, "admin-users", { limit: 60, windowMs: 10 * 60 * 1000 });
+  if (limited.limited) {
+    return NextResponse.json({ error: "Demasiados pedidos. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+  }
+
   if (!requestHasAdminSession(request)) {
     return NextResponse.json({ error: "Acesso nao autorizado." }, { status: 401 });
   }

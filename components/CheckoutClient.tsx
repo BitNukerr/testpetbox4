@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CheckoutError, CheckoutInstance, CheckoutOutput, CheckoutPaymentError } from "@easypaypt/checkout-sdk";
 import { type CartItem, getCart, saveOrder, setCart } from "@/lib/client-store";
+import { loadRemoteStoreSettings } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { supabase } from "@/lib/supabase-client";
@@ -33,6 +34,12 @@ export default function CheckoutClient() {
   useEffect(() => {
     const refresh = () => setSettings(adminStore.settings.get());
     refresh();
+    loadRemoteStoreSettings(adminStore.settings.get())
+      .then((remoteSettings) => {
+        setSettings(remoteSettings);
+        adminStore.settings.set(remoteSettings);
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

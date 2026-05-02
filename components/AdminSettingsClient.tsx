@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { loadRemoteStoreSettingsForAdmin, saveRemoteStoreSettings } from "@/lib/admin-db";
 import { adminStore, type StoreSettings } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 
@@ -8,15 +9,30 @@ export default function AdminSettingsClient() {
   const [form, setForm] = useState<StoreSettings>(() => adminStore.settings.get());
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    loadRemoteStoreSettingsForAdmin(adminStore.settings.get())
+      .then((settings) => {
+        setForm(settings);
+        adminStore.settings.set(settings);
+      })
+      .catch(() => null);
+  }, []);
+
   function update(field: keyof StoreSettings, value: string | number) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function save() {
+  async function save() {
     const next = { ...form, shippingPrice: Math.max(0, Number(form.shippingPrice) || 0) };
+    let remoteSaved = true;
+    try {
+      await saveRemoteStoreSettings(next);
+    } catch {
+      remoteSaved = false;
+    }
     adminStore.settings.set(next);
     setForm(next);
-    setMessage("Definicoes guardadas neste browser.");
+    setMessage(remoteSaved ? "Definicoes guardadas no Supabase." : "Definicoes guardadas neste browser. Confirme que o Supabase/RLS esta configurado.");
   }
 
   function resetAll() {

@@ -104,8 +104,8 @@ export function AdminImageListField({ value, onChange, onMessage, presets = [], 
           <div className="admin-image-list-item" key={`${image}-${index}`}>
             <img src={image} alt="" />
             <div className="admin-image-list-actions">
-              <button type="button" onClick={() => move(index, -1)} disabled={index === 0}>Up</button>
-              <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1}>Down</button>
+              <button type="button" onClick={() => move(index, -1)} disabled={index === 0}>Subir</button>
+              <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1}>Descer</button>
               <button type="button" onClick={() => updateItems(items.filter((_, itemIndex) => itemIndex !== index))}>X</button>
             </div>
           </div>

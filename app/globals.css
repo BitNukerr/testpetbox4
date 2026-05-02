@@ -7,6 +7,8 @@
   --accent:#064b2b;
   --accent-2:#0b6b3d;
   --soft:#f1f5e9;
+  --blue-dark:#063150;
+  --sky:#79c7e7;
 }
 *{box-sizing:border-box}
 html{scrollbar-gutter:stable;overflow-y:scroll}

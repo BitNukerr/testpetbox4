@@ -6,5 +6,5 @@
 <polygon points="110,142 140,90 160,148" fill="#917db7"/><polygon points="200,142 170,90 150,148" fill="#917db7"/>
 <circle cx="136" cy="172" r="7" fill="#2a211d"/><circle cx="174" cy="172" r="7" fill="#2a211d"/>
 <rect x="420" y="255" width="70" height="100" rx="16" fill="#fff"/><rect x="315" y="265" width="68" height="90" rx="16" fill="#f7dfef"/>
-<text x="350" y="470" text-anchor="middle" font-family="Arial" font-size="30" fill="#5a4633">Custom Cat Box</text>
+<text x="350" y="470" text-anchor="middle" font-family="Arial" font-size="30" fill="#5a4633">Caixa para Gato</text>
 </svg>

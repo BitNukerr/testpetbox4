@@ -47,4 +47,6 @@ Para aceitar cartao pela Easypay no futuro, use `EASYPAY_PAYMENT_METHODS=mbw,cc`
 
 Configure o webhook da Easypay para `https://your-domain.com/api/easypay/webhook` e use as mesmas credenciais Basic Auth das variaveis `EASYPAY_WEBHOOK_USER` e `EASYPAY_WEBHOOK_PASSWORD`.
 
-Para guardar moradas de entrega, dados de encomenda completos, emails de confirmacao e subscricoes criadas por encomendas pagas, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.
+O preco de envio pode ser editado no admin em **Definicoes**; `SHIPPING_PRICE_EUR` fica apenas como fallback quando a tabela `store_settings` ainda nao existe.
+
+Para guardar moradas de entrega, dados de encomenda completos, emails de confirmacao, preco de envio no admin e subscricoes criadas por encomendas pagas, volte a correr `supabase/petbox-rls-schema.sql` no Supabase SQL Editor depois de actualizar o projecto.

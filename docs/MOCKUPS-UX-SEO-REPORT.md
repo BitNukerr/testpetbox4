@@ -1,83 +1,75 @@
-# PetBox — UX, SEO e Mockups
+# PetBox UX, SEO e Mockups
+
+Documento de referencia para manter o site alinhado com a direccao visual e funcional da PetBox.
 
 ## 1. Objectivo do projecto
-A PetBox é uma plataforma de e-commerce para caixas de subscrição para cães e gatos. O objectivo é permitir que o utilizador escolha um plano mensal ou trimestral, personalize a caixa e finalize a compra de forma simples.
 
-## 2. Público-alvo
-- Donos de cães e gatos em Portugal.
-- Pessoas entre os 20 e os 45 anos que compram online.
-- Utilizadores que valorizam conveniência, surpresa e personalização.
+A PetBox e uma loja online portuguesa para caixas misterio, produtos avulsos e planos recorrentes para caes e gatos. O objectivo e tornar a compra simples: descobrir produtos, criar uma caixa personalizada e pagar de forma segura.
 
-## 3. UX — decisões principais
-- Navegação curta e clara: Loja, Criar Caixa, Blog, Sobre, Contacto e Conta.
-- CTA principal: “Criar a minha caixa”.
-- Configurador dividido em passos: Animal, Tamanho, Plano, Estilo e Extras.
-- Carrinho com imagem, resumo, quantidade e total visíveis.
-- Design mobile-first para facilitar compras no telemóvel.
+## 2. Publico-alvo
 
-## 4. Fluxo de utilizador
-1. O utilizador entra na homepage.
-2. Clica em “Criar a minha caixa”.
-3. Escolhe cão ou gato, tamanho, plano e extras.
-4. Adiciona ao carrinho.
+- Donos de caes e gatos em Portugal.
+- Pessoas que compram online e valorizam conveniencia.
+- Clientes que procuram surpresa, personalizacao e produtos escolhidos com cuidado.
+
+## 3. UX
+
+- Navegacao curta: Loja, Criar Caixa, Blog, Sobre, Contacto e Conta.
+- Loja com filtros fixos, categorias, pesquisa e ordenacao.
+- Configurador dividido em passos: animal, tamanho, idade, plano, personalidade, extras e observacoes.
+- Carrinho com imagem, resumo, quantidade, remover e total visivel.
+- Admin com edicao de homepage, produtos, planos, blog, configurador, paginas legais e definicoes.
+
+## 4. Jornada do utilizador
+
+1. O utilizador entra na pagina inicial.
+2. Explora caixas misterio, loja ou blog.
+3. Cria uma caixa personalizada ou adiciona produtos ao carrinho.
+4. Preenche dados de entrega.
 5. Finaliza a compra com Easypay/MB WAY.
-6. Acede à conta para gerir subscrição e pagamento.
+6. Recebe email de confirmacao.
+7. Acede a conta para consultar encomendas e subscricoes.
 
 ## 5. SEO
+
 ### Palavras-chave principais
-- caixa para animais
-- caixa de subscrição para cães
-- caixa de subscrição para gatos
-- snacks para cães
-- brinquedos para gatos
+
+- caixa misterio para caes
+- caixa misterio para gatos
 - produtos para animais online
+- snacks para caes
+- brinquedos para gatos
+- pet shop Portugal
 
-### Técnicas usadas
-- Título optimizado: “PetBox - Caixa de Subscrição para Animais”.
-- Descrição meta com palavras-chave relevantes.
-- URLs simples e claras: `/loja`, `/criar-caixa`, `/contacto`.
-- Conteúdo em português de Portugal.
-- Estrutura responsiva e mobile-friendly.
+### Tecnicas usadas
 
-## 6. Mockups para Figma
-Crie 5 frames:
+- Conteudo em portugues de Portugal.
+- URLs simples: `/loja`, `/criar-caixa`, `/blog`, `/contacto`.
+- Metadados por pagina.
+- Imagens com texto alternativo.
+- Paginas legais e cookies editaveis.
+- Estrutura responsiva e mobile-first.
 
-### Frame 1 — Homepage desktop
-- Header com logo PetBox.
-- Hero com título, texto e 2 botões.
-- Secção “Como funciona” com 3 cards.
-- Planos mensal e trimestral.
-- Produtos em destaque.
+## 6. Direccao visual
 
-### Frame 2 — Loja
-- Grelha de produtos com imagem, preço e botão.
-- Filtros por tipo de animal.
-
-### Frame 3 — Configurador
-- Barra de progresso com 5 passos.
-- Cartões para escolher cão/gato.
-- Opções de tamanho, plano, tema e extras.
-- Resumo em tempo real à direita.
-
-### Frame 4 — Carrinho/Checkout
-- Lista de itens com imagem.
-- Quantidade, remover e resumo de encomenda.
-- Botão “Finalizar compra”.
-
-### Frame 5 — Mobile
-- Header com menu hambúrguer.
-- Layout em coluna.
-- Botões grandes e fáceis de tocar.
+- Logo com pata e texto PetBox.
+- Pagina inicial em blocos editoriais, inspirada em layouts de e-commerce por cartoes.
+- Azul claro como cor de destaque visual em blocos principais.
+- Botoes arredondados, contrastados e consistentes.
+- Imagens de produtos sempre dentro de areas estaveis para nao partir o layout.
 
 ## 7. Backend
-O projecto inclui uma base para backend com:
-- Supabase Auth para login/criação de conta.
-- SQL para tabelas de perfis, encomendas e subscrições.
+
+- Supabase Auth para login e criacao de conta.
+- RLS para proteger dados de cliente.
 - Easypay Checkout para MB WAY.
-- Formulário de contacto enviado por email via Resend.
+- Webhook Easypay para confirmar encomendas.
+- Resend para emails.
+- Admin protegido por codigo privado e cookie de sessao assinado.
 
 ## 8. Melhorias futuras
-- Guardar encomendas reais na base de dados via webhooks da Easypay.
-- Área de cliente completa com histórico persistente.
-- Blog gerido por CMS.
-- Testes A/B nas chamadas para acção.
+
+- Quando a conta Easypay estiver pronta, testar pagamentos reais em producao.
+- Adicionar cartao pela Easypay com `EASYPAY_PAYMENT_METHODS=mbw,cc`.
+- Criar campanhas ou cupoes.
+- Adicionar reviews de produtos e caixas.

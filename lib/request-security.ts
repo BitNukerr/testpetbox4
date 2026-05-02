@@ -17,8 +17,16 @@ function clientIp(request: NextRequest) {
   return forwarded.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
 }
 
+function pruneExpiredBuckets(now: number) {
+  if (buckets.size < 1000) return;
+  for (const [key, entry] of buckets.entries()) {
+    if (entry.resetAt <= now) buckets.delete(key);
+  }
+}
+
 export function rateLimit(request: NextRequest, scope: string, options: RateLimitOptions) {
   const now = Date.now();
+  pruneExpiredBuckets(now);
   const key = `${scope}:${clientIp(request)}`;
   const current = buckets.get(key);
 

@@ -2,13 +2,17 @@
 
 import type { Plan, Product } from "@/data/products";
 import type { AdminOrder } from "@/data/admin";
-import type { ConfiguratorSettings, EditablePost, HomeSettings } from "@/lib/admin-store";
+import type { ConfiguratorSettings, EditablePost, HomeSettings, StoreSettings } from "@/lib/admin-store";
 import { mergeLegalSettings, type LegalSettings } from "@/lib/legal-content";
 import { supabase } from "@/lib/supabase-client";
 
 function requireSupabase() {
   if (!supabase) throw new Error("Supabase is not configured.");
   return supabase;
+}
+
+function isMissingColumnError(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "42703";
 }
 
 function productFromRow(row: any): Product {
@@ -80,6 +84,15 @@ function orderFromRow(row: any): AdminOrder {
       delivery.nif ? `NIF: ${delivery.nif}` : "",
       delivery.notes ? `Notas: ${delivery.notes}` : ""
     ].filter(Boolean).join("\n")
+  };
+}
+
+function storeSettingsFromRow(row: any, fallback: StoreSettings): StoreSettings {
+  return {
+    storeName: row?.store_name || fallback.storeName,
+    email: row?.support_email || fallback.email,
+    note: row?.internal_note || fallback.note,
+    shippingPrice: Number(row?.shipping_price ?? fallback.shippingPrice ?? 0)
   };
 }
 
@@ -227,6 +240,41 @@ export async function saveRemoteHomeSettings(settings: HomeSettings) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ resource: "home_settings", settings })
+  });
+}
+
+export async function loadRemoteStoreSettings(fallback: StoreSettings) {
+  const client = requireSupabase();
+  const currentResult = await client.from("store_settings").select("store_name,support_email,shipping_price,internal_note").eq("id", true).maybeSingle();
+  let data: any = currentResult.data;
+  let error = currentResult.error;
+  if (error && isMissingColumnError(error)) {
+    const legacyResult = await client.from("store_settings").select("store_name,support_email,shipping_price").eq("id", true).maybeSingle();
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
+  if (error) throw error;
+  return storeSettingsFromRow(data, fallback);
+}
+
+export async function loadRemoteStoreSettingsForAdmin(fallback: StoreSettings) {
+  const result = await adminFetch("/api/admin/store?resource=store_settings");
+  return storeSettingsFromRow(result.data, fallback);
+}
+
+export async function saveRemoteStoreSettings(settings: StoreSettings) {
+  await adminFetch("/api/admin/store", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      resource: "store_settings",
+      item: {
+        store_name: settings.storeName,
+        support_email: settings.email,
+        shipping_price: settings.shippingPrice,
+        internal_note: settings.note
+      }
+    })
   });
 }
 

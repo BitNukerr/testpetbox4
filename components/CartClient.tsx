@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CartItem, getCart, setCart } from "@/lib/client-store";
+import { loadRemoteStoreSettings } from "@/lib/admin-db";
 import { adminStore } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
@@ -29,6 +30,12 @@ export default function CartClient() {
   useEffect(() => {
     const refresh = () => setSettings(adminStore.settings.get());
     refresh();
+    loadRemoteStoreSettings(adminStore.settings.get())
+      .then((remoteSettings) => {
+        setSettings(remoteSettings);
+        adminStore.settings.set(remoteSettings);
+      })
+      .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
     return () => window.removeEventListener("petbox-admin-changed", refresh);
   }, []);

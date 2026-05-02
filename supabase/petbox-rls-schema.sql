@@ -167,8 +167,12 @@ create table if not exists public.store_settings (
   store_name text not null default 'PetBox',
   support_email text,
   shipping_price numeric(10,2) not null default 8 check (shipping_price >= 0),
+  internal_note text,
   updated_at timestamptz not null default now()
 );
+
+alter table public.store_settings
+add column if not exists internal_note text;
 
 create table if not exists public.home_settings (
   id boolean primary key default true check (id),
@@ -329,17 +333,13 @@ to authenticated
 using (user_id = (select auth.uid()) or public.is_petbox_admin());
 
 drop policy if exists "Users manage own subscriptions" on public.customer_subscriptions;
-create policy "Users manage own subscriptions"
-on public.customer_subscriptions for insert
-to authenticated
-with check (user_id = (select auth.uid()));
-
 drop policy if exists "Users update own subscriptions" on public.customer_subscriptions;
-create policy "Users update own subscriptions"
-on public.customer_subscriptions for update
+drop policy if exists "Admins manage subscriptions" on public.customer_subscriptions;
+create policy "Admins manage subscriptions"
+on public.customer_subscriptions for all
 to authenticated
-using (user_id = (select auth.uid()))
-with check (user_id = (select auth.uid()));
+using (public.is_petbox_admin())
+with check (public.is_petbox_admin());
 
 drop policy if exists "Users read own orders" on public.orders;
 create policy "Users read own orders"

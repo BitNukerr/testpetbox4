@@ -20,6 +20,7 @@ function cleanFilename(value: unknown) {
 
 function parseDataUrl(value: unknown) {
   if (typeof value !== "string") return null;
+  if (value.length > 2_100_000) return null;
   const match = value.match(/^data:(image\/(?:png|webp|jpeg|jpg));base64,(.+)$/);
   if (!match) return null;
   const mimeType = match[1] === "image/jpg" ? "image/jpeg" : match[1];

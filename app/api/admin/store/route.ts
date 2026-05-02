@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestHasAdminSession } from "@/lib/admin-auth";
-import { requestIsSameOrigin } from "@/lib/request-security";
+import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +14,10 @@ function cleanString(value: unknown, maxLength = 160) {
 function safeMoney(value: unknown) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, Math.min(number, 1000)) : 0;
+}
+
+function isMissingColumnError(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "42703";
 }
 
 function isUuid(value: string) {
@@ -41,6 +45,10 @@ function petLabelFromSpecies(value: unknown) {
 }
 
 function clientOrResponse(request: NextRequest) {
+  const limited = rateLimit(request, "admin-store", { limit: 160, windowMs: 10 * 60 * 1000 });
+  if (limited.limited) {
+    return { response: NextResponse.json({ error: "Demasiados pedidos ao painel. Tente novamente mais tarde." }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }) };
+  }
   if (!requestHasAdminSession(request)) {
     return { response: NextResponse.json({ error: "Acesso nao autorizado." }, { status: 401 }) };
   }
@@ -171,6 +179,27 @@ async function subscriptionsWithDetails(client: SupabaseAdminClient) {
   };
 }
 
+async function storeSettings(client: SupabaseAdminClient) {
+  const result = await client.from("store_settings").select("store_name,support_email,shipping_price,internal_note").eq("id", true).maybeSingle();
+  if (!result.error || !isMissingColumnError(result.error)) return result;
+  return client.from("store_settings").select("store_name,support_email,shipping_price").eq("id", true).maybeSingle();
+}
+
+async function saveStoreSettings(client: SupabaseAdminClient, item: any) {
+  const payload = {
+    id: true,
+    store_name: cleanString(item.store_name || item.storeName, 120) || "PetBox",
+    support_email: cleanString(item.support_email || item.email, 160) || null,
+    shipping_price: safeMoney(item.shipping_price ?? item.shippingPrice),
+    internal_note: cleanString(item.internal_note || item.note, 500) || null
+  };
+  const result = await client.from("store_settings").upsert(payload, { onConflict: "id" }).select("store_name,support_email,shipping_price,internal_note").single();
+  if (!result.error || !isMissingColumnError(result.error)) return result;
+
+  const { internal_note: _internalNote, ...legacyPayload } = payload;
+  return client.from("store_settings").upsert(legacyPayload, { onConflict: "id" }).select("store_name,support_email,shipping_price").single();
+}
+
 export async function GET(request: NextRequest) {
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
@@ -185,6 +214,12 @@ export async function GET(request: NextRequest) {
 
   if (resource === "plans") {
     const { data, error } = await client.from("plans").select("id,name,cadence,price,description,perks").order("price", { ascending: true });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ data });
+  }
+
+  if (resource === "store_settings") {
+    const { data, error } = await storeSettings(client);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ data });
   }
@@ -241,6 +276,12 @@ export async function POST(request: NextRequest) {
   if (body.resource === "plans") {
     const item = body.item || {};
     const { data, error } = await client.from("plans").upsert({ ...item, is_active: true }, { onConflict: "id" }).select("id,name,cadence,price,description,perks").single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ data });
+  }
+
+  if (body.resource === "store_settings") {
+    const { data, error } = await saveStoreSettings(client, body.item || {});
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ data });
   }

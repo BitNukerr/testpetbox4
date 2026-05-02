@@ -1,19 +1,21 @@
-# Supabase RLS setup for PetBox
+# Configuracao Supabase RLS da PetBox
 
-This setup moves customer data into Supabase with Row Level Security.
+Este ficheiro explica como aplicar a base de dados da PetBox com Row Level Security.
 
-## 1. Run the SQL
+## 1. Correr o SQL
 
-1. Open Supabase.
-2. Go to **SQL Editor**.
-3. Paste the full contents of `supabase/petbox-rls-schema.sql`.
-4. Click **Run**.
+1. Abra o Supabase.
+2. Entre em **SQL Editor**.
+3. Cole todo o conteudo de `supabase/petbox-rls-schema.sql`.
+4. Clique em **Run**.
 
-The SQL creates tables for profiles, addresses, pets, subscriptions, orders, order delivery details, products, plans, posts, store/home/configurator/legal settings, and admin users. It also links paid plan orders to subscriptions through `customer_subscriptions.source_order_id` and marks orders after confirmation emails through `orders.confirmation_email_sent_at`. It enables RLS on every public table.
+O SQL cria as tabelas de perfis, moradas, animais, subscricoes, encomendas, detalhes de entrega, produtos, planos, blog, definicoes da loja, pagina inicial, configurador, paginas legais e administradores. Tambem liga encomendas pagas de planos a subscricoes atraves de `customer_subscriptions.source_order_id`, guarda o preco de envio editavel no admin e marca encomendas depois do email de confirmacao atraves de `orders.confirmation_email_sent_at`.
 
-## 2. Add yourself as admin
+Pode voltar a correr o ficheiro sempre que o projecto for actualizado. O script usa `create table if not exists`, `alter table ... add column if not exists` e `drop/create policy`, por isso serve como migracao simples.
 
-After logging into the website once with your admin email, run this in Supabase SQL Editor:
+## 2. Adicionar o seu utilizador como admin
+
+Depois de iniciar sessao no site uma vez com o email de administrador, corra isto no Supabase SQL Editor:
 
 ```sql
 insert into public.admin_users (user_id)
@@ -23,30 +25,35 @@ where email = 'YOUR_EMAIL_HERE'
 on conflict (user_id) do nothing;
 ```
 
-Replace `YOUR_EMAIL_HERE` with your real login email.
+Substitua `YOUR_EMAIL_HERE` pelo email real da sua conta.
 
-## 3. Environment variables
+## 3. Variaveis no Vercel
 
-Keep these in Vercel:
+Mantenha estas variaveis no Vercel:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` only on the server
+- `SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`, apenas no servidor
 - `ADMIN_ACCESS_CODE`
 - `ADMIN_SESSION_SECRET`
-- `SUPABASE_STORAGE_BUCKET` optional, defaults to `petbox-images`
+- `SUPABASE_STORAGE_BUCKET`, opcional, usa `petbox-images` por defeito
 - `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`
-- `ORDER_NOTIFICATION_EMAIL` optional, falls back to `CONTACT_TO_EMAIL`
+- `ORDER_NOTIFICATION_EMAIL`, opcional, usa `CONTACT_TO_EMAIL` se estiver vazio
+- `SHIPPING_PRICE_EUR`, opcional, usado apenas como fallback inicial
 
-Never put a secret/service key in a `NEXT_PUBLIC_` variable.
+Nunca coloque uma secret/service key numa variavel `NEXT_PUBLIC_`.
 
-## 4. What is secure now
+## 4. O que fica protegido
 
-- Customers can only read and edit their own profiles, addresses, pets, subscriptions, and orders.
-- Public visitors can read active products, active plans, published posts, and public site settings.
-- Only users in `admin_users` can manage store data.
-- The service/secret key stays server-side.
+- Clientes podem ler as suas proprias encomendas e subscricoes.
+- Clientes podem editar apenas o proprio perfil, moradas e animais.
+- Subscricoes sao criadas ou alteradas apenas depois de pagamento confirmado ou pelo painel admin.
+- Visitantes publicos podem ler produtos activos, planos activos, posts publicados e definicoes publicas do site.
+- Apenas utilizadores em `admin_users` podem gerir dados da loja.
+- A chave secret/service fica sempre no servidor.
 
-## 5. Seguranca do checkout
+## 5. Checkout
 
-The checkout validates active products, plans, and custom box options on the server before creating the Easypay payment when `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` is configured. Keep that key server-only in Vercel, never in a `NEXT_PUBLIC_` variable.
+O checkout valida produtos activos, planos activos, opcoes da caixa personalizada e preco de envio no servidor antes de criar o pagamento Easypay, desde que `SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY` esteja configurada.
+
+O preco de envio deve ser editado em `/admin/settings`. A variavel `SHIPPING_PRICE_EUR` fica apenas como fallback enquanto a tabela `store_settings` ainda nao existir ou estiver vazia.

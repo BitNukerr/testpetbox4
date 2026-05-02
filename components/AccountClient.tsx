@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AuthClient from "@/components/AuthClient";
 import type { Plan } from "@/data/products";
-import { deleteRemotePet, loadRemoteAccount, saveRemoteAddress, saveRemotePet, saveRemoteProfile, saveRemoteSubscription } from "@/lib/account-db";
+import { deleteRemotePet, loadRemoteAccount, saveRemoteAddress, saveRemotePet, saveRemoteProfile } from "@/lib/account-db";
 import { adminStore } from "@/lib/admin-store";
 import {
   type AccountAddress,
@@ -43,12 +43,6 @@ const emptyAddress: AccountAddress = {
   zip: "",
   nif: ""
 };
-
-function todayPlus(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
 
 function petSpeciesLabel(value: AccountPet["species"]) {
   return value === "dog" ? "Cao" : "Gato";
@@ -266,82 +260,6 @@ export default function AccountClient() {
     setMessage("Perfil actualizado.");
   }
 
-  async function createOrUpdateSubscription() {
-    const plan = selectedPlan || plans[0];
-    const pet = selectedPet || pets[0];
-    if (!plan || !pet) {
-      setMessage("Adicione pelo menos um animal e um plano.");
-      return;
-    }
-
-    const nextSubscription: AccountSubscription = {
-      id: subscription?.id || `sub-${Date.now()}`,
-      status: subscription?.status || "active",
-      plan: plan.id,
-      cadence: plan.cadence,
-      petId: pet.id,
-      nextBoxDate: subscription?.nextBoxDate || todayPlus(14),
-      renewalDate: subscription?.renewalDate || todayPlus(plan.cadence === "monthly" ? 30 : 90),
-      price: plan.price,
-      extras: subscription?.extras || ""
-    };
-    let savedSubscription = nextSubscription;
-    if (user?.id && supabase) {
-      try {
-        savedSubscription = await saveRemoteSubscription(user.id, nextSubscription);
-      } catch {
-        setMessage("Nao foi possivel guardar a subscricao no Supabase. Guardei neste browser.");
-      }
-    }
-    setSubscription(savedSubscription, accountScope);
-    setSubscriptionState(savedSubscription);
-    setMessage("Subscricao guardada.");
-  }
-
-  async function updateSubscription(patch: Partial<AccountSubscription>) {
-    if (!subscription) return;
-    const next = { ...subscription, ...patch };
-    let savedSubscription = next;
-    if (user?.id && supabase) {
-      try {
-        savedSubscription = await saveRemoteSubscription(user.id, next);
-      } catch {
-        setMessage("Nao foi possivel actualizar no Supabase. Guardei neste browser.");
-      }
-    }
-    setSubscription(savedSubscription, accountScope);
-    setSubscriptionState(savedSubscription);
-    setMessage("Subscricao actualizada.");
-  }
-
-  function skipNextBox() {
-    if (!subscription) return;
-    updateSubscription({
-      nextBoxDate: todayPlus(subscription.cadence === "monthly" ? 30 : 90),
-      renewalDate: todayPlus(subscription.cadence === "monthly" ? 30 : 90)
-    });
-  }
-
-  function updateSubscriptionPlan(planId: string) {
-    const plan = plans.find((item) => item.id === planId);
-    if (!plan) return;
-    if (!subscription) {
-      setSubscriptionState({
-        id: "",
-        status: "active",
-        plan: plan.id,
-        cadence: plan.cadence,
-        petId: pets[0]?.id || "",
-        nextBoxDate: todayPlus(14),
-        renewalDate: todayPlus(plan.cadence === "monthly" ? 30 : 90),
-        price: plan.price,
-        extras: ""
-      });
-      return;
-    }
-    updateSubscription({ plan: plan.id, cadence: plan.cadence, price: plan.price });
-  }
-
   if (!authChecked) {
     return (
       <div className="container narrow">
@@ -501,26 +419,16 @@ export default function AccountClient() {
                   {subscription.extras ? <p><strong>Extras:</strong> {subscription.extras}</p> : null}
                 </div>
                 <div className="account-action-grid">
-                  <button className="btn btn-secondary small" onClick={skipNextBox}>Saltar proxima</button>
-                  <button className="btn btn-secondary small" onClick={() => updateSubscription({ status: subscription.status === "paused" ? "active" : "paused" })}>{subscription.status === "paused" ? "Retomar" : "Pausar"}</button>
-                  <button className="btn btn-secondary small" onClick={() => updateSubscription({ status: "cancelled" })}>Cancelar</button>
+                  <Link href="/contacto" className="btn btn-secondary small">Pedir alteracao</Link>
+                  <Link href="/criar-caixa" className="btn btn-secondary small">Criar nova caixa</Link>
                 </div>
               </div>
             ) : (
-              <p className="muted">Ainda nao existe uma subscricao activa. Pode criar uma caixa personalizada ou guardar aqui o plano preferido.</p>
+              <div className="empty-account-block">
+                <p className="muted">Ainda nao existe uma subscricao activa. As subscricoes aparecem aqui depois de um pagamento confirmado ou quando forem criadas no admin.</p>
+                <Link href="/criar-caixa" className="btn btn-secondary small">Criar caixa</Link>
+              </div>
             )}
-            <div className="form-grid account-form">
-              <select value={subscription?.plan || plans[0]?.id || ""} onChange={(event) => updateSubscriptionPlan(event.target.value)}>
-                {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
-              </select>
-              <select value={subscription?.petId || pets[0]?.id || ""} onChange={(event) => subscription ? updateSubscription({ petId: event.target.value }) : setSubscriptionState({ id: "", status: "active", plan: plans[0]?.id || "", cadence: plans[0]?.cadence || "monthly", petId: event.target.value, nextBoxDate: todayPlus(14), renewalDate: todayPlus(30), price: plans[0]?.price || 0, extras: "" })}>
-                {pets.length === 0 ? <option value="">Sem animais</option> : pets.map((pet) => <option key={pet.id} value={pet.id}>{pet.name}</option>)}
-              </select>
-              <input type="date" value={subscription?.nextBoxDate || todayPlus(14)} onChange={(event) => subscription ? updateSubscription({ nextBoxDate: event.target.value }) : null} />
-              <input type="date" value={subscription?.renewalDate || todayPlus(30)} onChange={(event) => subscription ? updateSubscription({ renewalDate: event.target.value }) : null} />
-              <input className="span-2" placeholder="Extras para a proxima caixa" value={subscription?.extras || ""} onChange={(event) => subscription ? updateSubscription({ extras: event.target.value }) : setSubscriptionState({ id: "", status: "active", plan: plans[0]?.id || "", cadence: plans[0]?.cadence || "monthly", petId: pets[0]?.id || "", nextBoxDate: todayPlus(14), renewalDate: todayPlus(30), price: plans[0]?.price || 0, extras: event.target.value })} />
-            </div>
-            <button className="btn full top-gap" onClick={createOrUpdateSubscription}>{subscription ? "Guardar subscricao" : "Criar subscricao"}</button>
           </div></section>
 
           <section className="card"><div className="card-body">

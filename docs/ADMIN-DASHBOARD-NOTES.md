@@ -1,8 +1,8 @@
-# PetBox Admin Dashboard
+# Painel Admin PetBox
 
-This document summarizes the current PetBox admin area.
+Resumo do painel administrativo actual da PetBox.
 
-## Routes
+## Rotas
 
 - `/admin`
 - `/admin/home`
@@ -14,22 +14,24 @@ This document summarizes the current PetBox admin area.
 - `/admin/customers`
 - `/admin/subscriptions`
 - `/admin/journal`
+- `/admin/legal`
 - `/admin/settings`
 
-## Implementation
+## Implementacao
 
-The admin section uses Bootstrap 5 layout classes and a dedicated admin stylesheet inspired by the OneUI admin template.
+O painel usa Bootstrap 5 para a estrutura e um CSS proprio em `app/admin/admin.css`. O Bootstrap e carregado apenas no layout admin, para nao alterar a loja publica.
 
-The admin layout imports Bootstrap inside `app/admin/layout.tsx` and keeps custom admin styling isolated in `app/admin/admin.css`.
+## Fontes de dados
 
-## Current Data Sources
+- Produtos, planos, posts, pagina inicial, configurador, paginas legais, utilizadores registados, encomendas e subscricoes usam rotas admin protegidas e Supabase.
+- Encomendas sao criadas pelo checkout e podem ser acompanhadas no admin.
+- Subscricoes sao criadas por encomendas pagas ou pelo admin.
+- O preco de envio e guardado em `store_settings` e editado em `/admin/settings`.
+- Os dados locais em `data/admin.ts` e `lib/admin-store.ts` continuam como fallback para desenvolvimento local antes do Supabase estar configurado.
 
-- Products, plans, posts, homepage settings, configurator settings, registered users, and orders are connected to Supabase through protected admin API routes.
-- Orders are created by the checkout flow and can be updated from the admin orders page.
-- Local fallback data remains in `data/admin.ts` and `lib/admin-store.ts` so the UI still opens during local development before Supabase is configured.
+## Seguranca
 
-## Security Notes
-
-- Use `ADMIN_ACCESS_CODE`, not a `NEXT_PUBLIC_` variable, for admin access.
-- Keep `SUPABASE_SECRET_KEY` and `ADMIN_SESSION_SECRET` server-side only.
-- Use `supabase/petbox-rls-schema.sql` as the current database schema.
+- Use `ADMIN_ACCESS_CODE` apenas como variavel privada, nunca `NEXT_PUBLIC_`.
+- Mantenha `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_SESSION_SECRET` apenas no servidor.
+- Use `supabase/petbox-rls-schema.sql` como schema actual da base de dados.
+- Clientes nao podem criar ou alterar subscricoes directamente pelo browser.

@@ -100,7 +100,15 @@ function safeQuantity(value: unknown) {
   return Number.isFinite(number) ? Math.max(1, Math.min(Math.floor(number), 20)) : 1;
 }
 
-function shippingPriceFromRequest(value: unknown) {
+async function shippingPriceFromRequest(value: unknown) {
+  const admin = getSupabaseAdmin();
+  if (admin) {
+    const { data, error } = await admin.from("store_settings").select("shipping_price").eq("id", true).maybeSingle();
+    if (!error && data?.shipping_price !== undefined && data?.shipping_price !== null) {
+      return safeMoney(data.shipping_price);
+    }
+  }
+
   const serverValue = process.env.SHIPPING_PRICE_EUR;
   if (serverValue !== undefined && serverValue !== "") return safeMoney(serverValue);
   if (process.env.NODE_ENV === "production") return 0;
@@ -299,7 +307,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const items: CartItem[] = body.items ?? [];
     const customer: CheckoutCustomer = body.customer ?? {};
-    const requestedShipping = shippingPriceFromRequest(body.shippingPrice);
+    const requestedShipping = await shippingPriceFromRequest(body.shippingPrice);
     const userId = await userIdFromAccessToken(body.accessToken);
 
     if (!items.length) {
