@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuthClient from "@/components/AuthClient";
 import type { Plan } from "@/data/products";
 import { deleteRemotePet, loadRemoteAccount, saveRemoteAddress, saveRemotePet, saveRemoteProfile } from "@/lib/account-db";
@@ -66,7 +67,8 @@ function subscriptionPill(value?: AccountSubscription["status"]) {
   return "admin-pill-danger";
 }
 
-export default function AccountClient() {
+export default function AccountClient({ requireAuth = false }: { requireAuth?: boolean }) {
+  const router = useRouter();
   const [orders, setOrders] = useState<ReturnType<typeof getOrders>>([]);
   const [pets, setPetsState] = useState<AccountPet[]>([]);
   const [petForm, setPetForm] = useState<AccountPet>(emptyPet);
@@ -79,6 +81,7 @@ export default function AccountClient() {
   const [authChecked, setAuthChecked] = useState(false);
   const [remoteReady, setRemoteReady] = useState(false);
   const [message, setMessage] = useState("");
+  const unauthenticatedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const accountScope = user?.id || user?.email || "";
   const selectedPlan = useMemo(() => plans.find((plan) => plan.id === subscription?.plan) || plans[0], [plans, subscription?.plan]);
@@ -102,32 +105,60 @@ export default function AccountClient() {
     }
 
     let mounted = true;
-    let initialSessionLoaded = false;
 
-    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+    const clearUnauthenticatedTimer = () => {
+      if (unauthenticatedTimer.current) {
+        clearTimeout(unauthenticatedTimer.current);
+        unauthenticatedTimer.current = null;
+      }
+    };
+
+    const applySession = (session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"], immediateMissingSession = false) => {
       if (!mounted) return;
-      const metadata = session?.user.user_metadata || {};
+      clearUnauthenticatedTimer();
+      if (!session?.user) {
+        const applyMissingSession = () => {
+          if (!mounted) return;
+          setUser(null);
+          setProfileName("");
+          setAuthChecked(true);
+        };
+        const missingSessionDelay = requireAuth ? 900 : 0;
+        if (immediateMissingSession || !missingSessionDelay) {
+          applyMissingSession();
+          return;
+        }
+        unauthenticatedTimer.current = setTimeout(applyMissingSession, missingSessionDelay);
+        return;
+      }
+
+      const metadata = session.user.user_metadata || {};
       const name = typeof metadata.full_name === "string" ? metadata.full_name : typeof metadata.name === "string" ? metadata.name : "";
-      setUser(session?.user ? { id: session.user.id, email: session.user.email || "", name, createdAt: session.user.created_at } : null);
+      setUser({ id: session.user.id, email: session.user.email || "", name, createdAt: session.user.created_at });
       setProfileName(name);
       setAuthChecked(true);
     };
 
     supabase.auth.getSession().then(({ data }) => {
-      initialSessionLoaded = true;
       applySession(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!initialSessionLoaded && event !== "SIGNED_IN") return;
-      applySession(session);
+      applySession(session, event === "SIGNED_OUT");
     });
 
     return () => {
       mounted = false;
+      clearUnauthenticatedTimer();
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [requireAuth]);
+
+  useEffect(() => {
+    if (requireAuth && authChecked && !user) {
+      router.replace("/entrar");
+    }
+  }, [authChecked, requireAuth, router, user]);
 
   useEffect(() => {
     const refreshOrders = () => setOrders(getOrders(accountScope));
@@ -260,7 +291,7 @@ export default function AccountClient() {
     setMessage("Perfil actualizado.");
   }
 
-  if (!authChecked) {
+  if (!authChecked || (requireAuth && !user)) {
     return (
       <div className="container narrow">
         <div className="card"><div className="card-body">
