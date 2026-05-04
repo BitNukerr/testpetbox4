@@ -139,6 +139,50 @@ export default function HomeShowcaseClient() {
             <div><strong>{settings.infoStepThreeTitle}</strong><p>{settings.infoStepThreeText}</p></div>
           </div>
         </article>
+
+        <section className="sales-trust-section" aria-label="Confiança e perguntas frequentes">
+          <div className="sales-banner">
+            <p>{settings.salesBannerText}</p>
+            <Link href={settings.salesBannerHref || "/criar-caixa"} className="btn campaign-btn">{settings.salesBannerCta}</Link>
+          </div>
+
+          <div className="trust-copy">
+            <span>{settings.trustLabel}</span>
+            <h2>{settings.trustTitle}</h2>
+            <p>{settings.trustText}</p>
+          </div>
+
+          <div className="trust-points">
+            <div><strong>{settings.trustOneTitle}</strong><p>{settings.trustOneText}</p></div>
+            <div><strong>{settings.trustTwoTitle}</strong><p>{settings.trustTwoText}</p></div>
+            <div><strong>{settings.trustThreeTitle}</strong><p>{settings.trustThreeText}</p></div>
+          </div>
+
+          <div className="faq-card">
+            <h3>Perguntas frequentes</h3>
+            <details open>
+              <summary>{settings.faqOneQuestion}</summary>
+              <p>{settings.faqOneAnswer}</p>
+            </details>
+            <details>
+              <summary>{settings.faqTwoQuestion}</summary>
+              <p>{settings.faqTwoAnswer}</p>
+            </details>
+            <details>
+              <summary>{settings.faqThreeQuestion}</summary>
+              <p>{settings.faqThreeAnswer}</p>
+            </details>
+          </div>
+
+          <div className="review-card">
+            <p>"{settings.reviewOneQuote}"</p>
+            <strong>{settings.reviewOneAuthor}</strong>
+          </div>
+          <div className="review-card">
+            <p>"{settings.reviewTwoQuote}"</p>
+            <strong>{settings.reviewTwoAuthor}</strong>
+          </div>
+        </section>
       </section>
 
       <section className="home-offer-grid" aria-label="Produtos e vantagens">

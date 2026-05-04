@@ -71,6 +71,28 @@ export type HomeSettings = {
   infoStepTwoText: string;
   infoStepThreeTitle: string;
   infoStepThreeText: string;
+  salesBannerText: string;
+  salesBannerCta: string;
+  salesBannerHref: string;
+  trustLabel: string;
+  trustTitle: string;
+  trustText: string;
+  trustOneTitle: string;
+  trustOneText: string;
+  trustTwoTitle: string;
+  trustTwoText: string;
+  trustThreeTitle: string;
+  trustThreeText: string;
+  reviewOneQuote: string;
+  reviewOneAuthor: string;
+  reviewTwoQuote: string;
+  reviewTwoAuthor: string;
+  faqOneQuestion: string;
+  faqOneAnswer: string;
+  faqTwoQuestion: string;
+  faqTwoAnswer: string;
+  faqThreeQuestion: string;
+  faqThreeAnswer: string;
 };
 
 export type ConfigOption = {
@@ -182,7 +204,29 @@ const defaultHomeSettings: HomeSettings = {
   infoStepTwoTitle: "2. Montamos a caixa",
   infoStepTwoText: "Combinamos snacks, brinquedos e cuidados de acordo com o perfil e com o plano escolhido.",
   infoStepThreeTitle: "3. Receba em casa",
-  infoStepThreeText: "A encomenda segue para a morada indicada, com extras opcionais e pagamento simples por Easypay."
+  infoStepThreeText: "A encomenda segue para a morada indicada, com extras opcionais e pagamento simples por Easypay.",
+  salesBannerText: "Primeira caixa? Comece pelo perfil do seu animal e veja uma seleccao pensada para ele.",
+  salesBannerCta: "Criar caixa",
+  salesBannerHref: "/criar-caixa",
+  trustLabel: "Confiança",
+  trustTitle: "Compra simples, segura e pensada para animais reais.",
+  trustText: "Antes de finalizar, o cliente sabe o que esta a escolher, como paga e como recebe a encomenda.",
+  trustOneTitle: "Pagamento seguro",
+  trustOneText: "Checkout Easypay com MB WAY e validacao dos valores no servidor.",
+  trustTwoTitle: "Entrega em Portugal",
+  trustTwoText: "Morada, contacto e notas ficam associados a encomenda para acompanhamento.",
+  trustThreeTitle: "Perfil personalizado",
+  trustThreeText: "Animal, tamanho, idade, personalidade e observacoes ajudam a preparar melhor a caixa.",
+  reviewOneQuote: "Adorei a ideia de receber uma caixa adaptada ao perfil do meu cao. O processo foi simples e claro.",
+  reviewOneAuthor: "Cliente PetBox",
+  reviewTwoQuote: "A loja e facil de perceber, os produtos estao bem organizados e o MB WAY ajuda muito no checkout.",
+  reviewTwoAuthor: "Cliente PetBox",
+  faqOneQuestion: "Posso escolher produtos especificos?",
+  faqOneAnswer: "Pode escolher extras e deixar observacoes. A seleccao final depende do perfil do animal, stock e plano escolhido.",
+  faqTwoQuestion: "Como funciona o pagamento?",
+  faqTwoAnswer: "O pagamento e criado pela Easypay. No momento actual, a loja esta preparada para MB WAY.",
+  faqThreeQuestion: "Posso alterar dados depois?",
+  faqThreeAnswer: "Pode actualizar dados da conta e contactar a PetBox para pedir alteracoes a subscricao ou encomenda."
 };
 
 const defaultConfiguratorSettings: ConfiguratorSettings = {

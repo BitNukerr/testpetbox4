@@ -205,6 +205,14 @@ export default function AdminHomeClient() {
                     <small>{form.infoStepThreeTitle}</small>
                   </div>
                 </div>
+                <div className="admin-home-preview-trust">
+                  <span>{form.trustLabel}</span>
+                  <strong>{form.trustTitle}</strong>
+                  <p>{form.salesBannerText}</p>
+                  <small>{form.faqOneQuestion}</small>
+                  <small>{form.faqTwoQuestion}</small>
+                  <small>{form.faqThreeQuestion}</small>
+                </div>
               </div>
             </div>
           </div>
@@ -223,6 +231,34 @@ export default function AdminHomeClient() {
                 <div className="col-md-4"><label className="form-label fw-bold">Passo 1</label><input className="admin-form-control mb-2" value={form.infoStepOneTitle} onChange={(event) => update("infoStepOneTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepOneText} onChange={(event) => update("infoStepOneText", event.target.value)} /></div>
                 <div className="col-md-4"><label className="form-label fw-bold">Passo 2</label><input className="admin-form-control mb-2" value={form.infoStepTwoTitle} onChange={(event) => update("infoStepTwoTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepTwoText} onChange={(event) => update("infoStepTwoText", event.target.value)} /></div>
                 <div className="col-md-4"><label className="form-label fw-bold">Passo 3</label><input className="admin-form-control mb-2" value={form.infoStepThreeTitle} onChange={(event) => update("infoStepThreeTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.infoStepThreeText} onChange={(event) => update("infoStepThreeText", event.target.value)} /></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12">
+            <div className="admin-config-group">
+              <div className="admin-config-group-head">
+                <div><h3>Confiança, reviews e FAQ</h3><p>Conteudo de apoio a conversao: banner, provas de confiança e perguntas frequentes.</p></div>
+              </div>
+              <div className="row g-3">
+                <div className="col-md-7"><label className="form-label fw-bold">Texto do banner</label><input className="admin-form-control" value={form.salesBannerText} onChange={(event) => update("salesBannerText", event.target.value)} /></div>
+                <div className="col-md-2"><label className="form-label fw-bold">Botao</label><input className="admin-form-control" value={form.salesBannerCta} onChange={(event) => update("salesBannerCta", event.target.value)} /></div>
+                <div className="col-md-3"><label className="form-label fw-bold">Link</label><input className="admin-form-control" value={form.salesBannerHref} onChange={(event) => update("salesBannerHref", event.target.value)} /></div>
+
+                <div className="col-md-4"><label className="form-label fw-bold">Etiqueta</label><input className="admin-form-control" value={form.trustLabel} onChange={(event) => update("trustLabel", event.target.value)} /></div>
+                <div className="col-md-8"><label className="form-label fw-bold">Titulo de confiança</label><input className="admin-form-control" value={form.trustTitle} onChange={(event) => update("trustTitle", event.target.value)} /></div>
+                <div className="col-12"><label className="form-label fw-bold">Texto de confiança</label><textarea className="admin-form-control" rows={2} value={form.trustText} onChange={(event) => update("trustText", event.target.value)} /></div>
+
+                <div className="col-md-4"><label className="form-label fw-bold">Ponto 1</label><input className="admin-form-control mb-2" value={form.trustOneTitle} onChange={(event) => update("trustOneTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.trustOneText} onChange={(event) => update("trustOneText", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">Ponto 2</label><input className="admin-form-control mb-2" value={form.trustTwoTitle} onChange={(event) => update("trustTwoTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.trustTwoText} onChange={(event) => update("trustTwoText", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">Ponto 3</label><input className="admin-form-control mb-2" value={form.trustThreeTitle} onChange={(event) => update("trustThreeTitle", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.trustThreeText} onChange={(event) => update("trustThreeText", event.target.value)} /></div>
+
+                <div className="col-md-6"><label className="form-label fw-bold">Review 1</label><textarea className="admin-form-control mb-2" rows={3} value={form.reviewOneQuote} onChange={(event) => update("reviewOneQuote", event.target.value)} /><input className="admin-form-control" value={form.reviewOneAuthor} onChange={(event) => update("reviewOneAuthor", event.target.value)} /></div>
+                <div className="col-md-6"><label className="form-label fw-bold">Review 2</label><textarea className="admin-form-control mb-2" rows={3} value={form.reviewTwoQuote} onChange={(event) => update("reviewTwoQuote", event.target.value)} /><input className="admin-form-control" value={form.reviewTwoAuthor} onChange={(event) => update("reviewTwoAuthor", event.target.value)} /></div>
+
+                <div className="col-md-4"><label className="form-label fw-bold">FAQ 1</label><input className="admin-form-control mb-2" value={form.faqOneQuestion} onChange={(event) => update("faqOneQuestion", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.faqOneAnswer} onChange={(event) => update("faqOneAnswer", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">FAQ 2</label><input className="admin-form-control mb-2" value={form.faqTwoQuestion} onChange={(event) => update("faqTwoQuestion", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.faqTwoAnswer} onChange={(event) => update("faqTwoAnswer", event.target.value)} /></div>
+                <div className="col-md-4"><label className="form-label fw-bold">FAQ 3</label><input className="admin-form-control mb-2" value={form.faqThreeQuestion} onChange={(event) => update("faqThreeQuestion", event.target.value)} /><textarea className="admin-form-control" rows={3} value={form.faqThreeAnswer} onChange={(event) => update("faqThreeAnswer", event.target.value)} /></div>
               </div>
             </div>
           </div>
