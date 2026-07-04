@@ -19,7 +19,7 @@ export default function PlanCard({ plan }: { plan: Plan }) {
         <button
           className="btn"
           onClick={() => addToCart({
-            id: `${plan.id}-${Date.now()}`,
+            id: plan.id,
             slug: plan.id,
             title: plan.name,
             price: plan.price,

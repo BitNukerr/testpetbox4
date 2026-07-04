@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AdminImageField, AdminImageListField } from "@/components/AdminImageField";
-import { loadRemoteHomeSettings, saveRemoteHomeSettings } from "@/lib/admin-db";
+import { loadRemoteHomeSettingsForAdmin, saveRemoteHomeSettings } from "@/lib/admin-db";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
 
 const heroPresets = [
@@ -74,17 +74,38 @@ const campaignBoxes: Array<{
   }
 ];
 
+function sameHomeSettings(left: HomeSettings, right: HomeSettings) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 export default function AdminHomeClient() {
   const [form, setForm] = useState<HomeSettings>(() => adminStore.home.get());
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [publishedSettings, setPublishedSettings] = useState<HomeSettings | null>(null);
 
   useEffect(() => {
-    loadRemoteHomeSettings(adminStore.home.get())
+    const localSettings = adminStore.home.get();
+    const hasLocalSettings = adminStore.home.hasLocal();
+
+    loadRemoteHomeSettingsForAdmin(localSettings)
       .then((settings) => {
+        if (hasLocalSettings && !sameHomeSettings(localSettings, settings)) {
+          setForm(localSettings);
+          setPublishedSettings(settings);
+          setMessage("Este browser tem alteracoes locais diferentes da versao publicada. Clique em Guardar para publicar estas imagens e textos para todos os visitantes.");
+          return;
+        }
+
         setForm(settings);
         adminStore.home.set(settings);
+        setPublishedSettings(null);
       })
-      .catch(() => null);
+      .catch(() => {
+        if (hasLocalSettings) {
+          setMessage("Nao consegui carregar a versao publicada. Pode continuar a editar este rascunho local e tentar Guardar novamente.");
+        }
+      });
   }, []);
 
   function update(field: FieldName, value: string) {
@@ -92,20 +113,34 @@ export default function AdminHomeClient() {
   }
 
   async function save() {
-    let remoteSaved = true;
+    if (saving) return;
+    setSaving(true);
     try {
       await saveRemoteHomeSettings(form);
+      adminStore.home.set(form);
+      setPublishedSettings(null);
+      setMessage("Pagina inicial publicada. Novos visitantes vao ver estas imagens e textos.");
     } catch {
-      remoteSaved = false;
+      adminStore.home.set(form);
+      setMessage("Nao consegui guardar no Supabase. Estas alteracoes ficaram so neste browser; novos visitantes continuam a ver a versao antiga.");
+    } finally {
+      setSaving(false);
     }
-    adminStore.home.set(form);
-    setMessage(remoteSaved ? "Pagina inicial actualizada." : "Pagina guardada localmente. Confirme que o Supabase/RLS esta configurado.");
   }
 
   function reset() {
     adminStore.home.reset();
     setForm(adminStore.home.get());
+    setPublishedSettings(null);
     setMessage("Pagina inicial reposta.");
+  }
+
+  function usePublishedVersion() {
+    if (!publishedSettings) return;
+    setForm(publishedSettings);
+    adminStore.home.set(publishedSettings);
+    setPublishedSettings(null);
+    setMessage("Versao publicada carregada neste editor.");
   }
 
   function ImageControls({ field }: { field: FieldName }) {
@@ -134,7 +169,8 @@ export default function AdminHomeClient() {
           <div className="text-muted">Configure textos, imagens e links dos blocos da primeira pagina.</div>
         </div>
         <div className="d-flex gap-2 flex-wrap">
-          <button className="admin-action-btn admin-action-primary" onClick={save}>Guardar</button>
+          {publishedSettings ? <button className="admin-action-btn" onClick={usePublishedVersion}>Usar publicada</button> : null}
+          <button className="admin-action-btn admin-action-primary" onClick={save} disabled={saving}>{saving ? "A guardar..." : "Guardar"}</button>
           <button className="admin-action-btn" onClick={reset}>Repor</button>
         </div>
       </div>

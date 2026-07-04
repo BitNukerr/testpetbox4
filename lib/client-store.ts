@@ -68,10 +68,35 @@ function scopedKey(key: string, scope?: string) {
   return scope ? `${key}:${scope}` : key;
 }
 
+function cartMergeKey(item: CartItem) {
+  if (item.type === "custom-box") return `custom-box:${item.id}`;
+  return `${item.type}:${item.slug}:${item.cadence || ""}`;
+}
+
+function normalizeCart(items: CartItem[]) {
+  const merged = new Map<string, CartItem>();
+
+  for (const item of items) {
+    const quantity = Math.max(0, Number(item.quantity || 0));
+    if (!quantity) continue;
+
+    const key = cartMergeKey(item);
+    const existing = merged.get(key);
+    if (existing) {
+      merged.set(key, { ...existing, quantity: existing.quantity + quantity });
+    } else {
+      merged.set(key, { ...item, quantity });
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    const parsed = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    return Array.isArray(parsed) ? normalizeCart(parsed) : [];
   } catch {
     return [];
   }
@@ -79,7 +104,7 @@ export function getCart(): CartItem[] {
 
 export function setCart(items: CartItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  localStorage.setItem(CART_KEY, JSON.stringify(normalizeCart(items)));
   window.dispatchEvent(new Event("petbox-cart-changed"));
 }
 

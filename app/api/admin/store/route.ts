@@ -224,6 +224,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data });
   }
 
+  if (resource === "home_settings") {
+    const { data, error } = await client.from("home_settings").select("settings").eq("id", true).maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ settings: data?.settings || {} });
+  }
+
   if (resource === "posts") {
     const { data, error } = await client.from("journal_posts").select("slug,title,excerpt,body,status,author,published_at,created_at").order("created_at", { ascending: false });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

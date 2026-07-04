@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <button
               className="btn small"
               onClick={() => addToCart({
-                id: `${product.slug}-${Date.now()}`,
+                id: product.slug,
                 slug: product.slug,
                 title: product.title,
                 price: product.price,

@@ -40,7 +40,7 @@ export function AdminImageField({ value, onChange, onMessage, presets = [], opti
       const result = await prepareAdminImage(file, options);
       const url = await uploadPreparedImage(result, file.name);
       onChange(url);
-      onMessage?.("Imagem optimizada e guardada no Supabase Storage.");
+      onMessage?.("Imagem optimizada e guardada no Supabase Storage. Clique em Guardar para publicar no site.");
     } catch (error) {
       onMessage?.(error instanceof Error ? error.message : "Nao foi possivel preparar a imagem.");
     }
@@ -83,7 +83,7 @@ export function AdminImageListField({ value, onChange, onMessage, presets = [], 
         return uploadPreparedImage(image, file.name);
       }));
       updateItems([...items, ...prepared]);
-      onMessage?.(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} guardada${prepared.length === 1 ? "" : "s"} no Supabase Storage.`);
+      onMessage?.(`${prepared.length} imagem${prepared.length === 1 ? "" : "s"} guardada${prepared.length === 1 ? "" : "s"} no Supabase Storage. Clique em Guardar para publicar no site.`);
     } catch (error) {
       onMessage?.(error instanceof Error ? error.message : "Nao foi possivel preparar as imagens.");
     }

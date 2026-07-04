@@ -230,9 +230,22 @@ export async function saveAdminOrderStatus(order: AdminOrder) {
 }
 
 export async function loadRemoteHomeSettings(fallback: HomeSettings) {
+  try {
+    const response = await fetch("/api/site/home", { cache: "no-store" });
+    const result = await response.json().catch(() => ({}));
+    if (response.ok) return { ...fallback, ...(result.settings || {}) } as HomeSettings;
+  } catch {
+    // Fall back to the public Supabase client below.
+  }
+
   const { data, error } = await requireSupabase().from("home_settings").select("settings").eq("id", true).maybeSingle();
   if (error) throw error;
   return { ...fallback, ...(data?.settings || {}) } as HomeSettings;
+}
+
+export async function loadRemoteHomeSettingsForAdmin(fallback: HomeSettings) {
+  const result = await adminFetch("/api/admin/store?resource=home_settings");
+  return { ...fallback, ...(result.settings || {}) } as HomeSettings;
 }
 
 export async function saveRemoteHomeSettings(settings: HomeSettings) {

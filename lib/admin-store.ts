@@ -314,6 +314,15 @@ function writeObject<T>(key: string, value: T) {
   window.dispatchEvent(new Event("petbox-admin-changed"));
 }
 
+function hasLocalValue(key: string) {
+  if (typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem(key) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -372,6 +381,7 @@ export const adminStore = {
   home: {
     get: () => readObject<HomeSettings>(KEYS.home, defaults.home),
     set: (settings: HomeSettings) => writeObject(KEYS.home, settings),
+    hasLocal: () => hasLocalValue(KEYS.home),
     reset: () => writeObject(KEYS.home, defaults.home)
   },
   configurator: {

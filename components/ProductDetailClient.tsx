@@ -46,7 +46,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           </div>
           <p className="price">{money(product.price)}</p>
           <div className="action-row wrap">
-            <button className="btn" onClick={() => addToCart({ id: `${product.slug}-${Date.now()}`, slug: product.slug, title: product.title, price: product.price, quantity: 1, image: product.image, category: product.category, type: "product", species: product.species })}>Adicionar ao carrinho</button>
+            <button className="btn" onClick={() => addToCart({ id: product.slug, slug: product.slug, title: product.title, price: product.price, quantity: 1, image: product.image, category: product.category, type: "product", species: product.species })}>Adicionar ao carrinho</button>
             <Link href="/loja" className="btn btn-secondary">Voltar a loja</Link>
           </div>
         </div></div>
