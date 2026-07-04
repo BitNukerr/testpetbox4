@@ -5,16 +5,23 @@ import BlogContent from "@/components/BlogContent";
 import { loadAdminPosts } from "@/lib/admin-db";
 import { adminStore, type EditablePost } from "@/lib/admin-store";
 
-export default function JournalPostClient({ slug }: { slug: string }) {
-  const [post, setPost] = useState<EditablePost | null>(null);
-  const [loaded, setLoaded] = useState(false);
+function findPublishedPost(posts: EditablePost[], slug: string) {
+  return posts.find((item) => item.slug === slug && item.status === "Publicado") || null;
+}
+
+export default function JournalPostClient({ slug, initialPosts = [] }: { slug: string; initialPosts?: EditablePost[] }) {
+  const [post, setPost] = useState<EditablePost | null>(() => findPublishedPost(initialPosts, slug));
+  const [loaded, setLoaded] = useState(() => Boolean(initialPosts.length));
+  const hasInitialPosts = Boolean(initialPosts.length);
 
   useEffect(() => {
+    if (hasInitialPosts) return;
+
     loadAdminPosts()
-      .then((posts) => setPost((posts.length ? posts : adminStore.posts.get()).find((item) => item.slug === slug) || null))
-      .catch(() => setPost(adminStore.posts.get().find((item) => item.slug === slug) || null))
+      .then((posts) => setPost(findPublishedPost(posts.length ? posts : adminStore.posts.get(), slug)))
+      .catch(() => setPost(findPublishedPost(adminStore.posts.get(), slug)))
       .finally(() => setLoaded(true));
-  }, [slug]);
+  }, [hasInitialPosts, slug]);
 
   if (!loaded) return null;
 

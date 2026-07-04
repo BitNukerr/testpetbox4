@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { Plan, Product } from "@/data/products";
-import type { ConfiguratorSettings, HomeSettings } from "@/lib/admin-store";
+import type { ConfiguratorSettings, EditablePost, HomeSettings } from "@/lib/admin-store";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export type HomepageData = {
@@ -47,6 +47,18 @@ function planFromRow(row: any): Plan {
   };
 }
 
+function postFromRow(row: any): EditablePost {
+  return {
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt,
+    body: row.body,
+    status: row.status,
+    author: row.author,
+    date: row.published_at || row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10)
+  };
+}
+
 async function readProducts() {
   const client = getSupabaseAdmin();
   if (!client) return [];
@@ -71,6 +83,19 @@ async function readPlans() {
     .order("price", { ascending: true });
 
   return error ? [] : (data || []).map(planFromRow);
+}
+
+async function readPosts() {
+  const client = getSupabaseAdmin();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("journal_posts")
+    .select("slug,title,excerpt,body,status,author,published_at,created_at")
+    .eq("status", "Publicado")
+    .order("created_at", { ascending: false });
+
+  return error ? [] : (data || []).map(postFromRow);
 }
 
 async function readHomepageData(): Promise<HomepageData> {
@@ -108,6 +133,11 @@ async function readConfiguratorData(): Promise<ConfiguratorData> {
 export const getCachedProducts = unstable_cache(readProducts, ["petbox-products"], {
   revalidate: 300,
   tags: ["petbox-products"]
+});
+
+export const getCachedPosts = unstable_cache(readPosts, ["petbox-posts"], {
+  revalidate: 300,
+  tags: ["petbox-posts"]
 });
 
 export const getCachedHomepageData = unstable_cache(readHomepageData, ["petbox-homepage-data"], {

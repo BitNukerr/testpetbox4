@@ -46,6 +46,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const [personalityId, setPersonalityId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).personalities, "playful"));
   const [extraIds, setExtraIds] = useState<string[]>(() => initialSettingsFromProps(initialConfiguratorSettings).extras[0]?.id ? [initialSettingsFromProps(initialConfiguratorSettings).extras[0].id] : []);
   const [petNotes, setPetNotes] = useState("");
+  const hasInitialData = Boolean(initialConfiguratorSettings || initialPlans.length);
 
   useEffect(() => {
     if (initialPlans.length) {
@@ -70,6 +71,11 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
     };
 
     refresh();
+    if (hasInitialData) {
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
     Promise.all([
       loadAdminPlans().catch(() => []),
       loadRemoteConfiguratorSettings(adminStore.configurator.get()).catch(() => null)

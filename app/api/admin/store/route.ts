@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
     const item = body.item || {};
     const { data, error } = await client.from("products").upsert({ ...item, is_active: true }, { onConflict: "slug" }).select("slug,title,category,species,price,description,image,tag,rating").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${data.slug}`]);
+    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${data.slug}`, "/sitemap.xml"]);
     return NextResponse.json({ data });
   }
 
@@ -304,6 +304,7 @@ export async function POST(request: NextRequest) {
     const item = body.item || {};
     const { data, error } = await client.from("journal_posts").upsert(item, { onConflict: "slug" }).select("slug,title,excerpt,body,status,author,published_at,created_at").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${data.slug}`, "/sitemap.xml"]);
     return NextResponse.json({ data });
   }
 
@@ -411,7 +412,7 @@ export async function DELETE(request: NextRequest) {
   if (resource === "products") {
     const { error } = await client.from("products").delete().eq("slug", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${id}`]);
+    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${id}`, "/sitemap.xml"]);
     return NextResponse.json({ ok: true });
   }
 
@@ -425,6 +426,7 @@ export async function DELETE(request: NextRequest) {
   if (resource === "posts") {
     const { error } = await client.from("journal_posts").delete().eq("slug", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${id}`, "/sitemap.xml"]);
     return NextResponse.json({ ok: true });
   }
 

@@ -13,6 +13,7 @@ import { pt } from "@/lib/translations";
 export default function ProductDetailClient({ slug, initialProducts = [] }: { slug: string; initialProducts?: Product[] }) {
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : []);
   const [loaded, setLoaded] = useState(() => Boolean(initialProducts.length));
+  const hasInitialProducts = Boolean(initialProducts.length);
 
   useEffect(() => {
     if (initialProducts.length) {
@@ -21,6 +22,8 @@ export default function ProductDetailClient({ slug, initialProducts = [] }: { sl
     } else {
       setProducts(adminStore.products.get());
     }
+
+    if (hasInitialProducts) return;
 
     loadAdminProducts()
       .then((items) => setProducts(items.length ? items : adminStore.products.get()))

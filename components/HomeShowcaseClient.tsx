@@ -29,6 +29,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
   const [settings, setSettings] = useState<HomeSettings>(() => initialSettingsFromProps(initialHomeSettings));
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
   const [plans, setPlans] = useState<Plan[]>(() => initialPlans.length ? initialPlans : adminStore.plans.get());
+  const hasInitialData = Boolean(initialHomeSettings || initialProducts.length || initialPlans.length);
 
   useEffect(() => {
     if (initialHomeSettings) {
@@ -48,6 +49,11 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
     };
 
     refresh();
+    if (hasInitialData) {
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
     Promise.all([
       loadRemoteHomeSettings(adminStore.home.get()).catch(() => null),
       loadAdminProducts().catch(() => []),

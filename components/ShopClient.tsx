@@ -29,6 +29,7 @@ export default function ShopClient({ initialProducts = [] }: { initialProducts?:
   const [category, setCategory] = useState("Todos");
   const [species, setSpecies] = useState<SpeciesFilter>("all");
   const [sort, setSort] = useState<SortMode>("featured");
+  const hasInitialProducts = Boolean(initialProducts.length);
 
   useEffect(() => {
     if (initialProducts.length) {
@@ -37,6 +38,11 @@ export default function ShopClient({ initialProducts = [] }: { initialProducts?:
 
     const refresh = () => setItems(adminStore.products.get());
     refresh();
+    if (hasInitialProducts) {
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
     loadAdminProducts()
       .then((products) => {
         if (products.length) {
