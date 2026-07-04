@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { loadAdminPlans, loadAdminProducts, loadRemoteHomeSettings } from "@/lib/admin-db";
 import { adminStore, type HomeSettings } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
+import type { Plan } from "@/data/products";
 import { money } from "@/lib/helpers";
 
 function speciesLabel(species: Product["species"]) {
@@ -13,12 +14,33 @@ function speciesLabel(species: Product["species"]) {
   return "Caes e gatos";
 }
 
-export default function HomeShowcaseClient() {
-  const [settings, setSettings] = useState<HomeSettings>(() => adminStore.home.get());
-  const [products, setProducts] = useState<Product[]>(() => adminStore.products.get());
-  const [plans, setPlans] = useState(() => adminStore.plans.get());
+type HomeShowcaseClientProps = {
+  initialHomeSettings?: Partial<HomeSettings> | null;
+  initialProducts?: Product[];
+  initialPlans?: Plan[];
+};
+
+function initialSettingsFromProps(initialHomeSettings?: Partial<HomeSettings> | null) {
+  const localSettings = adminStore.home.get();
+  return initialHomeSettings ? ({ ...localSettings, ...initialHomeSettings } as HomeSettings) : localSettings;
+}
+
+export default function HomeShowcaseClient({ initialHomeSettings = null, initialProducts = [], initialPlans = [] }: HomeShowcaseClientProps) {
+  const [settings, setSettings] = useState<HomeSettings>(() => initialSettingsFromProps(initialHomeSettings));
+  const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
+  const [plans, setPlans] = useState<Plan[]>(() => initialPlans.length ? initialPlans : adminStore.plans.get());
 
   useEffect(() => {
+    if (initialHomeSettings) {
+      adminStore.home.set(initialSettingsFromProps(initialHomeSettings));
+    }
+    if (initialProducts.length) {
+      adminStore.products.set(initialProducts);
+    }
+    if (initialPlans.length) {
+      adminStore.plans.set(initialPlans);
+    }
+
     const refresh = () => {
       setSettings(adminStore.home.get());
       setProducts(adminStore.products.get());
