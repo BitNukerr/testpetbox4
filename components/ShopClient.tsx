@@ -23,14 +23,18 @@ const categoryIcons: Record<string, string> = {
   "Acessórios": "◇"
 };
 
-export default function ShopClient() {
-  const [items, setItems] = useState<Product[]>(() => adminStore.products.get());
+export default function ShopClient({ initialProducts = [] }: { initialProducts?: Product[] }) {
+  const [items, setItems] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Todos");
   const [species, setSpecies] = useState<SpeciesFilter>("all");
   const [sort, setSort] = useState<SortMode>("featured");
 
   useEffect(() => {
+    if (initialProducts.length) {
+      adminStore.products.set(initialProducts);
+    }
+
     const refresh = () => setItems(adminStore.products.get());
     refresh();
     loadAdminProducts()

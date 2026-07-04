@@ -1,5 +1,8 @@
 import ProductDetailClient from "@/components/ProductDetailClient";
 import { products } from "@/data/products";
+import { getCachedProducts } from "@/lib/site-data";
+
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const initialProducts = await getCachedProducts();
 
-  return <ProductDetailClient slug={slug} />;
+  return <ProductDetailClient slug={slug} initialProducts={initialProducts} />;
 }

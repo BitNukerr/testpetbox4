@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requestHasAdminSession } from "@/lib/admin-auth";
 import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
@@ -200,6 +201,11 @@ async function saveStoreSettings(client: SupabaseAdminClient, item: any) {
   return client.from("store_settings").upsert(legacyPayload, { onConflict: "id" }).select("store_name,support_email,shipping_price").single();
 }
 
+function refreshPublicCache(tags: string[], paths: string[]) {
+  for (const tag of tags) revalidateTag(tag, "max");
+  for (const path of paths) revalidatePath(path);
+}
+
 export async function GET(request: NextRequest) {
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
@@ -276,6 +282,7 @@ export async function POST(request: NextRequest) {
     const item = body.item || {};
     const { data, error } = await client.from("products").upsert({ ...item, is_active: true }, { onConflict: "slug" }).select("slug,title,category,species,price,description,image,tag,rating").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${data.slug}`]);
     return NextResponse.json({ data });
   }
 
@@ -283,6 +290,7 @@ export async function POST(request: NextRequest) {
     const item = body.item || {};
     const { data, error } = await client.from("plans").upsert({ ...item, is_active: true }, { onConflict: "id" }).select("id,name,cadence,price,description,perks").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
     return NextResponse.json({ data });
   }
 
@@ -302,12 +310,14 @@ export async function POST(request: NextRequest) {
   if (body.resource === "home_settings") {
     const { error } = await client.from("home_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-homepage"], ["/"]);
     return NextResponse.json({ ok: true });
   }
 
   if (body.resource === "configurator_settings") {
     const { error } = await client.from("configurator_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-configurator"], ["/criar-caixa"]);
     return NextResponse.json({ ok: true });
   }
 
@@ -401,12 +411,14 @@ export async function DELETE(request: NextRequest) {
   if (resource === "products") {
     const { error } = await client.from("products").delete().eq("slug", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${id}`]);
     return NextResponse.json({ ok: true });
   }
 
   if (resource === "plans") {
     const { error } = await client.from("plans").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
     return NextResponse.json({ ok: true });
   }
 

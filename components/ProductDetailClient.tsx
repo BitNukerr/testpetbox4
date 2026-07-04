@@ -10,11 +10,18 @@ import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 
-export default function ProductDetailClient({ slug }: { slug: string }) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loaded, setLoaded] = useState(false);
+export default function ProductDetailClient({ slug, initialProducts = [] }: { slug: string; initialProducts?: Product[] }) {
+  const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : []);
+  const [loaded, setLoaded] = useState(() => Boolean(initialProducts.length));
 
   useEffect(() => {
+    if (initialProducts.length) {
+      adminStore.products.set(initialProducts);
+      setLoaded(true);
+    } else {
+      setProducts(adminStore.products.get());
+    }
+
     loadAdminProducts()
       .then((items) => setProducts(items.length ? items : adminStore.products.get()))
       .catch(() => setProducts(adminStore.products.get()))

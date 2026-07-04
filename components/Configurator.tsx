@@ -21,19 +21,40 @@ function getOption(options: ConfigOption[], id: string) {
   return options.find((option) => option.id === id) || options[0];
 }
 
-export default function Configurator() {
+type ConfiguratorProps = {
+  initialConfiguratorSettings?: Partial<ConfiguratorSettings> | null;
+  initialPlans?: Plan[];
+};
+
+function initialSettingsFromProps(initialConfiguratorSettings?: Partial<ConfiguratorSettings> | null) {
+  const localSettings = adminStore.configurator.get();
+  return initialConfiguratorSettings ? ({ ...localSettings, ...initialConfiguratorSettings } as ConfiguratorSettings) : localSettings;
+}
+
+function initialPlansFromProps(initialPlans?: Plan[]) {
+  return initialPlans?.length ? initialPlans : adminStore.plans.get();
+}
+
+export default function Configurator({ initialConfiguratorSettings = null, initialPlans = [] }: ConfiguratorProps) {
   const router = useRouter();
-  const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
-  const [settings, setSettings] = useState<ConfiguratorSettings>(() => adminStore.configurator.get());
-  const [animalId, setAnimalId] = useState(() => firstOption(adminStore.configurator.get().animals, "dog"));
-  const [sizeId, setSizeId] = useState(() => firstOption(adminStore.configurator.get().sizes, "medium"));
-  const [ageId, setAgeId] = useState(() => firstOption(adminStore.configurator.get().ages, "adult"));
-  const [planId, setPlanId] = useState(() => adminStore.plans.get()[0]?.id || "");
-  const [personalityId, setPersonalityId] = useState(() => firstOption(adminStore.configurator.get().personalities, "playful"));
-  const [extraIds, setExtraIds] = useState<string[]>(() => adminStore.configurator.get().extras[0]?.id ? [adminStore.configurator.get().extras[0].id] : []);
+  const [plans, setPlans] = useState<Plan[]>(() => initialPlansFromProps(initialPlans));
+  const [settings, setSettings] = useState<ConfiguratorSettings>(() => initialSettingsFromProps(initialConfiguratorSettings));
+  const [animalId, setAnimalId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).animals, "dog"));
+  const [sizeId, setSizeId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).sizes, "medium"));
+  const [ageId, setAgeId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).ages, "adult"));
+  const [planId, setPlanId] = useState(() => initialPlansFromProps(initialPlans)[0]?.id || "");
+  const [personalityId, setPersonalityId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).personalities, "playful"));
+  const [extraIds, setExtraIds] = useState<string[]>(() => initialSettingsFromProps(initialConfiguratorSettings).extras[0]?.id ? [initialSettingsFromProps(initialConfiguratorSettings).extras[0].id] : []);
   const [petNotes, setPetNotes] = useState("");
 
   useEffect(() => {
+    if (initialPlans.length) {
+      adminStore.plans.set(initialPlans);
+    }
+    if (initialConfiguratorSettings) {
+      adminStore.configurator.set(initialSettingsFromProps(initialConfiguratorSettings));
+    }
+
     const refresh = () => {
       const nextPlans = adminStore.plans.get();
       const nextSettings = adminStore.configurator.get();

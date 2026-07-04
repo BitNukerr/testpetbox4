@@ -1,6 +1,11 @@
 import Configurator from "@/components/Configurator";
+import { getCachedConfiguratorData } from "@/lib/site-data";
 
-export default function CriarCaixaPage() {
+export const revalidate = 300;
+
+export default async function CriarCaixaPage() {
+  const configuratorData = await getCachedConfiguratorData();
+
   return (
     <section className="container section">
       <div className="section-heading">
@@ -10,7 +15,7 @@ export default function CriarCaixaPage() {
           <p className="muted">Escolha o animal, plano, personalidade e extras. O resumo actualiza automaticamente.</p>
         </div>
       </div>
-      <Configurator />
+      <Configurator {...configuratorData} />
     </section>
   );
 }
