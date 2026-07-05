@@ -143,6 +143,12 @@ export default function AdminHomeClient() {
     setMessage("Versao publicada carregada neste editor.");
   }
 
+  function previewAsCustomer() {
+    adminStore.home.set(form);
+    window.open("/?preview=admin", "_blank", "noopener,noreferrer");
+    setMessage("Pre-visualizacao aberta com este rascunho local. Para publicar para todos, clique em Guardar.");
+  }
+
   function ImageControls({ field }: { field: FieldName }) {
     return <AdminImageField value={String(form[field] || "")} onChange={(value) => update(field, value)} onMessage={setMessage} presets={heroPresets} options={{ width: 900, height: 650, fit: "contain" }} />;
   }
@@ -170,6 +176,7 @@ export default function AdminHomeClient() {
         </div>
         <div className="d-flex gap-2 flex-wrap">
           {publishedSettings ? <button className="admin-action-btn" onClick={usePublishedVersion}>Usar publicada</button> : null}
+          <button className="admin-action-btn" onClick={previewAsCustomer}>Pre-visualizar site</button>
           <button className="admin-action-btn admin-action-primary" onClick={save} disabled={saving}>{saving ? "A guardar..." : "Guardar"}</button>
           <button className="admin-action-btn" onClick={reset}>Repor</button>
         </div>

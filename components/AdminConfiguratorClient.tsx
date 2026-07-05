@@ -121,6 +121,12 @@ export default function AdminConfiguratorClient() {
     setMessage(remoteSaved ? "Configurador actualizado." : "Configurador guardado localmente. Confirme que o Supabase/RLS esta configurado.");
   }
 
+  function previewAsCustomer() {
+    adminStore.configurator.set(form);
+    window.open("/criar-caixa?preview=admin", "_blank", "noopener,noreferrer");
+    setMessage("Pre-visualizacao aberta com este rascunho local. Para publicar para todos, clique em Guardar configurador.");
+  }
+
   function resetAll() {
     adminStore.configurator.reset();
     const next = adminStore.configurator.get();
@@ -140,6 +146,7 @@ export default function AdminConfiguratorClient() {
           <div className="text-muted">Configure os passos, cards e extras do configurador publico.</div>
         </div>
         <div className="d-flex gap-2 flex-wrap">
+          <button className="admin-action-btn" onClick={previewAsCustomer}>Pre-visualizar site</button>
           <button className="admin-action-btn admin-action-primary" onClick={saveAll}>Guardar configurador</button>
           <button className="admin-action-btn" onClick={resetAll}>Repor</button>
         </div>

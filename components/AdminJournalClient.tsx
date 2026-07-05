@@ -23,16 +23,21 @@ export default function AdminJournalClient() {
   const [form, setForm] = useState<EditablePost>(emptyPost);
   const [imageAlt, setImageAlt] = useState("");
   const [message, setMessage] = useState("");
+  const [loadingRemote, setLoadingRemote] = useState(true);
+  const [remoteIssue, setRemoteIssue] = useState("");
 
   useEffect(() => {
+    setLoadingRemote(true);
     loadAdminPostsForAdmin()
       .then((items) => {
         if (items.length) {
           setPosts(items);
           adminStore.posts.set(items);
         }
+        setRemoteIssue("");
       })
-      .catch(() => null);
+      .catch(() => setRemoteIssue("Modo local: nao consegui carregar os artigos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))
+      .finally(() => setLoadingRemote(false));
   }, []);
 
   function save(next: EditablePost[], text: string) {
@@ -175,6 +180,12 @@ export default function AdminJournalClient() {
         <div><h2 className="h4 mb-1">Blog</h2><div className="text-muted">Crie, edite, publique e remova artigos.</div></div>
         <div className="d-flex gap-2 flex-wrap"><button className="admin-action-btn" onClick={startNew}>Novo artigo</button><button className="admin-action-btn" onClick={resetPosts}>Repor blog</button></div>
       </div>
+      {loadingRemote || remoteIssue ? (
+        <div className="card-body pb-0">
+          {loadingRemote ? <div className="admin-setup-note mb-3">A carregar artigos do Supabase...</div> : null}
+          {remoteIssue ? <div className="admin-setup-note warning mb-3">{remoteIssue}</div> : null}
+        </div>
+      ) : null}
       {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-7"><label className="form-label fw-bold">Titulo</label><input className="admin-form-control" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value, slug: editing ? form.slug : slugify(event.target.value) })} /></div>
@@ -211,6 +222,9 @@ export default function AdminJournalClient() {
         <table className="table admin-table">
           <thead><tr><th>Titulo</th><th>Autor</th><th>Data</th><th>Estado</th><th /></tr></thead>
           <tbody>
+            {!loadingRemote && posts.length === 0 ? (
+              <tr><td colSpan={5} className="text-muted text-center py-4">Ainda nao ha artigos. Clique em Novo artigo para criar o primeiro.</td></tr>
+            ) : null}
             {posts.map((post) => (
               <tr key={post.slug}>
                 <td className="fw-bold">{post.title}<div className="text-muted small">/{post.slug}</div></td>

@@ -1,6 +1,11 @@
 import CartClient from "@/components/CartClient";
+import { getCachedStoreSettings } from "@/lib/site-data";
 
-export default function CarrinhoPage() {
+export const revalidate = 300;
+
+export default async function CarrinhoPage() {
+  const initialStoreSettings = await getCachedStoreSettings();
+
   return (
     <section className="section">
       <div className="container section-heading">
@@ -9,7 +14,7 @@ export default function CarrinhoPage() {
           <h1>Reveja as escolhas para o seu animal</h1>
         </div>
       </div>
-      <CartClient />
+      <CartClient initialStoreSettings={initialStoreSettings} />
     </section>
   );
 }

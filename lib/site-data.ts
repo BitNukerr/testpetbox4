@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { Plan, Product } from "@/data/products";
-import type { ConfiguratorSettings, EditablePost, HomeSettings } from "@/lib/admin-store";
+import type { ConfiguratorSettings, EditablePost, HomeSettings, StoreSettings } from "@/lib/admin-store";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export type HomepageData = {
@@ -13,6 +13,8 @@ export type ConfiguratorData = {
   initialConfiguratorSettings: Partial<ConfiguratorSettings> | null;
   initialPlans: Plan[];
 };
+
+export type StoreSettingsData = Partial<StoreSettings> | null;
 
 function emptyHomepageData(): HomepageData {
   return {
@@ -56,6 +58,17 @@ function postFromRow(row: any): EditablePost {
     status: row.status,
     author: row.author,
     date: row.published_at || row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10)
+  };
+}
+
+function storeSettingsFromRow(row: any): StoreSettingsData {
+  if (!row) return null;
+
+  return {
+    storeName: row.store_name || row.storeName || "PetBox",
+    email: row.support_email || row.email || "",
+    note: row.internal_note || row.note || "",
+    shippingPrice: Number(row.shipping_price ?? row.shippingPrice ?? 0)
   };
 }
 
@@ -130,6 +143,27 @@ async function readConfiguratorData(): Promise<ConfiguratorData> {
   };
 }
 
+async function readStoreSettings(): Promise<StoreSettingsData> {
+  const client = getSupabaseAdmin();
+  if (!client) return null;
+
+  let result = await client
+    .from("store_settings")
+    .select("store_name,support_email,shipping_price,internal_note")
+    .eq("id", true)
+    .maybeSingle();
+
+  if (result.error && String(result.error.message || "").toLowerCase().includes("internal_note")) {
+    result = await client
+      .from("store_settings")
+      .select("store_name,support_email,shipping_price")
+      .eq("id", true)
+      .maybeSingle();
+  }
+
+  return result.error ? null : storeSettingsFromRow(result.data);
+}
+
 export const getCachedProducts = unstable_cache(readProducts, ["petbox-products"], {
   revalidate: 300,
   tags: ["petbox-products"]
@@ -148,4 +182,9 @@ export const getCachedHomepageData = unstable_cache(readHomepageData, ["petbox-h
 export const getCachedConfiguratorData = unstable_cache(readConfiguratorData, ["petbox-configurator-data"], {
   revalidate: 300,
   tags: ["petbox-configurator", "petbox-plans"]
+});
+
+export const getCachedStoreSettings = unstable_cache(readStoreSettings, ["petbox-store-settings"], {
+  revalidate: 300,
+  tags: ["petbox-store-settings"]
 });

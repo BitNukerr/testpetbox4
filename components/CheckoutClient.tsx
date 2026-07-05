@@ -5,15 +5,24 @@ import { useRouter } from "next/navigation";
 import type { CheckoutError, CheckoutInstance, CheckoutOutput, CheckoutPaymentError } from "@easypaypt/checkout-sdk";
 import { type CartItem, getCart, saveOrder, setCart } from "@/lib/client-store";
 import { loadRemoteStoreSettings } from "@/lib/admin-db";
-import { adminStore } from "@/lib/admin-store";
+import { adminStore, type StoreSettings } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
 
-export default function CheckoutClient() {
+type CheckoutClientProps = {
+  initialStoreSettings?: Partial<StoreSettings> | null;
+};
+
+function initialSettingsFromProps(initialStoreSettings?: Partial<StoreSettings> | null) {
+  const localSettings = adminStore.settings.get();
+  return initialStoreSettings ? ({ ...localSettings, ...initialStoreSettings } as StoreSettings) : localSettings;
+}
+
+export default function CheckoutClient({ initialStoreSettings = null }: CheckoutClientProps) {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [settings, setSettings] = useState(() => adminStore.settings.get());
+  const [settings, setSettings] = useState(() => initialSettingsFromProps(initialStoreSettings));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [checkoutReady, setCheckoutReady] = useState(false);
@@ -29,11 +38,19 @@ export default function CheckoutClient() {
     nif: "",
     notes: ""
   });
+  const hasInitialSettings = Boolean(initialStoreSettings);
 
   useEffect(() => { setItems(getCart()); }, []);
   useEffect(() => {
     const refresh = () => setSettings(adminStore.settings.get());
+    if (initialStoreSettings) {
+      adminStore.settings.set(initialSettingsFromProps(initialStoreSettings));
+    }
     refresh();
+    if (hasInitialSettings) {
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
     loadRemoteStoreSettings(adminStore.settings.get())
       .then((remoteSettings) => {
         setSettings(remoteSettings);

@@ -25,6 +25,11 @@ function initialSettingsFromProps(initialHomeSettings?: Partial<HomeSettings> | 
   return initialHomeSettings ? ({ ...localSettings, ...initialHomeSettings } as HomeSettings) : localSettings;
 }
 
+function shouldUseAdminPreview() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("preview") === "admin";
+}
+
 export default function HomeShowcaseClient({ initialHomeSettings = null, initialProducts = [], initialPlans = [] }: HomeShowcaseClientProps) {
   const [settings, setSettings] = useState<HomeSettings>(() => initialSettingsFromProps(initialHomeSettings));
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
@@ -32,6 +37,18 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
   const hasInitialData = Boolean(initialHomeSettings || initialProducts.length || initialPlans.length);
 
   useEffect(() => {
+    const refresh = () => {
+      setSettings(adminStore.home.get());
+      setProducts(adminStore.products.get());
+      setPlans(adminStore.plans.get());
+    };
+
+    if (shouldUseAdminPreview()) {
+      refresh();
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
     if (initialHomeSettings) {
       adminStore.home.set(initialSettingsFromProps(initialHomeSettings));
     }
@@ -41,12 +58,6 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
     if (initialPlans.length) {
       adminStore.plans.set(initialPlans);
     }
-
-    const refresh = () => {
-      setSettings(adminStore.home.get());
-      setProducts(adminStore.products.get());
-      setPlans(adminStore.plans.get());
-    };
 
     refresh();
     if (hasInitialData) {

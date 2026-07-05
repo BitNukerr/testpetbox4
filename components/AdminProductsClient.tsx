@@ -44,18 +44,23 @@ export default function AdminProductsClient() {
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<Product>(emptyProduct);
   const [message, setMessage] = useState("");
+  const [loadingRemote, setLoadingRemote] = useState(true);
+  const [remoteIssue, setRemoteIssue] = useState("");
 
   const sortedProducts = useMemo(() => [...products].sort((a, b) => a.title.localeCompare(b.title)), [products]);
 
   useEffect(() => {
+    setLoadingRemote(true);
     loadAdminProductsForAdmin()
       .then((items) => {
         if (items.length) {
           setProducts(items);
           adminStore.products.set(items);
         }
+        setRemoteIssue("");
       })
-      .catch(() => null);
+      .catch(() => setRemoteIssue("Modo local: nao consegui carregar os produtos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))
+      .finally(() => setLoadingRemote(false));
   }, []);
 
   function saveProducts(next: Product[], text: string) {
@@ -135,6 +140,13 @@ export default function AdminProductsClient() {
         </div>
       </div>
 
+      {loadingRemote || remoteIssue ? (
+        <div className="card-body pb-0">
+          {loadingRemote ? <div className="admin-setup-note mb-3">A carregar produtos do Supabase...</div> : null}
+          {remoteIssue ? <div className="admin-setup-note warning mb-3">{remoteIssue}</div> : null}
+        </div>
+      ) : null}
+
       {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-xl-8">
@@ -174,6 +186,9 @@ export default function AdminProductsClient() {
         <table className="table admin-table admin-products-table">
           <thead><tr><th>Produto</th><th>Categoria</th><th>Animal</th><th>Preco</th><th>Avaliacao</th><th className="admin-actions-heading">Acoes</th></tr></thead>
           <tbody>
+            {!loadingRemote && sortedProducts.length === 0 ? (
+              <tr><td colSpan={6} className="text-muted text-center py-4">Ainda nao ha produtos. Clique em Novo produto para criar o primeiro.</td></tr>
+            ) : null}
             {sortedProducts.map((product) => (
               <tr key={product.slug}>
                 <td>

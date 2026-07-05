@@ -29,18 +29,23 @@ export default function AdminPlansClient() {
   const [form, setForm] = useState<Plan>(emptyPlan);
   const [perksText, setPerksText] = useState("");
   const [message, setMessage] = useState("");
+  const [loadingRemote, setLoadingRemote] = useState(true);
+  const [remoteIssue, setRemoteIssue] = useState("");
 
   const sortedPlans = useMemo(() => [...plans].sort((a, b) => a.price - b.price), [plans]);
 
   useEffect(() => {
+    setLoadingRemote(true);
     loadAdminPlansForAdmin()
       .then((items) => {
         if (items.length) {
           setPlans(items);
           adminStore.plans.set(items);
         }
+        setRemoteIssue("");
       })
-      .catch(() => null);
+      .catch(() => setRemoteIssue("Modo local: nao consegui carregar os planos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))
+      .finally(() => setLoadingRemote(false));
   }, []);
 
   function startNew() {
@@ -125,6 +130,13 @@ export default function AdminPlansClient() {
         </div>
       </div>
 
+      {loadingRemote || remoteIssue ? (
+        <div className="card-body pb-0">
+          {loadingRemote ? <div className="admin-setup-note mb-3">A carregar planos do Supabase...</div> : null}
+          {remoteIssue ? <div className="admin-setup-note warning mb-3">{remoteIssue}</div> : null}
+        </div>
+      ) : null}
+
       {formOpen ? <div className="card-body">
         <div className="row g-3">
           <div className="col-md-6"><label className="form-label fw-bold">Nome</label><input className="admin-form-control" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value, id: editing ? form.id : slugify(event.target.value) })} /></div>
@@ -142,6 +154,9 @@ export default function AdminPlansClient() {
         <table className="table admin-table">
           <thead><tr><th>Plano</th><th>Periodicidade</th><th>Preco</th><th>Vantagens</th><th className="admin-actions-heading">Acoes</th></tr></thead>
           <tbody>
+            {!loadingRemote && sortedPlans.length === 0 ? (
+              <tr><td colSpan={5} className="text-muted text-center py-4">Ainda nao ha planos. Clique em Novo plano para criar o primeiro.</td></tr>
+            ) : null}
             {sortedPlans.map((plan) => (
               <tr key={plan.id}>
                 <td><strong>{plan.name}</strong><div className="text-muted small">/{plan.id}</div><div className="text-muted small">{plan.description}</div></td>

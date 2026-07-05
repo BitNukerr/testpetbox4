@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
   if (body.resource === "store_settings") {
     const { data, error } = await saveStoreSettings(client, body.item || {});
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    refreshPublicCache(["petbox-store-settings"], ["/carrinho", "/pagamento"]);
     return NextResponse.json({ data });
   }
 

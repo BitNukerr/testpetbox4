@@ -35,6 +35,11 @@ function initialPlansFromProps(initialPlans?: Plan[]) {
   return initialPlans?.length ? initialPlans : adminStore.plans.get();
 }
 
+function shouldUseAdminPreview() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("preview") === "admin";
+}
+
 export default function Configurator({ initialConfiguratorSettings = null, initialPlans = [] }: ConfiguratorProps) {
   const router = useRouter();
   const [plans, setPlans] = useState<Plan[]>(() => initialPlansFromProps(initialPlans));
@@ -49,13 +54,6 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const hasInitialData = Boolean(initialConfiguratorSettings || initialPlans.length);
 
   useEffect(() => {
-    if (initialPlans.length) {
-      adminStore.plans.set(initialPlans);
-    }
-    if (initialConfiguratorSettings) {
-      adminStore.configurator.set(initialSettingsFromProps(initialConfiguratorSettings));
-    }
-
     const refresh = () => {
       const nextPlans = adminStore.plans.get();
       const nextSettings = adminStore.configurator.get();
@@ -69,6 +67,19 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       setPersonalityId((current) => nextSettings.personalities.some((option) => option.id === current) ? current : firstOption(nextSettings.personalities, "playful"));
       setExtraIds((current) => current.filter((id) => nextSettings.extras.some((option) => option.id === id)));
     };
+
+    if (shouldUseAdminPreview()) {
+      refresh();
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
+    if (initialPlans.length) {
+      adminStore.plans.set(initialPlans);
+    }
+    if (initialConfiguratorSettings) {
+      adminStore.configurator.set(initialSettingsFromProps(initialConfiguratorSettings));
+    }
 
     refresh();
     if (hasInitialData) {

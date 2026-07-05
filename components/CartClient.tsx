@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CartItem, getCart, setCart } from "@/lib/client-store";
 import { loadRemoteStoreSettings } from "@/lib/admin-db";
-import { adminStore } from "@/lib/admin-store";
+import { adminStore, type StoreSettings } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 
@@ -23,13 +23,30 @@ function speciesLabel(species?: CartItem["species"]) {
   return "";
 }
 
-export default function CartClient() {
+type CartClientProps = {
+  initialStoreSettings?: Partial<StoreSettings> | null;
+};
+
+function initialSettingsFromProps(initialStoreSettings?: Partial<StoreSettings> | null) {
+  const localSettings = adminStore.settings.get();
+  return initialStoreSettings ? ({ ...localSettings, ...initialStoreSettings } as StoreSettings) : localSettings;
+}
+
+export default function CartClient({ initialStoreSettings = null }: CartClientProps) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [settings, setSettings] = useState(() => adminStore.settings.get());
+  const [settings, setSettings] = useState(() => initialSettingsFromProps(initialStoreSettings));
+  const hasInitialSettings = Boolean(initialStoreSettings);
   useEffect(() => { const refresh = () => setItems(getCart()); refresh(); window.addEventListener("petbox-cart-changed", refresh); return () => window.removeEventListener("petbox-cart-changed", refresh); }, []);
   useEffect(() => {
     const refresh = () => setSettings(adminStore.settings.get());
+    if (initialStoreSettings) {
+      adminStore.settings.set(initialSettingsFromProps(initialStoreSettings));
+    }
     refresh();
+    if (hasInitialSettings) {
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
     loadRemoteStoreSettings(adminStore.settings.get())
       .then((remoteSettings) => {
         setSettings(remoteSettings);
