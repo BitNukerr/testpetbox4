@@ -459,6 +459,28 @@ to authenticated
 using (public.is_petbox_admin())
 with check (public.is_petbox_admin());
 
+create table if not exists public.admin_activity_log (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  action text not null,
+  target text not null,
+  detail text
+);
+
+alter table public.admin_activity_log enable row level security;
+
+drop policy if exists "Admins read activity log" on public.admin_activity_log;
+create policy "Admins read activity log"
+on public.admin_activity_log for select
+to authenticated
+using (public.is_petbox_admin());
+
+drop policy if exists "Admins insert activity log" on public.admin_activity_log;
+create policy "Admins insert activity log"
+on public.admin_activity_log for insert
+to authenticated
+with check (public.is_petbox_admin());
+
 insert into public.store_settings (id, store_name, shipping_price)
 values (true, 'PetBox', 8)
 on conflict (id) do nothing;

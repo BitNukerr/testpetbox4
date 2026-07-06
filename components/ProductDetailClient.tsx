@@ -14,9 +14,22 @@ import SmartImage from "@/components/SmartImage";
 export default function ProductDetailClient({ slug, initialProducts = [] }: { slug: string; initialProducts?: Product[] }) {
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : []);
   const [loaded, setLoaded] = useState(() => Boolean(initialProducts.length));
+  const [previewMode, setPreviewMode] = useState(false);
   const hasInitialProducts = Boolean(initialProducts.length);
 
   useEffect(() => {
+    const isPreview = new URLSearchParams(window.location.search).get("preview") === "admin";
+    if (isPreview) {
+      const refresh = () => {
+        setProducts(adminStore.products.get());
+        setLoaded(true);
+      };
+      setPreviewMode(true);
+      refresh();
+      window.addEventListener("petbox-admin-changed", refresh);
+      return () => window.removeEventListener("petbox-admin-changed", refresh);
+    }
+
     if (initialProducts.length) {
       adminStore.products.set(initialProducts);
       setLoaded(true);
@@ -43,6 +56,7 @@ export default function ProductDetailClient({ slug, initialProducts = [] }: { sl
 
   return (
     <section className="container section">
+      {previewMode ? <div className="preview-mode-banner">Pre-visualizacao local do admin. Os visitantes so veem isto depois de guardar.</div> : null}
       <div className="product-detail refined">
         <div className="detail-media-card"><SmartImage src={product.image} alt={product.title} className="detail-image" width={1000} height={1000} sizes="(max-width: 900px) 100vw, 55vw" priority /></div>
         <div className="card"><div className="card-body detail-buy-box">

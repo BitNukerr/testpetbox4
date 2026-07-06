@@ -35,6 +35,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
   const [settings, setSettings] = useState<HomeSettings>(() => initialSettingsFromProps(initialHomeSettings));
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
   const [plans, setPlans] = useState<Plan[]>(() => initialPlans.length ? initialPlans : adminStore.plans.get());
+  const [previewMode, setPreviewMode] = useState(false);
   const hasInitialData = Boolean(initialHomeSettings || initialProducts.length || initialPlans.length);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
     };
 
     if (shouldUseAdminPreview()) {
+      setPreviewMode(true);
       refresh();
       window.addEventListener("petbox-admin-changed", refresh);
       return () => window.removeEventListener("petbox-admin-changed", refresh);
@@ -105,6 +107,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
 
   return (
     <main className="home-showcase container">
+      {previewMode ? <div className="preview-mode-banner">Pre-visualizacao local do admin. Os visitantes so veem isto depois de guardar.</div> : null}
       <section className="home-campaign-grid" aria-label="PetBox em destaque">
         <Link href={settings.showcaseLeadHref || "/criar-caixa"} className="campaign-video-card">
           <div className="petbox-video-word" aria-hidden="true">

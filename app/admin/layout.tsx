@@ -16,6 +16,7 @@ const adminNav = [
   ["Subscricoes", "/admin/subscriptions", "S"],
   ["Blog", "/admin/journal", "B"],
   ["Legal", "/admin/legal", "L"],
+  ["Atividade", "/admin/activity", "A"],
   ["Definicoes", "/admin/settings", "DF"]
 ] as const;
 

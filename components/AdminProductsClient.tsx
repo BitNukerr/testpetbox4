@@ -106,6 +106,22 @@ export default function AdminProductsClient() {
     setFormOpen(false);
   }
 
+  function previewProduct(product = form) {
+    const slug = product.slug || slugify(product.title);
+    if (!slug || !product.title) {
+      setMessage("Preencha pelo menos nome e slug para pre-visualizar.");
+      return;
+    }
+
+    const draft = { ...product, slug, price: Number(product.price), rating: Number(product.rating) };
+    const next = products.some((item) => item.slug === slug)
+      ? products.map((item) => item.slug === slug ? draft : item)
+      : [...products, draft];
+    adminStore.products.set(next);
+    window.open(`/produto/${slug}?preview=admin`, "_blank", "noopener,noreferrer");
+    setMessage("Pre-visualizacao aberta com este rascunho local. Para publicar para todos, clique em Guardar.");
+  }
+
   async function deleteProduct(slug: string) {
     let remoteDeleted = true;
     try {
@@ -175,6 +191,7 @@ export default function AdminProductsClient() {
           </div>
 
           <div className="col-12 d-flex gap-2 flex-wrap">
+            <button className="admin-action-btn" onClick={() => previewProduct()} type="button">Pre-visualizar site</button>
             <button className="admin-action-btn admin-action-primary" onClick={saveProduct}>{editing ? "Guardar alteracoes" : "Criar produto"}</button>
             <button className="admin-action-btn" onClick={() => { setFormOpen(false); setEditing(null); setForm(emptyProduct); }}>Fechar</button>
           </div>
@@ -204,6 +221,7 @@ export default function AdminProductsClient() {
                 <td>
                   <div className="admin-table-actions">
                     <button className="admin-action-btn" onClick={() => startEdit(product)}>Editar</button>
+                    <button className="admin-action-btn" onClick={() => previewProduct(product)}>Ver</button>
                     <button className="admin-action-btn" onClick={() => deleteProduct(product.slug)}>Remover</button>
                   </div>
                 </td>

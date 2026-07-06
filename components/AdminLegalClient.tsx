@@ -139,6 +139,12 @@ export default function AdminLegalClient() {
     setMessage("Paginas legais repostas localmente.");
   }
 
+  function previewAsCustomer() {
+    adminStore.legal.set(cloneSettings(form));
+    window.open(`/legal/${active}?preview=admin`, "_blank", "noopener,noreferrer");
+    setMessage("Pre-visualizacao aberta com este rascunho local. Para publicar para todos, clique em Guardar.");
+  }
+
   return (
     <div className="admin-card">
       <div className="card-header admin-save-header d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -147,6 +153,7 @@ export default function AdminLegalClient() {
           <div className="text-muted">Edite textos de cookies, termos, privacidade, envios e devolucoes.</div>
         </div>
         <div className="d-flex gap-2 flex-wrap">
+          <button className="admin-action-btn" onClick={previewAsCustomer}>Pre-visualizar site</button>
           <button className="admin-action-btn admin-action-primary" onClick={save}>Guardar</button>
           <button className="admin-action-btn" onClick={reset}>Repor</button>
         </div>

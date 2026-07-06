@@ -97,6 +97,33 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
     ];
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
   }, [address, pets.length, profileName, subscription]);
+  const nextActions = useMemo(() => [
+    {
+      title: "Completar perfil",
+      text: profileName.trim() ? "Nome da conta guardado." : "Adicione o nome que quer usar nas encomendas.",
+      href: "#perfil",
+      done: Boolean(profileName.trim())
+    },
+    {
+      title: "Guardar morada",
+      text: address.address && address.city && address.zip ? "Morada pronta para o checkout." : "Guarde a morada para acelerar a proxima compra.",
+      href: "#morada",
+      done: Boolean(address.address && address.city && address.zip)
+    },
+    {
+      title: "Adicionar animal",
+      text: pets.length ? `${pets.length} perfil${pets.length === 1 ? "" : "s"} de animal guardado${pets.length === 1 ? "" : "s"}.` : "Crie um perfil para personalizar melhor a caixa.",
+      href: "#animais",
+      done: pets.length > 0
+    },
+    {
+      title: "Criar caixa",
+      text: subscription ? "Subscricao activa associada a conta." : "Escolha um plano e personalize a primeira caixa.",
+      href: "/criar-caixa",
+      done: Boolean(subscription)
+    }
+  ], [address.address, address.city, address.zip, pets.length, profileName, subscription]);
+  const deliveryReady = Boolean(address.name && address.phone && address.address && address.city && address.zip);
 
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) {
@@ -347,10 +374,33 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
         <div className="account-stat"><span>Animais</span><strong>{pets.length}</strong></div>
         <div className="account-stat"><span>Subscricao</span><strong>{subscription ? subscriptionStatusLabel(subscription.status) : "Sem plano"}</strong></div>
         <div className="account-stat"><span>Encomendas</span><strong>{orders.length}</strong></div>
+        <div className="account-stat"><span>Dados</span><strong>{deliveryReady ? "Prontos" : "Em falta"}</strong></div>
       </div>
 
       <div className="container">
-        <section className="card account-profile-card"><div className="card-body">
+        <section className="card account-next-card"><div className="card-body">
+          <div className="account-card-heading">
+            <div>
+              <span className="tag">Proximos passos</span>
+              <h2>Prepare a conta para comprar mais rapido</h2>
+              <p className="muted mb-0">{remoteReady ? "Dados sincronizados com a sua conta." : "Alguns dados podem estar guardados apenas neste browser."}</p>
+            </div>
+            <span className={`admin-pill ${remoteReady ? "admin-pill-success" : "admin-pill-warning"}`}>{remoteReady ? "Sincronizado" : "Modo local"}</span>
+          </div>
+          <div className="account-next-grid">
+            {nextActions.map((action) => (
+              <Link href={action.href} className={action.done ? "account-next-item done" : "account-next-item"} key={action.title}>
+                <span>{action.done ? "Feito" : "Pendente"}</span>
+                <strong>{action.title}</strong>
+                <p>{action.text}</p>
+              </Link>
+            ))}
+          </div>
+        </div></section>
+      </div>
+
+      <div className="container">
+        <section className="card account-profile-card" id="perfil"><div className="card-body">
           <div className="account-card-heading">
             <div>
               <span className="tag">Perfil</span>
@@ -371,7 +421,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
 
       <div className="container account-layout">
         <div className="account-main">
-          <section className="card"><div className="card-body">
+          <section className="card" id="animais"><div className="card-body">
             <div className="account-card-heading">
               <div><span className="tag">Perfis</span><h2>Animais</h2></div>
               <button className="btn btn-secondary small" onClick={() => { setPetForm(emptyPet); setEditingPetId(null); }}>Novo animal</button>
@@ -410,7 +460,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
             <button className="btn top-gap" onClick={savePet}>{editingPetId ? "Guardar animal" : "Adicionar animal"}</button>
           </div></section>
 
-          <section className="card"><div className="card-body">
+          <section className="card" id="morada"><div className="card-body">
             <div className="account-card-heading">
               <div><span className="tag">Entrega</span><h2>Dados de contacto e morada</h2></div>
               <button className="btn btn-secondary small" onClick={saveAddress}>Guardar</button>

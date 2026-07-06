@@ -809,6 +809,47 @@
   font-size: .92rem;
   margin-bottom: 8px;
 }
+
+.admin-activity-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-activity-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  background: #fbfaf6;
+  padding: 14px 16px;
+}
+
+.admin-activity-item strong {
+  color: #18211c;
+}
+
+.admin-activity-item p {
+  margin: 4px 0 0;
+  color: var(--admin-muted);
+}
+
+.admin-activity-meta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  color: var(--admin-muted);
+  white-space: nowrap;
+}
+
+.admin-activity-meta small {
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #fff;
+  font-weight: 800;
+}
 .admin-login-shell {
   min-height: 100vh;
   display: grid;

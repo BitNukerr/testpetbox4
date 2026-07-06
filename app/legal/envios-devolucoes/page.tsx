@@ -8,5 +8,5 @@ export const metadata = {
 
 export default async function ShippingReturnsPage() {
   const page = await loadLegalPage("envios-devolucoes");
-  return <LegalPage title={page.title} intro={page.intro} sections={page.sections} />;
+  return <LegalPage pageKey="envios-devolucoes" title={page.title} intro={page.intro} sections={page.sections} />;
 }

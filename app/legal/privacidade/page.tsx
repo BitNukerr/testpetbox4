@@ -8,5 +8,5 @@ export const metadata = {
 
 export default async function PrivacyPage() {
   const page = await loadLegalPage("privacidade");
-  return <LegalPage title={page.title} intro={page.intro} sections={page.sections} />;
+  return <LegalPage pageKey="privacidade" title={page.title} intro={page.intro} sections={page.sections} />;
 }

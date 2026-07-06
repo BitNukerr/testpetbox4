@@ -3,6 +3,7 @@
 import type { Plan, Product } from "@/data/products";
 import type { AdminOrder } from "@/data/admin";
 import type { ConfiguratorSettings, EditablePost, HomeSettings, StoreSettings } from "@/lib/admin-store";
+import { trackAdminMutation } from "@/lib/admin-activity";
 import { mergeLegalSettings, type LegalSettings } from "@/lib/legal-content";
 import { supabase } from "@/lib/supabase-client";
 
@@ -106,6 +107,7 @@ async function adminFetch(path: string, init?: RequestInit) {
   const response = await fetch(path, init);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Nao foi possivel actualizar o Supabase.");
+  trackAdminMutation(path, init);
   return data;
 }
 

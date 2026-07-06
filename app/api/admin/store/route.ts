@@ -206,6 +206,25 @@ function refreshPublicCache(tags: string[], paths: string[]) {
   for (const path of paths) revalidatePath(path);
 }
 
+async function activityRows(client: SupabaseAdminClient) {
+  const { data, error } = await client
+    .from("admin_activity_log")
+    .select("id,created_at,action,target,detail")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) return { data: [], setupRequired: true, error: error.message };
+  return { data: data || [], setupRequired: false };
+}
+
+async function recordAdminActivity(client: SupabaseAdminClient, action: string, target: string, detail = "") {
+  await client.from("admin_activity_log").insert({
+    action: cleanString(action, 80) || "Alteracao",
+    target: cleanString(target, 120) || "Admin",
+    detail: cleanString(detail, 500) || null
+  });
+}
+
 export async function GET(request: NextRequest) {
   const setup = clientOrResponse(request);
   if (setup.response) return setup.response;
@@ -265,6 +284,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ settings: data?.settings || {} });
   }
 
+  if (resource === "activity") {
+    return NextResponse.json(await activityRows(client));
+  }
+
   return NextResponse.json({ error: "Recurso invalido." }, { status: 400 });
 }
 
@@ -283,6 +306,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await client.from("products").upsert({ ...item, is_active: true }, { onConflict: "slug" }).select("slug,title,category,species,price,description,image,tag,rating").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${data.slug}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Guardou", "Produtos", data.title || data.slug).catch(() => null);
     return NextResponse.json({ data });
   }
 
@@ -291,6 +315,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await client.from("plans").upsert({ ...item, is_active: true }, { onConflict: "id" }).select("id,name,cadence,price,description,perks").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
+    await recordAdminActivity(client, "Guardou", "Planos", data.name || data.id).catch(() => null);
     return NextResponse.json({ data });
   }
 
@@ -298,6 +323,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await saveStoreSettings(client, body.item || {});
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-store-settings"], ["/carrinho", "/pagamento"]);
+    await recordAdminActivity(client, "Guardou", "Definicoes", "Definicoes da loja e envio").catch(() => null);
     return NextResponse.json({ data });
   }
 
@@ -306,6 +332,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await client.from("journal_posts").upsert(item, { onConflict: "slug" }).select("slug,title,excerpt,body,status,author,published_at,created_at").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${data.slug}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Guardou", "Blog", data.title || data.slug).catch(() => null);
     return NextResponse.json({ data });
   }
 
@@ -313,6 +340,7 @@ export async function POST(request: NextRequest) {
     const { error } = await client.from("home_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-homepage"], ["/"]);
+    await recordAdminActivity(client, "Guardou", "Pagina inicial", "Textos, imagens e blocos").catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
@@ -320,12 +348,20 @@ export async function POST(request: NextRequest) {
     const { error } = await client.from("configurator_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-configurator"], ["/criar-caixa"]);
+    await recordAdminActivity(client, "Guardou", "Criar caixa", "Passos e opcoes do configurador").catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
   if (body.resource === "legal_settings") {
     const { error } = await client.from("legal_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await recordAdminActivity(client, "Guardou", "Legal", "Paginas legais").catch(() => null);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.resource === "activity") {
+    const item = body.item || {};
+    await recordAdminActivity(client, item.action, item.target, item.detail).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
@@ -338,6 +374,7 @@ export async function POST(request: NextRequest) {
 
     const { error } = await client.from("orders").update({ status }).eq("id", item.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await recordAdminActivity(client, "Actualizou", "Encomendas", `${item.id} - ${status}`).catch(() => null);
 
     try {
       const data = await ordersWithProfiles(client);
@@ -385,6 +422,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await recordAdminActivity(client, "Guardou", "Subscricoes", data.id).catch(() => null);
 
     try {
       const subscriptions = await subscriptionsWithDetails(client);
@@ -414,6 +452,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await client.from("products").delete().eq("slug", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${id}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Removeu", "Produtos", id).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
@@ -421,6 +460,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await client.from("plans").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
+    await recordAdminActivity(client, "Removeu", "Planos", id).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
@@ -428,12 +468,14 @@ export async function DELETE(request: NextRequest) {
     const { error } = await client.from("journal_posts").delete().eq("slug", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${id}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Removeu", "Blog", id).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
   if (resource === "subscriptions") {
     const { error } = await client.from("customer_subscriptions").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await recordAdminActivity(client, "Removeu", "Subscricoes", id).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 

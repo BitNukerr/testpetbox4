@@ -8,5 +8,5 @@ export const metadata = {
 
 export default async function CookiesPage() {
   const page = await loadLegalPage("cookies");
-  return <LegalPage title={page.title} intro={page.intro} sections={page.sections} />;
+  return <LegalPage pageKey="cookies" title={page.title} intro={page.intro} sections={page.sections} />;
 }

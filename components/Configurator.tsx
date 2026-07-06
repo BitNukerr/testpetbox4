@@ -52,6 +52,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const [personalityId, setPersonalityId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).personalities, "playful"));
   const [extraIds, setExtraIds] = useState<string[]>(() => initialSettingsFromProps(initialConfiguratorSettings).extras[0]?.id ? [initialSettingsFromProps(initialConfiguratorSettings).extras[0].id] : []);
   const [petNotes, setPetNotes] = useState("");
+  const [previewMode, setPreviewMode] = useState(false);
   const hasInitialData = Boolean(initialConfiguratorSettings || initialPlans.length);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
     };
 
     if (shouldUseAdminPreview()) {
+      setPreviewMode(true);
       refresh();
       window.addEventListener("petbox-admin-changed", refresh);
       return () => window.removeEventListener("petbox-admin-changed", refresh);
@@ -155,6 +157,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
 
   return (
     <div className="configurator">
+      {previewMode ? <div className="preview-mode-banner">Pre-visualizacao local do admin. Os visitantes so veem isto depois de guardar.</div> : null}
       <div className="config-grid">
         <div className="config-panel">
           <div className="config-step">

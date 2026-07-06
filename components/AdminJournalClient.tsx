@@ -99,6 +99,16 @@ export default function AdminJournalClient() {
     upsertPost(post, status === "Publicado" ? "Artigo publicado." : "Artigo guardado como rascunho.", status === "Publicado" ? "Artigo publicado." : "Artigo guardado como rascunho.");
   }
 
+  function previewPost(post = buildPost(form.status)) {
+    if (!post) return;
+    const next = posts.some((item) => item.slug === post.slug)
+      ? posts.map((item) => item.slug === post.slug ? post : item)
+      : [post, ...posts];
+    adminStore.posts.set(next);
+    window.open(`/blog/${post.slug}?preview=admin`, "_blank", "noopener,noreferrer");
+    setMessage("Pre-visualizacao aberta com este rascunho local. Para publicar para todos, clique em Publicar.");
+  }
+
   async function updatePostStatus(post: EditablePost, status: EditablePost["status"]) {
     const nextPost = { ...post, status };
     let remoteSaved = true;
@@ -204,6 +214,7 @@ export default function AdminJournalClient() {
           </div>
           <div className="col-12"><label className="form-label fw-bold">Conteudo</label><textarea className="admin-form-control" rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} /></div>
           <div className="col-12 d-flex gap-2 flex-wrap">
+            <button className="admin-action-btn" onClick={() => previewPost()}>Pre-visualizar site</button>
             <button className="admin-action-btn" onClick={savePost}>{editing ? "Guardar artigo" : "Criar artigo"}</button>
             <button className="admin-action-btn admin-action-primary" onClick={() => savePostWithStatus("Publicado")}>Publicar</button>
             <button className="admin-action-btn" onClick={() => savePostWithStatus("Rascunho")}>Guardar como rascunho</button>
@@ -233,6 +244,7 @@ export default function AdminJournalClient() {
                 <td><span className={`admin-pill ${post.status === "Publicado" ? "admin-pill-success" : "admin-pill-warning"}`}>{post.status}</span></td>
                 <td className="d-flex justify-content-end gap-2 flex-wrap">
                   <button className="admin-action-btn" onClick={() => startEdit(post)}>Editar</button>
+                  <button className="admin-action-btn" onClick={() => previewPost(post)}>Ver</button>
                   {post.status === "Publicado" ? (
                     <button className="admin-action-btn" onClick={() => updatePostStatus(post, "Rascunho")}>Retirar</button>
                   ) : (
