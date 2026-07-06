@@ -5,6 +5,7 @@ import type { Plan } from "@/data/products";
 import { loadAdminPlans, loadRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
 import { addToCart, clearSelectedPetForBox, getSelectedPetForBox, type AccountPet } from "@/lib/client-store";
+import { getConfiguratorVariantImage } from "@/lib/configurator-images";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 import { useRouter } from "next/navigation";
@@ -39,13 +40,13 @@ function ageIdFromBirthday(birthday: string) {
   return "adult";
 }
 
-function notesFromPet(pet: AccountPet) {
+function profileDetailsFromPet(pet: AccountPet, personalityLabel: string) {
   const details = [
-    `Perfil: ${pet.name}`,
-    pet.allergies.trim() ? `Alergias/ingredientes a evitar: ${pet.allergies.trim()}` : "",
-    pet.preferences.trim() ? `Preferencias: ${pet.preferences.trim()}` : ""
+    personalityLabel ? `Personalidade: ${personalityLabel}` : "",
+    (pet.allergies || "").trim() ? `Alergias: ${(pet.allergies || "").trim()}` : "",
+    (pet.preferences || "").trim() ? `Preferencias: ${(pet.preferences || "").trim()}` : ""
   ].filter(Boolean);
-  return details.join(". ").slice(0, 240);
+  return details;
 }
 
 type ConfiguratorProps = {
@@ -96,7 +97,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       if (hasOption(nextSettings.sizes, pet.size)) setSizeId(pet.size);
       const nextAgeId = ageIdFromBirthday(pet.birthday);
       if (hasOption(nextSettings.ages, nextAgeId)) setAgeId(nextAgeId);
-      setPetNotes((current) => current.trim() ? current : notesFromPet(pet));
+      if (pet.personality && hasOption(nextSettings.personalities, pet.personality)) setPersonalityId(pet.personality);
       selectedPetAppliedRef.current = pet.id;
     };
 
@@ -177,6 +178,9 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const selectedPlan = plans.find((plan) => plan.id === planId) || plans[0];
   const personality = getOption(settings.personalities, personalityId);
   const selectedExtras = settings.extras.filter((extra) => extraIds.includes(extra.id));
+  const selectedPetPersonality = selectedPet?.personality ? settings.personalities.find((option) => option.id === selectedPet.personality) : null;
+  const selectedPetDetails = selectedPet ? profileDetailsFromPet(selectedPet, selectedPetPersonality?.label || "") : [];
+  const previewImage = getConfiguratorVariantImage(settings, animal, size, age);
   const total = (selectedPlan?.price || 0) + (animal?.price || 0) + (size?.price || 0) + (age?.price || 0) + (personality?.price || 0) + selectedExtras.reduce((sum, extra) => sum + extra.price, 0);
   const summaryExtras = useMemo(() => selectedExtras.map((extra) => extra.label).join(", ") || "Nenhum", [selectedExtras]);
   const cleanPetNotes = petNotes.trim().replace(/\s+/g, " ").slice(0, 240);
@@ -204,11 +208,13 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       cadence: selectedPlan.cadence,
       species: animal.id,
       category: "Caixa personalizada",
-      image: animal.image,
+      image: previewImage,
       config: {
         planId: selectedPlan.id,
         petId: selectedPet?.id || "",
         petName: selectedPet?.name || "",
+        petAllergies: selectedPet?.allergies || "",
+        petPreferences: selectedPet?.preferences || "",
         animalId: animal.id,
         sizeId: size.id,
         ageId: age.id,
@@ -222,6 +228,8 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
         tamanho: size.label,
         idade: age.label,
         personalidade: personality.label,
+        alergias: selectedPet?.allergies || "",
+        preferencias: selectedPet?.preferences || "",
         extras: summaryExtras,
         observacoes: cleanPetNotes
       }
@@ -237,7 +245,8 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
           <div>
             <span className="tag">Perfil seleccionado</span>
             <strong>{selectedPet.name}</strong>
-            <p>A caixa foi pre-preenchida com o animal, tamanho, idade e notas guardadas na sua conta.</p>
+            <p>A caixa foi pre-preenchida com animal, tamanho, idade e personalidade. Use as observacoes apenas para notas extra desta encomenda.</p>
+            {selectedPetDetails.length ? <div className="selected-pet-detail-row">{selectedPetDetails.map((detail) => <span key={detail}>{detail}</span>)}</div> : null}
           </div>
           <button className="btn btn-secondary small" onClick={clearSelectedPet}>Escolher manualmente</button>
         </div>
@@ -332,7 +341,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
 
         <aside className="config-summary">
           <div className="summary-media">
-            <SmartImage src={animal?.image || "/images/dog-box.svg"} alt="Pre-visualizacao da caixa" width={620} height={620} sizes="360px" priority />
+            <SmartImage src={previewImage} alt="Pre-visualizacao da caixa" width={620} height={620} sizes="360px" priority />
           </div>
           <span className="tag">Resumo em tempo real</span>
           <h3>{selectedPlan?.name || "Caixa PetBox"} {animal?.label || ""}</h3>

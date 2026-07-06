@@ -32,6 +32,7 @@ export type AccountPet = {
   species: "dog" | "cat";
   size: "small" | "medium" | "large";
   birthday: string;
+  personality: string;
   allergies: string;
   preferences: string;
 };

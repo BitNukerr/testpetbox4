@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminImageField } from "@/components/AdminImageField";
 import { loadRemoteConfiguratorSettings, saveRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, slugify, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
+import { configuredVariantImage, configuratorVariantKey, getConfiguratorVariantImage } from "@/lib/configurator-images";
 
 type OptionGroup = "animals" | "sizes" | "ages" | "personalities" | "extras";
 
@@ -21,6 +22,13 @@ const groups: { key: OptionGroup; title: string; text: string; allowImage?: bool
   { key: "ages", title: "Idades", text: "Opcoes de idade/fase de vida do animal." },
   { key: "personalities", title: "Personalidades", text: "Estilos da caixa." },
   { key: "extras", title: "Extras", text: "Produtos extra com preco proprio." }
+];
+
+const variantPresets = [
+  "/images/dog-box.svg",
+  "/images/cat-box.svg",
+  "/images/hero-pets.svg",
+  "/images/box-generic.svg"
 ];
 
 function titleField(group: OptionGroup): keyof ConfiguratorSettings {
@@ -110,6 +118,18 @@ export default function AdminConfiguratorClient() {
     setMessage("Opcao removida. Clique em Guardar configurador para publicar.");
   }
 
+  function updateVariantImage(animalId: string, sizeId: string, ageId: string, image: string) {
+    setForm((current) => {
+      const key = configuratorVariantKey(animalId, sizeId, ageId);
+      const keptVariants = (current.imageVariants || []).filter((variant) => configuratorVariantKey(variant.animalId, variant.sizeId, variant.ageId) !== key);
+      return {
+        ...current,
+        imageVariants: image ? [...keptVariants, { animalId, sizeId, ageId, image }] : keptVariants
+      };
+    });
+    setMessage(image ? "Imagem da combinacao preparada. Clique em Guardar configurador para publicar." : "Imagem personalizada removida. Sera usada a imagem automatica.");
+  }
+
   async function saveAll() {
     let remoteSaved = true;
     try {
@@ -187,6 +207,39 @@ export default function AdminConfiguratorClient() {
               </div>
             </div>
           ))}
+
+          <div className="col-12">
+            <div className="admin-config-group">
+              <div className="admin-config-group-head">
+                <div>
+                  <h3>Imagens por combinacao</h3>
+                  <p>Substitua a imagem automatica para cada animal, tamanho e idade. Se ficar vazio, o site gera uma preview consistente.</p>
+                </div>
+              </div>
+              <div className="admin-variant-grid">
+                {form.animals.flatMap((animal) => form.sizes.flatMap((size) => form.ages.map((age) => {
+                  const configuredImage = configuredVariantImage(form, animal.id, size.id, age.id);
+                  const previewImage = getConfiguratorVariantImage(form, animal, size, age);
+                  return (
+                    <div className="admin-variant-card" key={configuratorVariantKey(animal.id, size.id, age.id)}>
+                      <div className="admin-variant-preview"><img src={previewImage} alt="" /></div>
+                      <div>
+                        <strong>{animal.label}</strong>
+                        <span>{size.label} | {age.label}</span>
+                      </div>
+                      <AdminImageField
+                        value={configuredImage}
+                        onChange={(image) => updateVariantImage(animal.id, size.id, age.id, image)}
+                        onMessage={setMessage}
+                        presets={variantPresets}
+                        options={{ width: 900, height: 900, fit: "contain" }}
+                      />
+                    </div>
+                  );
+                })))}
+              </div>
+            </div>
+          </div>
 
           {editorOpen ? <div className="col-12">
             <div className="admin-config-editor">

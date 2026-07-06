@@ -53,11 +53,14 @@ create table if not exists public.pets (
   species text not null check (species in ('dog', 'cat')),
   size text not null check (size in ('small', 'medium', 'large')),
   birthday date,
+  personality text,
   allergies text,
   preferences text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.pets add column if not exists personality text;
 
 create table if not exists public.products (
   slug text primary key,

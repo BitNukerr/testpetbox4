@@ -103,6 +103,13 @@ export type ConfigOption = {
   image?: string;
 };
 
+export type ConfiguratorImageVariant = {
+  animalId: string;
+  sizeId: string;
+  ageId: string;
+  image: string;
+};
+
 export type ConfiguratorSettings = {
   animalTitle: string;
   animalText: string;
@@ -121,6 +128,7 @@ export type ConfiguratorSettings = {
   ages: ConfigOption[];
   personalities: ConfigOption[];
   extras: ConfigOption[];
+  imageVariants: ConfiguratorImageVariant[];
 };
 
 export type StoreSettings = {
@@ -267,7 +275,8 @@ const defaultConfiguratorSettings: ConfiguratorSettings = {
     { id: "toy", label: "Brinquedo premium", description: "Um brinquedo extra escolhido por perfil.", price: 6 },
     { id: "care", label: "Produto de cuidado", description: "Cuidado simples para pele, pelo ou patas.", price: 6 },
     { id: "photo", label: "Acessorio para fotos", description: "Um detalhe especial para fotografias.", price: 6 }
-  ]
+  ],
+  imageVariants: []
 };
 
 const defaultStoreSettings: StoreSettings = {

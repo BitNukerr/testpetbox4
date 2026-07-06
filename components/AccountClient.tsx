@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthClient from "@/components/AuthClient";
 import type { Plan } from "@/data/products";
 import { deleteRemotePet, loadRemoteAccount, saveRemoteAddress, saveRemotePet, saveRemoteProfile } from "@/lib/account-db";
-import { adminStore } from "@/lib/admin-store";
+import { adminStore, type ConfigOption } from "@/lib/admin-store";
 import {
   type AccountAddress,
   type AccountPet,
@@ -32,6 +32,7 @@ const emptyPet: AccountPet = {
   species: "dog",
   size: "medium",
   birthday: "",
+  personality: "",
   allergies: "",
   preferences: ""
 };
@@ -54,6 +55,11 @@ function petSizeLabel(value: AccountPet["size"]) {
   if (value === "small") return "Pequeno";
   if (value === "large") return "Grande";
   return "Medio";
+}
+
+function petPersonalityLabel(value: string | undefined, personalities: ConfigOption[]) {
+  if (!value) return "Por definir";
+  return personalities.find((option) => option.id === value)?.label || value;
 }
 
 function petAgeYears(birthday: string) {
@@ -90,45 +96,46 @@ function petAgeDetail(pet: AccountPet) {
   return `${years} anos`;
 }
 
-function petRecommendation(pet: AccountPet) {
+function petRecommendation(pet: AccountPet, personalityLabel: string) {
   const stage = petAgeStage(pet);
-  const hasCareNotes = Boolean(pet.allergies.trim() || pet.preferences.trim());
+  const hasCareNotes = Boolean((pet.allergies || "").trim() || (pet.preferences || "").trim());
   const careSuffix = hasCareNotes ? " As notas guardadas entram no resumo da caixa." : " Pode adicionar gostos ou alergias para afinar melhor.";
+  const personalitySuffix = pet.personality ? ` Personalidade: ${personalityLabel}.` : "";
 
   if (pet.species === "cat") {
     if (stage === "young") {
       return {
         title: "Caixa de descoberta para gato jovem",
-        text: `Boa para brinquedos leves, snacks simples e enriquecimento em casa.${careSuffix}`
+        text: `Boa para brinquedos leves, snacks simples e enriquecimento em casa.${personalitySuffix}${careSuffix}`
       };
     }
     if (stage === "senior") {
       return {
         title: "Caixa calma para gato senior",
-        text: `Focada em conforto, brincadeiras suaves e produtos faceis de usar.${careSuffix}`
+        text: `Focada em conforto, brincadeiras suaves e produtos faceis de usar.${personalitySuffix}${careSuffix}`
       };
     }
     return {
       title: "Caixa de enriquecimento para gato",
-      text: `Ideal para variar brinquedos, snacks e rotinas sem ter de escolher tudo de raiz.${careSuffix}`
+      text: `Ideal para variar brinquedos, snacks e rotinas sem ter de escolher tudo de raiz.${personalitySuffix}${careSuffix}`
     };
   }
 
   if (stage === "young") {
     return {
       title: "Caixa de descoberta para cao jovem",
-      text: `Pensada para treino, mordedores adequados e snacks para primeiras rotinas.${careSuffix}`
+      text: `Pensada para treino, mordedores adequados e snacks para primeiras rotinas.${personalitySuffix}${careSuffix}`
     };
   }
   if (stage === "senior") {
     return {
       title: "Caixa conforto para cao senior",
-      text: `Mais suave, com foco em snacks, brinquedos tranquilos e bem-estar diario.${careSuffix}`
+      text: `Mais suave, com foco em snacks, brinquedos tranquilos e bem-estar diario.${personalitySuffix}${careSuffix}`
     };
   }
   return {
     title: "Caixa activa por perfil",
-    text: `Combina brinquedos, snacks e extras com o tamanho e preferencias guardadas.${careSuffix}`
+    text: `Combina brinquedos, snacks e extras com o tamanho e preferencias guardadas.${personalitySuffix}${careSuffix}`
   };
 }
 
@@ -153,6 +160,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
   const [address, setAddressState] = useState<AccountAddress>(emptyAddress);
   const [subscription, setSubscriptionState] = useState<AccountSubscription | null>(null);
   const [plans, setPlans] = useState<Plan[]>(() => adminStore.plans.get());
+  const [personalities, setPersonalities] = useState<ConfigOption[]>(() => adminStore.configurator.get().personalities);
   const [user, setUser] = useState<UserState>(null);
   const [profileName, setProfileName] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
@@ -271,7 +279,10 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
       setAddressState(getAddress(accountScope));
       setSubscriptionState(getSubscription(accountScope));
     };
-    const refreshAdmin = () => setPlans(adminStore.plans.get());
+    const refreshAdmin = () => {
+      setPlans(adminStore.plans.get());
+      setPersonalities(adminStore.configurator.get().personalities);
+    };
 
     refreshOrders();
     refreshAccount();
@@ -316,7 +327,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
       return;
     }
 
-    const pet = { ...petForm, id: petForm.id || `pet-${Date.now()}` };
+    const pet = { ...emptyPet, ...petForm, id: petForm.id || `pet-${Date.now()}` };
     let savedPet = pet;
     if (user?.id && supabase) {
       try {
@@ -515,6 +526,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
                     <strong>{pet.name}</strong>
                     <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)} | {petAgeLabel(pet)}</span>
                     <small>{petAgeDetail(pet)}</small>
+                    <small>Personalidade: {petPersonalityLabel(pet.personality, personalities)}</small>
                     {pet.allergies ? <small>Alergias: {pet.allergies}</small> : null}
                     {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
                   </div>
@@ -529,10 +541,11 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
             {pets.length ? (
               <div className="pet-recommendation-grid">
                 {pets.map((pet) => {
-                  const recommendation = petRecommendation(pet);
+                  const personalityLabel = petPersonalityLabel(pet.personality, personalities);
+                  const recommendation = petRecommendation(pet, personalityLabel);
                   return (
                     <article className="pet-recommendation-card" key={`recommendation-${pet.id}`}>
-                      <span>{pet.name} | {petSpeciesLabel(pet.species)} | {petAgeLabel(pet)}</span>
+                      <span>{pet.name} | {petSpeciesLabel(pet.species)} | {petAgeLabel(pet)} | {personalityLabel}</span>
                       <strong>{recommendation.title}</strong>
                       <p>{recommendation.text}</p>
                       <button className="btn small" onClick={() => startBoxForPet(pet)}>Criar caixa para {pet.name}</button>
@@ -552,6 +565,10 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
                 <option value="small">Pequeno</option>
                 <option value="medium">Medio</option>
                 <option value="large">Grande</option>
+              </select>
+              <select className="span-2" value={petForm.personality || ""} onChange={(event) => setPetForm({ ...petForm, personality: event.target.value })}>
+                <option value="">Personalidade por definir</option>
+                {personalities.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}
               </select>
               <input className="span-2" placeholder="Alergias ou ingredientes a evitar" value={petForm.allergies} onChange={(event) => setPetForm({ ...petForm, allergies: event.target.value })} />
               <input className="span-2" placeholder="Preferencias de brinquedos, snacks ou estilo" value={petForm.preferences} onChange={(event) => setPetForm({ ...petForm, preferences: event.target.value })} />

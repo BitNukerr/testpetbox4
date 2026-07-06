@@ -15,6 +15,7 @@ type PetRow = {
   species: AccountPet["species"];
   size: AccountPet["size"];
   birthday: string | null;
+  personality?: string | null;
   allergies: string | null;
   preferences: string | null;
 };
@@ -72,9 +73,20 @@ function petFromRow(row: PetRow): AccountPet {
     species: row.species,
     size: row.size,
     birthday: row.birthday || "",
+    personality: row.personality || "",
     allergies: row.allergies || "",
     preferences: row.preferences || ""
   };
+}
+
+async function loadRemotePets(userId: string) {
+  const client = requireSupabase();
+  const withPersonality = await client.from("pets").select("id,name,species,size,birthday,personality,allergies,preferences").eq("user_id", userId).order("created_at", { ascending: true });
+  if (!withPersonality.error) return (withPersonality.data || []).map((pet) => petFromRow(pet as PetRow));
+
+  const fallback = await client.from("pets").select("id,name,species,size,birthday,allergies,preferences").eq("user_id", userId).order("created_at", { ascending: true });
+  if (fallback.error) throw fallback.error;
+  return (fallback.data || []).map((pet) => petFromRow(pet as PetRow));
 }
 
 function addressFromRow(row: AddressRow): AccountAddress {
@@ -120,7 +132,7 @@ export async function loadRemoteAccount(userId: string): Promise<RemoteAccountDa
   const client = requireSupabase();
   const [profileResult, petsResult, addressResult, subscriptionResult, ordersResult] = await Promise.all([
     client.from("profiles").select("user_id,email,full_name").eq("user_id", userId).maybeSingle(),
-    client.from("pets").select("id,name,species,size,birthday,allergies,preferences").eq("user_id", userId).order("created_at", { ascending: true }),
+    loadRemotePets(userId).then((data) => ({ data, error: null })).catch((error) => ({ data: [], error })),
     client.from("account_addresses").select("name,phone,mbway_phone,address,city,zip,nif").eq("user_id", userId).maybeSingle(),
     client.from("customer_subscriptions").select("id,status,plan_id,cadence,pet_id,next_box_date,renewal_date,price,extras").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     client.from("orders").select("id,title,total,status,payment_method,easypay_checkout_id,easypay_payment_id,created_at").eq("user_id", userId).order("created_at", { ascending: false })
@@ -131,7 +143,7 @@ export async function loadRemoteAccount(userId: string): Promise<RemoteAccountDa
 
   return {
     profile: profileResult.data || null,
-    pets: (petsResult.data || []).map((pet) => petFromRow(pet as PetRow)),
+    pets: petsResult.data || [],
     address: addressResult.data ? addressFromRow(addressResult.data as AddressRow) : null,
     subscription: subscriptionResult.data ? subscriptionFromRow(subscriptionResult.data as SubscriptionRow) : null,
     orders: (ordersResult.data || []).map((order) => orderFromRow(order as OrderRow))
@@ -146,7 +158,7 @@ export async function saveRemoteProfile(userId: string, email: string, fullName:
 
 export async function saveRemotePet(userId: string, pet: AccountPet) {
   const client = requireSupabase();
-  const payload = {
+  const basePayload = {
     user_id: userId,
     name: pet.name,
     species: pet.species,
@@ -155,12 +167,20 @@ export async function saveRemotePet(userId: string, pet: AccountPet) {
     allergies: pet.allergies || null,
     preferences: pet.preferences || null
   };
-  const query = pet.id && !pet.id.startsWith("pet-")
-    ? client.from("pets").update(payload).eq("id", pet.id).select("id,name,species,size,birthday,allergies,preferences").single()
-    : client.from("pets").insert(payload).select("id,name,species,size,birthday,allergies,preferences").single();
-  const { data, error } = await query;
+  const payload = { ...basePayload, personality: pet.personality || null };
+  const query = (body: typeof basePayload | typeof payload, select: string) => pet.id && !pet.id.startsWith("pet-")
+    ? client.from("pets").update(body).eq("id", pet.id).select(select).single()
+    : client.from("pets").insert(body).select(select).single();
+
+  let { data, error } = await query(payload, "id,name,species,size,birthday,personality,allergies,preferences");
+  if (error) {
+    const fallback = await query(basePayload, "id,name,species,size,birthday,allergies,preferences");
+    data = fallback.data;
+    error = fallback.error;
+  }
   if (error) throw error;
-  return petFromRow(data as PetRow);
+  const savedRow = data as unknown as PetRow;
+  return { ...petFromRow(savedRow), personality: savedRow.personality || pet.personality || "" };
 }
 
 export async function deleteRemotePet(id: string) {
