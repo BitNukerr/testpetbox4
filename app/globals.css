@@ -207,6 +207,9 @@ p{line-height:1.65}
 .config-grid,.section-grid,.product-detail{display:grid;grid-template-columns:1fr 360px;gap:20px}
 .preview-card{position:sticky;top:92px;height:max-content}
 .config-panel{display:grid;gap:18px}
+.selected-pet-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;border:1px solid #9bd7f2;border-radius:22px;background:linear-gradient(135deg,#e9f8ff,#fffaf4);padding:16px 18px;box-shadow:0 12px 28px rgba(26,90,111,.08)}
+.selected-pet-banner strong{display:block;font-size:1.2rem;margin-top:5px}
+.selected-pet-banner p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 .config-step{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px}
 .config-step-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px}
 .config-step-head span{display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--accent);color:#fff;font-weight:800;flex:0 0 auto}
@@ -324,6 +327,12 @@ p{line-height:1.65}
 .pet-profile{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--soft)}
 .pet-profile strong,.pet-profile span,.pet-profile small{display:block}
 .pet-profile span,.pet-profile small{color:var(--muted);margin-top:4px}
+.pet-recommendation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:2px 0 18px}
+.pet-recommendation-card{display:grid;gap:8px;border:1px solid #bfe5f5;border-radius:20px;background:linear-gradient(135deg,#e9f8ff,#fffaf4);padding:16px}
+.pet-recommendation-card span{color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.pet-recommendation-card strong{font-size:1.05rem;color:var(--blue-dark)}
+.pet-recommendation-card p{margin:0;color:var(--muted);line-height:1.45}
+.pet-recommendation-card .btn{width:max-content;max-width:100%;white-space:normal}
 .account-form{margin-top:12px}
 .admin-pill{border-radius:999px;padding:6px 10px;font-size:.78rem;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .admin-pill-success{background:#dcfce7;color:#166534}
@@ -390,6 +399,7 @@ p{line-height:1.65}
   .grid.two,.grid.three{grid-template-columns:1fr}
   .auth-page-grid{grid-template-columns:1fr}
   .account-overview,.account-layout,.account-next-grid{grid-template-columns:1fr}
+  .pet-recommendation-grid{grid-template-columns:1fr}
   .account-side{position:static}
   .choice-grid,.choice-grid.two-choice{grid-template-columns:1fr}
   .hero-stats{grid-template-columns:1fr}
@@ -427,5 +437,6 @@ p{line-height:1.65}
   .password-field button{border-left:0;border-top:1px solid var(--line);padding:10px 12px}
   .account-action-grid{grid-template-columns:1fr}
   .pet-profile{flex-direction:column}
+  .selected-pet-banner{align-items:flex-start;flex-direction:column}
   .cookie-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
 }

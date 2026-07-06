@@ -17,6 +17,7 @@ import {
   getSubscription,
   setAddress,
   setPets,
+  setSelectedPetForBox,
   setSubscription
 } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
@@ -53,6 +54,82 @@ function petSizeLabel(value: AccountPet["size"]) {
   if (value === "small") return "Pequeno";
   if (value === "large") return "Grande";
   return "Medio";
+}
+
+function petAgeYears(birthday: string) {
+  if (!birthday) return null;
+  const birthDate = new Date(birthday);
+  if (Number.isNaN(birthDate.getTime())) return null;
+  const today = new Date();
+  let years = today.getFullYear() - birthDate.getFullYear();
+  const birthdayPassed = today.getMonth() > birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+  if (!birthdayPassed) years -= 1;
+  return Math.max(0, years);
+}
+
+function petAgeStage(pet: AccountPet) {
+  const years = petAgeYears(pet.birthday);
+  if (years === null) return "adult";
+  if (years < 1) return "young";
+  if (years >= 8) return "senior";
+  return "adult";
+}
+
+function petAgeLabel(pet: AccountPet) {
+  const stage = petAgeStage(pet);
+  if (stage === "young") return "Jovem";
+  if (stage === "senior") return "Senior";
+  return "Adulto";
+}
+
+function petAgeDetail(pet: AccountPet) {
+  const years = petAgeYears(pet.birthday);
+  if (years === null) return "Idade por confirmar";
+  if (years === 0) return "Menos de 1 ano";
+  if (years === 1) return "1 ano";
+  return `${years} anos`;
+}
+
+function petRecommendation(pet: AccountPet) {
+  const stage = petAgeStage(pet);
+  const hasCareNotes = Boolean(pet.allergies.trim() || pet.preferences.trim());
+  const careSuffix = hasCareNotes ? " As notas guardadas entram no resumo da caixa." : " Pode adicionar gostos ou alergias para afinar melhor.";
+
+  if (pet.species === "cat") {
+    if (stage === "young") {
+      return {
+        title: "Caixa de descoberta para gato jovem",
+        text: `Boa para brinquedos leves, snacks simples e enriquecimento em casa.${careSuffix}`
+      };
+    }
+    if (stage === "senior") {
+      return {
+        title: "Caixa calma para gato senior",
+        text: `Focada em conforto, brincadeiras suaves e produtos faceis de usar.${careSuffix}`
+      };
+    }
+    return {
+      title: "Caixa de enriquecimento para gato",
+      text: `Ideal para variar brinquedos, snacks e rotinas sem ter de escolher tudo de raiz.${careSuffix}`
+    };
+  }
+
+  if (stage === "young") {
+    return {
+      title: "Caixa de descoberta para cao jovem",
+      text: `Pensada para treino, mordedores adequados e snacks para primeiras rotinas.${careSuffix}`
+    };
+  }
+  if (stage === "senior") {
+    return {
+      title: "Caixa conforto para cao senior",
+      text: `Mais suave, com foco em snacks, brinquedos tranquilos e bem-estar diario.${careSuffix}`
+    };
+  }
+  return {
+    title: "Caixa activa por perfil",
+    text: `Combina brinquedos, snacks e extras com o tamanho e preferencias guardadas.${careSuffix}`
+  };
 }
 
 function subscriptionStatusLabel(value: AccountSubscription["status"]) {
@@ -266,6 +343,11 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
     setMessage("");
   }
 
+  function startBoxForPet(pet: AccountPet) {
+    setSelectedPetForBox(pet);
+    router.push(`/criar-caixa?animal=${encodeURIComponent(pet.id)}`);
+  }
+
   async function deletePet(id: string) {
     if (user?.id && supabase && !id.startsWith("pet-")) {
       try {
@@ -431,17 +513,34 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
                 <article className="pet-profile" key={pet.id}>
                   <div>
                     <strong>{pet.name}</strong>
-                    <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)}</span>
+                    <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)} | {petAgeLabel(pet)}</span>
+                    <small>{petAgeDetail(pet)}</small>
                     {pet.allergies ? <small>Alergias: {pet.allergies}</small> : null}
                     {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
                   </div>
                   <div className="action-row wrap">
+                    <button className="btn btn-secondary small" onClick={() => startBoxForPet(pet)}>Criar caixa</button>
                     <button className="link-btn" onClick={() => editPet(pet)}>Editar</button>
                     <button className="link-btn remove-btn" onClick={() => deletePet(pet.id)}>Remover</button>
                   </div>
                 </article>
               ))}
             </div>
+            {pets.length ? (
+              <div className="pet-recommendation-grid">
+                {pets.map((pet) => {
+                  const recommendation = petRecommendation(pet);
+                  return (
+                    <article className="pet-recommendation-card" key={`recommendation-${pet.id}`}>
+                      <span>{pet.name} | {petSpeciesLabel(pet.species)} | {petAgeLabel(pet)}</span>
+                      <strong>{recommendation.title}</strong>
+                      <p>{recommendation.text}</p>
+                      <button className="btn small" onClick={() => startBoxForPet(pet)}>Criar caixa para {pet.name}</button>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
             <div className="form-grid account-form">
               <input placeholder="Nome do animal" value={petForm.name} onChange={(event) => setPetForm({ ...petForm, name: event.target.value })} />
               <input type="date" value={petForm.birthday} onChange={(event) => setPetForm({ ...petForm, birthday: event.target.value })} />

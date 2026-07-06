@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Plan } from "@/data/products";
 import { loadAdminPlans, loadRemoteConfiguratorSettings } from "@/lib/admin-db";
 import { adminStore, type ConfigOption, type ConfiguratorSettings } from "@/lib/admin-store";
-import { addToCart } from "@/lib/client-store";
+import { addToCart, clearSelectedPetForBox, getSelectedPetForBox, type AccountPet } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,32 @@ function planLabel(plan: Plan) {
 
 function getOption(options: ConfigOption[], id: string) {
   return options.find((option) => option.id === id) || options[0];
+}
+
+function hasOption(options: ConfigOption[], id: string) {
+  return options.some((option) => option.id === id);
+}
+
+function ageIdFromBirthday(birthday: string) {
+  if (!birthday) return "adult";
+  const birthDate = new Date(birthday);
+  if (Number.isNaN(birthDate.getTime())) return "adult";
+  const today = new Date();
+  let years = today.getFullYear() - birthDate.getFullYear();
+  const birthdayPassed = today.getMonth() > birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+  if (!birthdayPassed) years -= 1;
+  if (years < 1) return "young";
+  if (years >= 8) return "senior";
+  return "adult";
+}
+
+function notesFromPet(pet: AccountPet) {
+  const details = [
+    `Perfil: ${pet.name}`,
+    pet.allergies.trim() ? `Alergias/ingredientes a evitar: ${pet.allergies.trim()}` : "",
+    pet.preferences.trim() ? `Preferencias: ${pet.preferences.trim()}` : ""
+  ].filter(Boolean);
+  return details.join(". ").slice(0, 240);
 }
 
 type ConfiguratorProps = {
@@ -52,10 +78,28 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const [personalityId, setPersonalityId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).personalities, "playful"));
   const [extraIds, setExtraIds] = useState<string[]>(() => initialSettingsFromProps(initialConfiguratorSettings).extras[0]?.id ? [initialSettingsFromProps(initialConfiguratorSettings).extras[0].id] : []);
   const [petNotes, setPetNotes] = useState("");
+  const [selectedPet, setSelectedPet] = useState<AccountPet | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const selectedPetAppliedRef = useRef("");
   const hasInitialData = Boolean(initialConfiguratorSettings || initialPlans.length);
 
   useEffect(() => {
+    const applySelectedPet = (nextSettings: ConfiguratorSettings) => {
+      const pet = getSelectedPetForBox();
+      setSelectedPet(pet);
+      if (!pet) {
+        selectedPetAppliedRef.current = "";
+        return;
+      }
+      if (selectedPetAppliedRef.current === pet.id) return;
+      if (hasOption(nextSettings.animals, pet.species)) setAnimalId(pet.species);
+      if (hasOption(nextSettings.sizes, pet.size)) setSizeId(pet.size);
+      const nextAgeId = ageIdFromBirthday(pet.birthday);
+      if (hasOption(nextSettings.ages, nextAgeId)) setAgeId(nextAgeId);
+      setPetNotes((current) => current.trim() ? current : notesFromPet(pet));
+      selectedPetAppliedRef.current = pet.id;
+    };
+
     const refresh = () => {
       const nextPlans = adminStore.plans.get();
       const nextSettings = adminStore.configurator.get();
@@ -68,13 +112,18 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       setPlanId((current) => nextPlans.some((plan) => plan.id === current) ? current : nextPlans[0]?.id || "");
       setPersonalityId((current) => nextSettings.personalities.some((option) => option.id === current) ? current : firstOption(nextSettings.personalities, "playful"));
       setExtraIds((current) => current.filter((id) => nextSettings.extras.some((option) => option.id === id)));
+      applySelectedPet(nextSettings);
     };
 
     if (shouldUseAdminPreview()) {
       setPreviewMode(true);
       refresh();
       window.addEventListener("petbox-admin-changed", refresh);
-      return () => window.removeEventListener("petbox-admin-changed", refresh);
+      window.addEventListener("petbox-selected-pet-changed", refresh);
+      return () => {
+        window.removeEventListener("petbox-admin-changed", refresh);
+        window.removeEventListener("petbox-selected-pet-changed", refresh);
+      };
     }
 
     if (initialPlans.length) {
@@ -87,7 +136,11 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
     refresh();
     if (hasInitialData) {
       window.addEventListener("petbox-admin-changed", refresh);
-      return () => window.removeEventListener("petbox-admin-changed", refresh);
+      window.addEventListener("petbox-selected-pet-changed", refresh);
+      return () => {
+        window.removeEventListener("petbox-admin-changed", refresh);
+        window.removeEventListener("petbox-selected-pet-changed", refresh);
+      };
     }
 
     Promise.all([
@@ -107,10 +160,15 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
         setAgeId((current) => remoteSettings.ages.some((option) => option.id === current) ? current : firstOption(remoteSettings.ages, "adult"));
         setPersonalityId((current) => remoteSettings.personalities.some((option) => option.id === current) ? current : firstOption(remoteSettings.personalities, "playful"));
         setExtraIds((current) => current.filter((id) => remoteSettings.extras.some((option) => option.id === id)));
+        applySelectedPet(remoteSettings);
       }
     });
     window.addEventListener("petbox-admin-changed", refresh);
-    return () => window.removeEventListener("petbox-admin-changed", refresh);
+    window.addEventListener("petbox-selected-pet-changed", refresh);
+    return () => {
+      window.removeEventListener("petbox-admin-changed", refresh);
+      window.removeEventListener("petbox-selected-pet-changed", refresh);
+    };
   }, []);
 
   const animal = getOption(settings.animals, animalId);
@@ -127,13 +185,19 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
     setExtraIds((prev) => prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]);
   }
 
+  function clearSelectedPet() {
+    clearSelectedPetForBox();
+    selectedPetAppliedRef.current = "";
+    setSelectedPet(null);
+  }
+
   function addConfigured(goCheckout = false) {
     if (!selectedPlan || !animal || !size || !age || !personality) return;
 
     addToCart({
       id: `custom-${Date.now()}`,
       slug: "custom-pet-box",
-      title: `${selectedPlan.name} ${animal.label}`,
+      title: selectedPet ? `${selectedPlan.name} para ${selectedPet.name}` : `${selectedPlan.name} ${animal.label}`,
       price: total,
       quantity: 1,
       type: "custom-box",
@@ -143,6 +207,8 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       image: animal.image,
       config: {
         planId: selectedPlan.id,
+        petId: selectedPet?.id || "",
+        petName: selectedPet?.name || "",
         animalId: animal.id,
         sizeId: size.id,
         ageId: age.id,
@@ -150,7 +216,15 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
         extraIds: selectedExtras.map((extra) => extra.id).join(","),
         notes: cleanPetNotes
       },
-      metadata: { animal: animal.label, tamanho: size.label, idade: age.label, personalidade: personality.label, extras: summaryExtras, observacoes: cleanPetNotes }
+      metadata: {
+        perfil: selectedPet?.name || "",
+        animal: animal.label,
+        tamanho: size.label,
+        idade: age.label,
+        personalidade: personality.label,
+        extras: summaryExtras,
+        observacoes: cleanPetNotes
+      }
     });
     router.push(goCheckout ? "/pagamento" : "/carrinho");
   }
@@ -158,6 +232,16 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   return (
     <div className="configurator">
       {previewMode ? <div className="preview-mode-banner">Pre-visualizacao local do admin. Os visitantes so veem isto depois de guardar.</div> : null}
+      {selectedPet ? (
+        <div className="selected-pet-banner">
+          <div>
+            <span className="tag">Perfil seleccionado</span>
+            <strong>{selectedPet.name}</strong>
+            <p>A caixa foi pre-preenchida com o animal, tamanho, idade e notas guardadas na sua conta.</p>
+          </div>
+          <button className="btn btn-secondary small" onClick={clearSelectedPet}>Escolher manualmente</button>
+        </div>
+      ) : null}
       <div className="config-grid">
         <div className="config-panel">
           <div className="config-step">

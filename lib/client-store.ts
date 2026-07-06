@@ -63,6 +63,7 @@ const ORDERS_KEY = "petbox-orders";
 const PETS_KEY = "petbox-account-pets";
 const ADDRESS_KEY = "petbox-account-address";
 const SUBSCRIPTION_KEY = "petbox-account-subscription";
+const SELECTED_PET_BOX_KEY = "petbox-selected-pet-box";
 
 function scopedKey(key: string, scope?: string) {
   return scope ? `${key}:${scope}` : key;
@@ -161,6 +162,27 @@ export function getPets(scope?: string) {
 
 export function setPets(pets: AccountPet[], scope?: string) {
   writeValue(scopedKey(PETS_KEY, scope), pets);
+}
+
+export function getSelectedPetForBox(): AccountPet | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem(SELECTED_PET_BOX_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+export function setSelectedPetForBox(pet: AccountPet) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SELECTED_PET_BOX_KEY, JSON.stringify(pet));
+  window.dispatchEvent(new Event("petbox-selected-pet-changed"));
+}
+
+export function clearSelectedPetForBox() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(SELECTED_PET_BOX_KEY);
+  window.dispatchEvent(new Event("petbox-selected-pet-changed"));
 }
 
 export function getAddress(scope?: string): AccountAddress {
