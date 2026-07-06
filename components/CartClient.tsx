@@ -7,6 +7,7 @@ import { loadRemoteStoreSettings } from "@/lib/admin-db";
 import { adminStore, type StoreSettings } from "@/lib/admin-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
+import SmartImage from "@/components/SmartImage";
 
 function getCartImage(item: CartItem) {
   if (item.image) return item.image;
@@ -78,7 +79,7 @@ export default function CartClient({ initialStoreSettings = null }: CartClientPr
           <div className="card"><div className="card-body empty-cart"><h2>{pt.cart.emptyTitle}</h2><p className="muted">{pt.cart.emptyText}</p><Link href="/loja" className="btn">{pt.cart.shopNow}</Link></div></div>
         ) : items.map((item) => (
           <article key={item.id} className="card cart-item-card">
-            <div className="cart-media-wrap"><img src={getCartImage(item)} alt={item.title} className="cart-thumb" /></div>
+            <div className="cart-media-wrap"><SmartImage src={getCartImage(item)} alt={item.title} className="cart-thumb" width={260} height={260} sizes="132px" /></div>
             <div className="cart-main">
               <div className="cart-copy-top">
                 <span className="tag">{item.type === "plan" ? pt.cart.subscription : item.type === "custom-box" ? pt.cart.customBox : item.category || pt.cart.product}</span>

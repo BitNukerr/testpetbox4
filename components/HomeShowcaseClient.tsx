@@ -7,6 +7,7 @@ import { adminStore, type HomeSettings } from "@/lib/admin-store";
 import type { Product } from "@/data/products";
 import type { Plan } from "@/data/products";
 import { money } from "@/lib/helpers";
+import SmartImage from "@/components/SmartImage";
 
 function speciesLabel(species: Product["species"]) {
   if (species === "dog") return "Caes";
@@ -113,7 +114,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
             {[0, 1].map((group) => (
               <div className="video-asset-group" key={group}>
                 {heroLoopImages.map((image, index) => (
-                  <img key={`${group}-${index}`} src={image} alt="" />
+                  <SmartImage key={`${group}-${index}`} src={image} alt="" width={180} height={160} sizes="116px" priority={group === 0 && index < 3} />
                 ))}
               </div>
             ))}
@@ -131,7 +132,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
             <p>{settings.showcasePromoText}</p>
             <Link href={settings.showcasePromoHref || "/criar-caixa"} className="btn campaign-btn">{settings.showcasePromoCta}</Link>
           </div>
-          <img src={settings.showcasePromoImage || settings.heroImage} alt="" />
+          <SmartImage src={settings.showcasePromoImage || settings.heroImage} alt="" width={720} height={520} sizes="(max-width: 900px) 100vw, 34vw" priority />
         </aside>
 
         <Link href={settings.showcaseTileOneHref || "/criar-caixa"} className="campaign-tile tile-large tile-green">
@@ -139,7 +140,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
           <strong>{settings.showcaseTileOneTitle}</strong>
           <p>{settings.showcaseTileOneText}</p>
           <em>{settings.showcaseTileOneCta}</em>
-          <img src={settings.showcaseTileOneImage} alt="" />
+          <SmartImage src={settings.showcaseTileOneImage} alt="" width={420} height={320} sizes="(max-width: 900px) 45vw, 18vw" />
         </Link>
 
         <Link href={settings.showcaseTileTwoHref || "/loja"} className="campaign-tile tile-large tile-cream">
@@ -147,7 +148,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
           <strong>{settings.showcaseTileTwoTitle}</strong>
           <p>{settings.showcaseTileTwoText}</p>
           <em>{settings.showcaseTileTwoCta}</em>
-          <img src={settings.showcaseTileTwoImage} alt="" />
+          <SmartImage src={settings.showcaseTileTwoImage} alt="" width={420} height={320} sizes="(max-width: 900px) 45vw, 18vw" />
         </Link>
 
         <Link href={settings.showcaseTileThreeHref || "/sobre"} className="campaign-tile tile-side tile-blue">
@@ -155,7 +156,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
           <strong>{settings.showcaseTileThreeTitle}</strong>
           <p>{settings.showcaseTileThreeText}</p>
           <em>{settings.showcaseTileThreeCta}</em>
-          <img src={settings.showcaseTileThreeImage} alt="" />
+          <SmartImage src={settings.showcaseTileThreeImage} alt="" width={260} height={220} sizes="112px" />
         </Link>
 
         <Link href={settings.showcaseTileFourHref || "/blog"} className="campaign-tile tile-wide tile-blog">
@@ -163,7 +164,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
           <strong>{settings.showcaseTileFourTitle}</strong>
           <p>{settings.showcaseTileFourText}</p>
           <em>{settings.showcaseTileFourCta}</em>
-          <img src={settings.showcaseTileFourImage} alt="" />
+          <SmartImage src={settings.showcaseTileFourImage} alt="" width={380} height={240} sizes="(max-width: 900px) 35vw, 16vw" />
         </Link>
 
         <article className="campaign-info-card">
@@ -227,7 +228,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
       <section className="home-offer-grid" aria-label="Produtos e vantagens">
         {featuredProducts.map((product) => (
           <Link href={`/produto/${product.slug}`} className="offer-card" key={product.slug}>
-            <img src={product.image} alt={product.title} />
+            <SmartImage src={product.image} alt={product.title} width={420} height={300} sizes="(max-width: 900px) 50vw, 20vw" />
             <span>{product.category}</span>
             <strong>{product.title}</strong>
             <p>{speciesLabel(product.species)} | {money(product.price)}</p>
@@ -235,7 +236,7 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
         ))}
         {quarterlyPlan ? (
           <Link href="/criar-caixa" className="offer-card offer-card-strong">
-            <img src="/images/box-generic.svg" alt="" />
+            <SmartImage src="/images/box-generic.svg" alt="" width={420} height={300} sizes="(max-width: 900px) 50vw, 20vw" />
             <span>Melhor valor</span>
             <strong>{quarterlyPlan.name}</strong>
             <p>{money(quarterlyPlan.price)} | plano trimestral</p>

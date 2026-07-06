@@ -1,8 +1,25 @@
+const supabaseImageHost = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : "";
+  } catch {
+    return "";
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
   images: {
-    unoptimized: true
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: supabaseImageHost
+      ? [
+          {
+            protocol: "https",
+            hostname: supabaseImageHost,
+            pathname: "/storage/v1/object/public/**"
+          }
+        ]
+      : []
   },
   async headers() {
     return [

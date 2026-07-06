@@ -5,6 +5,7 @@ import { Product } from "@/data/products";
 import { money } from "@/lib/helpers";
 import { addToCart } from "@/lib/client-store";
 import { pt } from "@/lib/translations";
+import SmartImage from "@/components/SmartImage";
 
 function speciesLabel(species: Product["species"]) {
   if (species === "dog") return pt.configure.dog;
@@ -15,7 +16,7 @@ function speciesLabel(species: Product["species"]) {
 export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="card product-card">
-      <img src={product.image} alt={product.title} className="product-image" />
+      <SmartImage src={product.image} alt={product.title} className="product-image" width={700} height={700} sizes="(max-width: 768px) 100vw, 33vw" />
       <div className="card-body">
         <span className="tag">{product.tag}</span>
         <h3>{product.title}</h3>

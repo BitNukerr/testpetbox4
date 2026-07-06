@@ -27,6 +27,7 @@ export default function CheckoutClient({ initialStoreSettings = null }: Checkout
   const [error, setError] = useState("");
   const [checkoutReady, setCheckoutReady] = useState(false);
   const checkoutRef = useRef<CheckoutInstance | null>(null);
+  const checkoutStartingRef = useRef(false);
   const [customer, setCustomer] = useState({
     firstName: "",
     lastName: "",
@@ -91,12 +92,19 @@ export default function CheckoutClient({ initialStoreSettings = null }: Checkout
 
   async function startCheckout(event?: React.FormEvent<HTMLFormElement>) {
     event?.preventDefault();
+    if (loading || checkoutStartingRef.current) return;
+    if (checkoutReady) {
+      setError("Ja existe uma sessao de pagamento aberta abaixo. Feche-a para tentar novamente.");
+      return;
+    }
+
     const validationError = validateCheckout();
     if (validationError) {
       setError(validationError);
       return;
     }
 
+    checkoutStartingRef.current = true;
     setLoading(true);
     setError("");
     setCheckoutReady(false);
@@ -128,6 +136,8 @@ export default function CheckoutClient({ initialStoreSettings = null }: Checkout
         inputBorderRadius: 16,
         buttonBoxShadow: false,
         onSuccess: async (info: CheckoutOutput) => {
+          setLoading(true);
+          setCheckoutReady(false);
           const paymentId = info.payment.id || info.id;
           const { data: latestAuthData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
           await fetch("/api/orders/confirm", {
@@ -155,20 +165,35 @@ export default function CheckoutClient({ initialStoreSettings = null }: Checkout
           router.push(`/sucesso?payment_id=${encodeURIComponent(paymentId)}`);
         },
         onError: (checkoutError: CheckoutError) => {
+          checkoutStartingRef.current = false;
+          checkoutRef.current?.unmount();
+          checkoutRef.current = null;
+          setCheckoutReady(false);
           setError(getCheckoutErrorMessage(checkoutError));
           setLoading(false);
         },
         onPaymentError: (paymentError: CheckoutPaymentError) => {
+          checkoutStartingRef.current = false;
+          checkoutRef.current?.unmount();
+          checkoutRef.current = null;
+          setCheckoutReady(false);
           setError(getCheckoutErrorMessage(paymentError));
           setLoading(false);
         },
-        onClose: () => setLoading(false)
+        onClose: () => {
+          checkoutStartingRef.current = false;
+          checkoutRef.current = null;
+          setCheckoutReady(false);
+          setLoading(false);
+        }
       });
       setCheckoutReady(true);
       setLoading(false);
+      checkoutStartingRef.current = false;
     } catch (err: any) {
       setError(err.message || "Não foi possível iniciar o pagamento.");
       setLoading(false);
+      checkoutStartingRef.current = false;
     }
   }
 
@@ -192,8 +217,8 @@ export default function CheckoutClient({ initialStoreSettings = null }: Checkout
               <input placeholder="Notas de entrega (opcional)" value={customer.notes} onChange={(event) => updateCustomer("notes", event.target.value)} />
             </div>
             {error ? <p className="error-text">{error}</p> : null}
-            <button className="btn checkout-pay-btn" disabled={items.length === 0 || loading} type="submit">
-              {loading ? pt.checkout.loading : pt.checkout.pay}
+            <button className="btn checkout-pay-btn" disabled={items.length === 0 || loading || checkoutReady} type="submit">
+              {loading ? pt.checkout.loading : checkoutReady ? "Pagamento aberto abaixo" : pt.checkout.pay}
             </button>
           </form>
           <div id="easypay-checkout" className={checkoutReady ? "easypay-checkout-shell is-ready" : "easypay-checkout-shell"} />

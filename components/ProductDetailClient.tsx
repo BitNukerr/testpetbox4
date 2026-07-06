@@ -9,6 +9,7 @@ import { adminStore } from "@/lib/admin-store";
 import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
+import SmartImage from "@/components/SmartImage";
 
 export default function ProductDetailClient({ slug, initialProducts = [] }: { slug: string; initialProducts?: Product[] }) {
   const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : []);
@@ -43,7 +44,7 @@ export default function ProductDetailClient({ slug, initialProducts = [] }: { sl
   return (
     <section className="container section">
       <div className="product-detail refined">
-        <div className="detail-media-card"><img src={product.image} alt={product.title} className="detail-image" /></div>
+        <div className="detail-media-card"><SmartImage src={product.image} alt={product.title} className="detail-image" width={1000} height={1000} sizes="(max-width: 900px) 100vw, 55vw" priority /></div>
         <div className="card"><div className="card-body detail-buy-box">
           <span className="tag">{product.tag}</span>
           <h1>{product.title}</h1>

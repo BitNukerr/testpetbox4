@@ -1,3 +1,5 @@
+import SmartImage from "@/components/SmartImage";
+
 type BlogBlock =
   | { type: "paragraph"; text: string }
   | { type: "image"; alt: string; src: string };
@@ -54,7 +56,7 @@ export default function BlogContent({ body, preview = false }: { body: string; p
         if (block.type === "image") {
           return (
             <figure className="blog-image-block" key={`${block.src}-${index}`}>
-              <img src={block.src} alt={block.alt} />
+              <SmartImage src={block.src} alt={block.alt} width={1200} height={760} sizes="(max-width: 900px) 100vw, 760px" />
               {block.alt ? <figcaption>{block.alt}</figcaption> : null}
             </figure>
           );

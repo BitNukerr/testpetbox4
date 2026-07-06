@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getCart } from "@/lib/client-store";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 import { pt } from "@/lib/translations";
+import SmartImage from "@/components/SmartImage";
 
 const publicNav = [
   [pt.nav.shop, "/loja"],
@@ -81,7 +82,7 @@ export default function Header() {
     <header className="site-header">
       <div className="container header-row">
         <Link href="/" className="brand">
-          <img src="/dog-paw.png" alt="" className="brand-logo" />
+          <SmartImage src="/dog-paw.png" alt="" className="brand-logo" width={54} height={50} sizes="54px" priority />
           <span>
             <strong><span>Pet</span>Box</strong>
           </span>

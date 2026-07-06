@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SmartImage from "@/components/SmartImage";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -11,7 +12,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <div className="footer-brand"><img src="/dog-paw.png" alt="" /><h3>PetBox</h3></div>
+          <div className="footer-brand"><SmartImage src="/dog-paw.png" alt="" width={36} height={32} sizes="36px" /><h3>PetBox</h3></div>
           <p>Caixas mensais e trimestrais para caes e gatos, com snacks, brinquedos e extras avulsos.</p>
         </div>
         <div>

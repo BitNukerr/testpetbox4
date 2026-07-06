@@ -1,3 +1,5 @@
+import SmartImage from "@/components/SmartImage";
+
 export default function SobrePage() {
   return (
     <section className="container section narrow">
@@ -7,7 +9,7 @@ export default function SobrePage() {
         A PetBox e uma loja online para caixas misterio para caes e gatos. Junta planos mensais e trimestrais,
         personalizacao por perfil do animal, produtos avulsos e pagamento por MB WAY via Easypay.
       </p>
-      <img src="/images/about-pets.svg" alt="Ilustracao de caes e gatos" className="wide-image" />
+      <SmartImage src="/images/about-pets.svg" alt="Ilustracao de caes e gatos" className="wide-image" width={1100} height={700} sizes="(max-width: 900px) 100vw, 760px" priority />
     </section>
   );
 }

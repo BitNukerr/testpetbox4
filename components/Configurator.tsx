@@ -8,6 +8,7 @@ import { addToCart } from "@/lib/client-store";
 import { money } from "@/lib/helpers";
 import { pt } from "@/lib/translations";
 import { useRouter } from "next/navigation";
+import SmartImage from "@/components/SmartImage";
 
 function firstOption(options: ConfigOption[], fallback: string) {
   return options[0]?.id || fallback;
@@ -244,7 +245,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
 
         <aside className="config-summary">
           <div className="summary-media">
-            <img src={animal?.image || "/images/dog-box.svg"} alt="Pre-visualizacao da caixa" />
+            <SmartImage src={animal?.image || "/images/dog-box.svg"} alt="Pre-visualizacao da caixa" width={620} height={620} sizes="360px" priority />
           </div>
           <span className="tag">Resumo em tempo real</span>
           <h3>{selectedPlan?.name || "Caixa PetBox"} {animal?.label || ""}</h3>

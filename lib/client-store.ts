@@ -135,8 +135,8 @@ export function getOrders(scope?: string): SavedOrder[] {
 
 export function saveOrder(order: SavedOrder, scope?: string) {
   const orders = getOrders(scope);
-  orders.unshift(order);
-  localStorage.setItem(scopedKey(ORDERS_KEY, scope), JSON.stringify(orders));
+  const next = [order, ...orders.filter((item) => item.id !== order.id)];
+  localStorage.setItem(scopedKey(ORDERS_KEY, scope), JSON.stringify(next));
   window.dispatchEvent(new Event("petbox-orders-changed"));
 }
 

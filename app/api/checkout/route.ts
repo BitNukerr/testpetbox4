@@ -288,6 +288,9 @@ async function savePendingOrder(params: {
     }] : [])
   ];
 
+  const { error: clearItemsError } = await admin.from("order_items").delete().eq("order_id", params.orderId);
+  if (clearItemsError) throw clearItemsError;
+
   const { error: itemsError } = await admin.from("order_items").insert(rows);
   if (itemsError) throw itemsError;
   return true;
@@ -326,8 +329,8 @@ export async function POST(req: NextRequest) {
 
     if (!credentials) {
       return NextResponse.json(
-        { error: "Faltam as variáveis EASYPAY_ACCOUNT_ID e EASYPAY_API_KEY no Vercel." },
-        { status: 500 }
+        { code: "easypay_not_configured", error: "O pagamento ainda nao esta configurado. Contacte a PetBox para concluir a encomenda." },
+        { status: 503 }
       );
     }
 
@@ -335,7 +338,7 @@ export async function POST(req: NextRequest) {
     const subtotal = orderItems.reduce((sum, item) => sum + item.value * item.quantity, 0);
     const shipping = subtotal > 0 ? requestedShipping : 0;
     const total = toMoney(subtotal + shipping);
-    const orderKey = `petbox-${Date.now()}`;
+    const orderKey = `petbox-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const payload = {
       type: ["single"],
@@ -375,7 +378,7 @@ export async function POST(req: NextRequest) {
     if (!response.ok || !data?.id || !data?.session) {
       console.error("Erro Easypay:", data);
       return NextResponse.json(
-        { error: data?.message || data?.error || "Não foi possível criar o pagamento Easypay." },
+        { code: "easypay_checkout_failed", error: data?.message || data?.error || "Nao foi possivel criar o pagamento Easypay. Tente novamente dentro de momentos." },
         { status: response.status || 500 }
       );
     }
@@ -396,7 +399,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Erro na sessão de pagamento Easypay:", error);
     return NextResponse.json(
-      { error: "Não foi possível criar a sessão de pagamento." },
+      { code: "checkout_failed", error: error instanceof Error ? error.message : "Nao foi possivel criar a sessao de pagamento." },
       { status: 500 }
     );
   }
