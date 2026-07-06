@@ -531,7 +531,6 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
                     {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
                   </div>
                   <div className="action-row wrap">
-                    <button className="btn btn-secondary small" onClick={() => startBoxForPet(pet)}>Criar caixa</button>
                     <button className="link-btn" onClick={() => editPet(pet)}>Editar</button>
                     <button className="link-btn remove-btn" onClick={() => deletePet(pet.id)}>Remover</button>
                   </div>
