@@ -209,6 +209,9 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
     }
   ], [address.address, address.city, address.zip, pets.length, profileName, subscription]);
   const deliveryReady = Boolean(address.name && address.phone && address.address && address.city && address.zip);
+  const displayName = profileName.trim() || user?.email || "Cliente PetBox";
+  const accountInitial = displayName.trim().charAt(0).toUpperCase() || "P";
+  const primaryPet = pets[0];
 
   useEffect(() => {
     if (!isSupabaseConfigured() || !supabase) {
@@ -458,12 +461,36 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
 
   return (
     <>
-      <div className="container section-heading">
-        <div><span className="eyebrow">{pt.nav.account}</span><h1>A sua conta PetBox</h1></div>
-        <Link href="/criar-caixa" className="btn btn-secondary">Criar nova caixa</Link>
+      <div className="container account-hero" id="perfil">
+        <div className="account-hero-copy">
+          <span className="eyebrow">{pt.nav.account}</span>
+          <h1>Ola, {displayName}</h1>
+          <p className="muted">Gerir animais, moradas, subscricoes e encomendas num so lugar.</p>
+          <div className="account-hero-actions">
+            {primaryPet ? <button className="btn" onClick={() => startBoxForPet(primaryPet)}>Criar caixa</button> : <Link href="/criar-caixa" className="btn">Criar caixa</Link>}
+            <Link href="/loja" className="btn btn-secondary">Ir para a loja</Link>
+          </div>
+        </div>
+
+        <section className="account-hero-card">
+          <div className="account-avatar" aria-hidden="true">{accountInitial}</div>
+          <div className="account-hero-card-copy">
+            <span className={`admin-pill ${remoteReady ? "admin-pill-success" : "admin-pill-warning"}`}>{remoteReady ? "Sincronizado" : "Modo local"}</span>
+            <h2>{displayName}</h2>
+            <p>{user.email}{user.createdAt ? ` | Cliente desde ${new Date(user.createdAt).toLocaleDateString("pt-PT")}` : ""}</p>
+          </div>
+          <div className="profile-progress" aria-label={`Perfil ${profileCompletion}% completo`}>
+            <span>{profileCompletion}% completo</span>
+            <div><i style={{ width: `${profileCompletion}%` }} /></div>
+          </div>
+          <div className="form-grid account-form compact">
+            <input placeholder="Nome para a conta" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
+            <button className="btn btn-secondary" onClick={saveProfile}>Guardar perfil</button>
+          </div>
+        </section>
       </div>
 
-      <div className="container account-overview">
+      <div className="container account-overview account-overview-modern">
         <div className="account-stat"><span>Animais</span><strong>{pets.length}</strong></div>
         <div className="account-stat"><span>Subscricao</span><strong>{subscription ? subscriptionStatusLabel(subscription.status) : "Sem plano"}</strong></div>
         <div className="account-stat"><span>Encomendas</span><strong>{orders.length}</strong></div>
@@ -471,7 +498,7 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
       </div>
 
       <div className="container">
-        <section className="card account-next-card"><div className="card-body">
+        <section className="card account-next-card account-command-card"><div className="card-body">
           <div className="account-card-heading">
             <div>
               <span className="tag">Proximos passos</span>
@@ -492,43 +519,25 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
         </div></section>
       </div>
 
-      <div className="container">
-        <section className="card account-profile-card" id="perfil"><div className="card-body">
-          <div className="account-card-heading">
-            <div>
-              <span className="tag">Perfil</span>
-              <h2>{profileName || user.email}</h2>
-              <p className="muted mb-0">{user.email}{user.createdAt ? ` | Cliente desde ${new Date(user.createdAt).toLocaleDateString("pt-PT")}` : ""}</p>
-            </div>
-            <div className="profile-progress" aria-label={`Perfil ${profileCompletion}% completo`}>
-              <span>{profileCompletion}%</span>
-              <div><i style={{ width: `${profileCompletion}%` }} /></div>
-            </div>
-          </div>
-          <div className="form-grid account-form">
-            <input placeholder="Nome para a conta" value={profileName} onChange={(event) => setProfileName(event.target.value)} />
-            <button className="btn btn-secondary" onClick={saveProfile}>Guardar perfil</button>
-          </div>
-        </div></section>
-      </div>
-
       <div className="container account-layout">
         <div className="account-main">
-          <section className="card" id="animais"><div className="card-body">
+          <section className="card account-pets-card" id="animais"><div className="card-body">
             <div className="account-card-heading">
-              <div><span className="tag">Perfis</span><h2>Animais</h2></div>
+              <div><span className="tag">Perfis</span><h2>Animais da conta</h2><p className="muted mb-0">Cada perfil pode alimentar uma caixa personalizada.</p></div>
               <button className="btn btn-secondary small" onClick={() => { setPetForm(emptyPet); setEditingPetId(null); }}>Novo animal</button>
             </div>
             <div className="pet-grid">
               {pets.length === 0 ? <p className="muted">Adicione o primeiro animal para personalizar as caixas.</p> : pets.map((pet) => (
                 <article className="pet-profile" key={pet.id}>
-                  <div>
-                    <strong>{pet.name}</strong>
-                    <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)} | {petAgeLabel(pet)}</span>
-                    <small>{petAgeDetail(pet)}</small>
-                    <small>Personalidade: {petPersonalityLabel(pet.personality, personalities)}</small>
-                    {pet.allergies ? <small>Alergias: {pet.allergies}</small> : null}
-                    {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
+                  <div className="pet-profile-main">
+                    <span className="pet-avatar" aria-hidden="true">{pet.species === "cat" ? "G" : "C"}</span>
+                    <div>
+                      <strong>{pet.name}</strong>
+                      <span>{petSpeciesLabel(pet.species)} | {petSizeLabel(pet.size)} | {petAgeLabel(pet)}</span>
+                      <small>{petAgeDetail(pet)} | Personalidade: {petPersonalityLabel(pet.personality, personalities)}</small>
+                      {pet.allergies ? <small>Alergias: {pet.allergies}</small> : null}
+                      {pet.preferences ? <small>Preferencias: {pet.preferences}</small> : null}
+                    </div>
                   </div>
                   <div className="action-row wrap">
                     <button className="link-btn" onClick={() => editPet(pet)}>Editar</button>
@@ -553,26 +562,33 @@ export default function AccountClient({ requireAuth = false }: { requireAuth?: b
                 })}
               </div>
             ) : null}
-            <div className="form-grid account-form">
-              <input placeholder="Nome do animal" value={petForm.name} onChange={(event) => setPetForm({ ...petForm, name: event.target.value })} />
-              <input type="date" value={petForm.birthday} onChange={(event) => setPetForm({ ...petForm, birthday: event.target.value })} />
-              <select value={petForm.species} onChange={(event) => setPetForm({ ...petForm, species: event.target.value as AccountPet["species"] })}>
-                <option value="dog">Cao</option>
-                <option value="cat">Gato</option>
-              </select>
-              <select value={petForm.size} onChange={(event) => setPetForm({ ...petForm, size: event.target.value as AccountPet["size"] })}>
-                <option value="small">Pequeno</option>
-                <option value="medium">Medio</option>
-                <option value="large">Grande</option>
-              </select>
-              <select className="span-2" value={petForm.personality || ""} onChange={(event) => setPetForm({ ...petForm, personality: event.target.value })}>
-                <option value="">Personalidade por definir</option>
-                {personalities.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}
-              </select>
-              <input className="span-2" placeholder="Alergias ou ingredientes a evitar" value={petForm.allergies} onChange={(event) => setPetForm({ ...petForm, allergies: event.target.value })} />
-              <input className="span-2" placeholder="Preferencias de brinquedos, snacks ou estilo" value={petForm.preferences} onChange={(event) => setPetForm({ ...petForm, preferences: event.target.value })} />
+            <div className="pet-editor-panel">
+              <div>
+                <span className="tag">{editingPetId ? "Editar perfil" : "Novo perfil"}</span>
+                <h3>{editingPetId ? "Actualizar animal" : "Adicionar animal"}</h3>
+                <p className="muted">Estes dados ajudam a montar caixas mais certeiras.</p>
+              </div>
+              <div className="form-grid account-form">
+                <input placeholder="Nome do animal" value={petForm.name} onChange={(event) => setPetForm({ ...petForm, name: event.target.value })} />
+                <input type="date" value={petForm.birthday} onChange={(event) => setPetForm({ ...petForm, birthday: event.target.value })} />
+                <select value={petForm.species} onChange={(event) => setPetForm({ ...petForm, species: event.target.value as AccountPet["species"] })}>
+                  <option value="dog">Cao</option>
+                  <option value="cat">Gato</option>
+                </select>
+                <select value={petForm.size} onChange={(event) => setPetForm({ ...petForm, size: event.target.value as AccountPet["size"] })}>
+                  <option value="small">Pequeno</option>
+                  <option value="medium">Medio</option>
+                  <option value="large">Grande</option>
+                </select>
+                <select className="span-2" value={petForm.personality || ""} onChange={(event) => setPetForm({ ...petForm, personality: event.target.value })}>
+                  <option value="">Personalidade por definir</option>
+                  {personalities.map((option) => <option value={option.id} key={option.id}>{option.label}</option>)}
+                </select>
+                <input className="span-2" placeholder="Alergias ou ingredientes a evitar" value={petForm.allergies} onChange={(event) => setPetForm({ ...petForm, allergies: event.target.value })} />
+                <input className="span-2" placeholder="Preferencias de brinquedos, snacks ou estilo" value={petForm.preferences} onChange={(event) => setPetForm({ ...petForm, preferences: event.target.value })} />
+              </div>
+              <button className="btn top-gap" onClick={savePet}>{editingPetId ? "Guardar animal" : "Adicionar animal"}</button>
             </div>
-            <button className="btn top-gap" onClick={savePet}>{editingPetId ? "Guardar animal" : "Adicionar animal"}</button>
           </div></section>
 
           <section className="card" id="morada"><div className="card-body">

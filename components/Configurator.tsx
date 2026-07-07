@@ -184,6 +184,13 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
   const total = (selectedPlan?.price || 0) + (animal?.price || 0) + (size?.price || 0) + (age?.price || 0) + (personality?.price || 0) + selectedExtras.reduce((sum, extra) => sum + extra.price, 0);
   const summaryExtras = useMemo(() => selectedExtras.map((extra) => extra.label).join(", ") || "Nenhum", [selectedExtras]);
   const cleanPetNotes = petNotes.trim().replace(/\s+/g, " ").slice(0, 240);
+  const progressSteps = [
+    { label: "Animal", value: animal?.label || "-" },
+    { label: "Tamanho", value: size?.label || "-" },
+    { label: "Idade", value: age?.label || "-" },
+    { label: "Plano", value: selectedPlan ? planLabel(selectedPlan) : "-" },
+    { label: "Estilo", value: personality?.label || "-" }
+  ];
 
   function toggleExtra(extraId: string) {
     setExtraIds((prev) => prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]);
@@ -251,6 +258,15 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
           <button className="btn btn-secondary small" onClick={clearSelectedPet}>Escolher manualmente</button>
         </div>
       ) : null}
+      <div className="config-progress-strip" aria-label="Resumo das escolhas">
+        {progressSteps.map((step, index) => (
+          <div className="config-progress-item" key={step.label}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{step.label}</strong>
+            <small>{step.value}</small>
+          </div>
+        ))}
+      </div>
       <div className="config-grid">
         <div className="config-panel">
           <div className="config-step">
@@ -345,6 +361,11 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
           </div>
           <span className="tag">Resumo em tempo real</span>
           <h3>{selectedPlan?.name || "Caixa PetBox"} {animal?.label || ""}</h3>
+          <div className="summary-pills">
+            <span>{animal?.label || "Animal"}</span>
+            <span>{size?.label || "Tamanho"}</span>
+            <span>{age?.label || "Idade"}</span>
+          </div>
           <div className="summary-lines">
             <div><span>Animal</span><strong>{animal?.label}</strong></div>
             <div><span>Tamanho</span><strong>{size?.label}</strong></div>
@@ -358,6 +379,11 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
           <div className="config-summary-actions">
             <button className="btn full" onClick={() => addConfigured(true)}>Comprar agora</button>
             <button className="btn btn-secondary full" onClick={() => addConfigured(false)}>Adicionar ao carrinho</button>
+          </div>
+          <div className="summary-trust-row">
+            <span>MB WAY por Easypay</span>
+            <span>Extras editaveis</span>
+            <span>Perfil guardado</span>
           </div>
         </aside>
       </div>
