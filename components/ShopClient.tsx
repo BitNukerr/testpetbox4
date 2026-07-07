@@ -109,7 +109,7 @@ export default function ShopClient({ initialProducts = [] }: { initialProducts?:
         <div className="shop-toolbar">
           <p className="muted">{filtered.length} produto{filtered.length === 1 ? "" : "s"} encontrados</p>
         </div>
-        {filtered.length ? <div className="grid three">{filtered.map((product) => <ProductCard key={product.slug} product={product} />)}</div> : <div className="card"><div className="card-body"><h2>Sem resultados</h2><p className="muted">Tente outra categoria, animal ou pesquisa.</p></div></div>}
+        {filtered.length ? <div className="shop-product-grid">{filtered.map((product) => <ProductCard key={product.slug} product={product} />)}</div> : <div className="card"><div className="card-body"><h2>Sem resultados</h2><p className="muted">Tente outra categoria, animal ou pesquisa.</p></div></div>}
       </div>
     </div>
   );
