@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requestHasAdminSession } from "@/lib/admin-auth";
+import {
+  hasValidationError,
+  validateConfiguratorSettingsInput,
+  validateDeleteId,
+  validateHomeSettingsInput,
+  validateLegalSettingsInput,
+  validateOrderStatusInput,
+  validatePlanInput,
+  validatePostInput,
+  validateProductInput,
+  validateStoreSettingsInput
+} from "@/lib/admin-validation";
 import { rateLimit, requestIsSameOrigin } from "@/lib/request-security";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -302,8 +314,10 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
 
   if (body.resource === "products") {
-    const item = body.item || {};
-    const { data, error } = await client.from("products").upsert({ ...item, is_active: true }, { onConflict: "slug" }).select("slug,title,category,species,price,description,image,tag,rating").single();
+    const item = validateProductInput(body.item);
+    if (hasValidationError(item)) return NextResponse.json({ error: item.error }, { status: 400 });
+
+    const { data, error } = await client.from("products").upsert(item.value, { onConflict: "slug" }).select("slug,title,category,species,price,description,image,tag,rating").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${data.slug}`, "/sitemap.xml"]);
     await recordAdminActivity(client, "Guardou", "Produtos", data.title || data.slug).catch(() => null);
@@ -311,8 +325,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "plans") {
-    const item = body.item || {};
-    const { data, error } = await client.from("plans").upsert({ ...item, is_active: true }, { onConflict: "id" }).select("id,name,cadence,price,description,perks").single();
+    const item = validatePlanInput(body.item);
+    if (hasValidationError(item)) return NextResponse.json({ error: item.error }, { status: 400 });
+
+    const { data, error } = await client.from("plans").upsert(item.value, { onConflict: "id" }).select("id,name,cadence,price,description,perks").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
     await recordAdminActivity(client, "Guardou", "Planos", data.name || data.id).catch(() => null);
@@ -320,7 +336,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "store_settings") {
-    const { data, error } = await saveStoreSettings(client, body.item || {});
+    const item = validateStoreSettingsInput(body.item);
+    if (hasValidationError(item)) return NextResponse.json({ error: item.error }, { status: 400 });
+
+    const { data, error } = await saveStoreSettings(client, item.value);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-store-settings"], ["/carrinho", "/pagamento"]);
     await recordAdminActivity(client, "Guardou", "Definicoes", "Definicoes da loja e envio").catch(() => null);
@@ -328,8 +347,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "posts") {
-    const item = body.item || {};
-    const { data, error } = await client.from("journal_posts").upsert(item, { onConflict: "slug" }).select("slug,title,excerpt,body,status,author,published_at,created_at").single();
+    const item = validatePostInput(body.item);
+    if (hasValidationError(item)) return NextResponse.json({ error: item.error }, { status: 400 });
+
+    const { data, error } = await client.from("journal_posts").upsert(item.value, { onConflict: "slug" }).select("slug,title,excerpt,body,status,author,published_at,created_at").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${data.slug}`, "/sitemap.xml"]);
     await recordAdminActivity(client, "Guardou", "Blog", data.title || data.slug).catch(() => null);
@@ -337,7 +358,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "home_settings") {
-    const { error } = await client.from("home_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
+    const settings = validateHomeSettingsInput(body.settings);
+    if (hasValidationError(settings)) return NextResponse.json({ error: settings.error }, { status: 400 });
+
+    const { error } = await client.from("home_settings").upsert({ id: true, settings: settings.value }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-homepage"], ["/"]);
     await recordAdminActivity(client, "Guardou", "Pagina inicial", "Textos, imagens e blocos").catch(() => null);
@@ -345,7 +369,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "configurator_settings") {
-    const { error } = await client.from("configurator_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
+    const settings = validateConfiguratorSettingsInput(body.settings);
+    if (hasValidationError(settings)) return NextResponse.json({ error: settings.error }, { status: 400 });
+
+    const { error } = await client.from("configurator_settings").upsert({ id: true, settings: settings.value }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-configurator"], ["/criar-caixa"]);
     await recordAdminActivity(client, "Guardou", "Criar caixa", "Passos e opcoes do configurador").catch(() => null);
@@ -353,7 +380,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "legal_settings") {
-    const { error } = await client.from("legal_settings").upsert({ id: true, settings: body.settings || {} }, { onConflict: "id" });
+    const settings = validateLegalSettingsInput(body.settings);
+    if (hasValidationError(settings)) return NextResponse.json({ error: settings.error }, { status: 400 });
+
+    const { error } = await client.from("legal_settings").upsert({ id: true, settings: settings.value }, { onConflict: "id" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     await recordAdminActivity(client, "Guardou", "Legal", "Paginas legais").catch(() => null);
     return NextResponse.json({ ok: true });
@@ -366,19 +396,16 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.resource === "orders") {
-    const item = body.item || {};
-    if (!item.id) return NextResponse.json({ error: "ID em falta." }, { status: 400 });
+    const item = validateOrderStatusInput(body.item);
+    if (hasValidationError(item)) return NextResponse.json({ error: item.error }, { status: 400 });
 
-    const status = typeof item.status === "string" ? item.status.trim().slice(0, 40) : "";
-    if (!status) return NextResponse.json({ error: "Estado em falta." }, { status: 400 });
-
-    const { error } = await client.from("orders").update({ status }).eq("id", item.id);
+    const { error } = await client.from("orders").update({ status: item.value.status }).eq("id", item.value.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    await recordAdminActivity(client, "Actualizou", "Encomendas", `${item.id} - ${status}`).catch(() => null);
+    await recordAdminActivity(client, "Actualizou", "Encomendas", `${item.value.id} - ${item.value.status}`).catch(() => null);
 
     try {
       const data = await ordersWithProfiles(client);
-      return NextResponse.json({ data: data.find((order: any) => order.id === item.id) || null });
+      return NextResponse.json({ data: data.find((order: any) => order.id === item.value.id) || null });
     } catch (readError: any) {
       return NextResponse.json({ error: readError.message }, { status: 500 });
     }
@@ -447,35 +474,38 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
 
   if (!id) return NextResponse.json({ error: "ID em falta." }, { status: 400 });
+  const safeId = validateDeleteId(resource, id);
+  if (hasValidationError(safeId)) return NextResponse.json({ error: safeId.error }, { status: 400 });
+  const recordId = safeId.value;
 
   if (resource === "products") {
-    const { error } = await client.from("products").delete().eq("slug", id);
+    const { error } = await client.from("products").delete().eq("slug", recordId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${id}`, "/sitemap.xml"]);
-    await recordAdminActivity(client, "Removeu", "Produtos", id).catch(() => null);
+    refreshPublicCache(["petbox-products", "petbox-homepage"], ["/", "/loja", `/produto/${recordId}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Removeu", "Produtos", recordId).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
   if (resource === "plans") {
-    const { error } = await client.from("plans").delete().eq("id", id);
+    const { error } = await client.from("plans").delete().eq("id", recordId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     refreshPublicCache(["petbox-plans", "petbox-homepage", "petbox-configurator"], ["/", "/criar-caixa"]);
-    await recordAdminActivity(client, "Removeu", "Planos", id).catch(() => null);
+    await recordAdminActivity(client, "Removeu", "Planos", recordId).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
   if (resource === "posts") {
-    const { error } = await client.from("journal_posts").delete().eq("slug", id);
+    const { error } = await client.from("journal_posts").delete().eq("slug", recordId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${id}`, "/sitemap.xml"]);
-    await recordAdminActivity(client, "Removeu", "Blog", id).catch(() => null);
+    refreshPublicCache(["petbox-posts"], ["/blog", `/blog/${recordId}`, "/sitemap.xml"]);
+    await recordAdminActivity(client, "Removeu", "Blog", recordId).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
   if (resource === "subscriptions") {
-    const { error } = await client.from("customer_subscriptions").delete().eq("id", id);
+    const { error } = await client.from("customer_subscriptions").delete().eq("id", recordId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    await recordAdminActivity(client, "Removeu", "Subscricoes", id).catch(() => null);
+    await recordAdminActivity(client, "Removeu", "Subscricoes", recordId).catch(() => null);
     return NextResponse.json({ ok: true });
   }
 
