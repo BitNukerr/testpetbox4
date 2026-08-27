@@ -2,7 +2,7 @@ import JournalPostClient from "@/components/JournalPostClient";
 import { journalPosts } from "@/data/products";
 import { getCachedPosts } from "@/lib/site-data";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

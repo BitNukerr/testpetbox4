@@ -1,7 +1,7 @@
 import CheckoutClient from "@/components/CheckoutClient";
 import { getCachedStoreSettings } from "@/lib/site-data";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function PagamentoPage() {
   const initialStoreSettings = await getCachedStoreSettings();

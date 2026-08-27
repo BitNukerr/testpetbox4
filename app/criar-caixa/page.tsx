@@ -1,7 +1,7 @@
 import Configurator from "@/components/Configurator";
 import { getCachedConfiguratorData } from "@/lib/site-data";
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function CriarCaixaPage() {
   const configuratorData = await getCachedConfiguratorData();

@@ -6,7 +6,7 @@ export const metadata = {
   description: "Compre snacks, brinquedos, produtos de cuidado e acessorios para caes e gatos."
 };
 
-export const revalidate = 300;
+export const revalidate = 86400;
 
 export default async function LojaPage() {
   const initialProducts = await getCachedProducts();

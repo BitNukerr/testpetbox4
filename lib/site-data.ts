@@ -3,6 +3,8 @@ import type { Plan, Product } from "@/data/products";
 import type { ConfiguratorSettings, EditablePost, HomeSettings, StoreSettings } from "@/lib/admin-store";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
+const CONTENT_REVALIDATE_SECONDS = 86400;
+
 export type HomepageData = {
   initialHomeSettings: Partial<HomeSettings> | null;
   initialProducts: Product[];
@@ -165,26 +167,26 @@ async function readStoreSettings(): Promise<StoreSettingsData> {
 }
 
 export const getCachedProducts = unstable_cache(readProducts, ["petbox-products"], {
-  revalidate: 300,
+  revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-products"]
 });
 
 export const getCachedPosts = unstable_cache(readPosts, ["petbox-posts"], {
-  revalidate: 300,
+  revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-posts"]
 });
 
 export const getCachedHomepageData = unstable_cache(readHomepageData, ["petbox-homepage-data"], {
-  revalidate: 300,
+  revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-homepage", "petbox-products", "petbox-plans"]
 });
 
 export const getCachedConfiguratorData = unstable_cache(readConfiguratorData, ["petbox-configurator-data"], {
-  revalidate: 300,
+  revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-configurator", "petbox-plans"]
 });
 
 export const getCachedStoreSettings = unstable_cache(readStoreSettings, ["petbox-store-settings"], {
-  revalidate: 300,
+  revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-store-settings"]
 });
