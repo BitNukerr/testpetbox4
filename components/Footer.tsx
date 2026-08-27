@@ -13,7 +13,7 @@ export default function Footer() {
       <div className="container footer-grid">
         <div>
           <div className="footer-brand"><SmartImage src="/dog-paw.png" alt="" width={36} height={32} sizes="36px" /><h3>PetBox</h3></div>
-          <p>Caixas mensais e trimestrais para caes e gatos, com snacks, brinquedos e extras avulsos.</p>
+          <p>Caixas mensais e trimestrais para cães e gatos, com snacks, brinquedos e extras avulsos.</p>
         </div>
         <div>
           <h4>Explorar</h4>
@@ -31,7 +31,7 @@ export default function Footer() {
           <h4>Legal</h4>
           <Link href="/legal/termos">Termos</Link>
           <Link href="/legal/privacidade">Privacidade</Link>
-          <Link href="/legal/envios-devolucoes">Envios e devolucoes</Link>
+          <Link href="/legal/envios-devolucoes">Envios e devoluções</Link>
           <Link href="/legal/cookies">Cookies</Link>
         </div>
       </div>

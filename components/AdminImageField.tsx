@@ -54,7 +54,15 @@ export function AdminImageField({ value, onChange, onMessage, presets = [], opti
           <button className="admin-image-remove" type="button" onClick={() => onChange("")} aria-label="Remover imagem">X</button>
         </div>
       ) : <div className="admin-image-empty">Sem imagem</div>}
-      <input className="admin-form-control" type="file" accept="image/*" onChange={(event) => upload(event.target.files?.[0])} />
+      <input
+        className="admin-form-control"
+        type="file"
+        accept="image/*"
+        onChange={(event) => {
+          upload(event.target.files?.[0]);
+          event.currentTarget.value = "";
+        }}
+      />
       {presets.length ? (
         <div className="admin-image-presets mt-2">
           {presets.map((image) => (
@@ -112,7 +120,16 @@ export function AdminImageListField({ value, onChange, onMessage, presets = [], 
         ))}
         {!items.length ? <div className="admin-image-empty">Sem imagens</div> : null}
       </div>
-      <input className="admin-form-control" type="file" accept="image/*" multiple onChange={(event) => upload(event.target.files)} />
+      <input
+        className="admin-form-control"
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(event) => {
+          upload(event.target.files);
+          event.currentTarget.value = "";
+        }}
+      />
       {presets.length ? (
         <div className="admin-image-presets mt-2">
           {presets.map((image) => (

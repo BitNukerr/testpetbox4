@@ -9,9 +9,10 @@ function publishedPosts(posts: EditablePost[]) {
   return posts.filter((post) => post.status === "Publicado");
 }
 
-export default function JournalClient({ initialPosts = [] }: { initialPosts?: EditablePost[] }) {
-  const [posts, setPosts] = useState<EditablePost[]>(() => initialPosts.length ? initialPosts : publishedPosts(adminStore.posts.get()));
-  const hasInitialPosts = Boolean(initialPosts.length);
+export default function JournalClient({ initialPosts = [], initialPostsLoaded = false }: { initialPosts?: EditablePost[]; initialPostsLoaded?: boolean }) {
+  const authoritativeInitialPosts = initialPostsLoaded || initialPosts.length > 0;
+  const [posts, setPosts] = useState<EditablePost[]>(() => authoritativeInitialPosts ? initialPosts : publishedPosts(adminStore.posts.get()));
+  const hasInitialPosts = authoritativeInitialPosts;
 
   useEffect(() => {
     const refresh = () => setPosts(publishedPosts(adminStore.posts.get()));
@@ -23,10 +24,8 @@ export default function JournalClient({ initialPosts = [] }: { initialPosts?: Ed
     refresh();
     loadAdminPosts()
       .then((items) => {
-        if (items.length) {
-          const next = publishedPosts(items);
-          setPosts(next);
-        }
+        const next = publishedPosts(items);
+        setPosts(next);
       })
       .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
@@ -35,6 +34,9 @@ export default function JournalClient({ initialPosts = [] }: { initialPosts?: Ed
 
   return (
     <div className="grid two">
+      {posts.length === 0 ? (
+        <div className="card"><div className="card-body"><h2>Sem artigos publicados</h2><p className="muted">Volte mais tarde para ler novidades da PetBox.</p></div></div>
+      ) : null}
       {posts.map((post) => (
         <Link href={`/blog/${post.slug}`} key={post.slug} className="card journal-card">
           <div className="card-body">

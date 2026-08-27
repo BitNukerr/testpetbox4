@@ -56,7 +56,7 @@ export const pt = {
   checkout: {
     title: "Pagamento por MB WAY",
     intro: "O pagamento é processado pela Easypay com o número de telemóvel associado ao MB WAY.",
-    mbWayAvailable: "So aceitamos MB WAY nesta fase de pagamento.",
+    mbWayAvailable: "Só aceitamos MB WAY nesta fase de pagamento.",
     firstName: "Nome",
     lastName: "Apelido",
     email: "Email",
@@ -75,7 +75,7 @@ export const pt = {
     customBox: "Caixa personalizada",
     product: "Produto",
     orderSummary: "Resumo da encomenda",
-    orderText: "O envio e calculado antes do pagamento. As caixas e produtos sao pagos por MB WAY."
+    orderText: "O envio é calculado antes do pagamento. As caixas e produtos são pagos por MB WAY."
   },
   configure: {
     dog: "Cão",

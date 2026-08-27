@@ -9,20 +9,30 @@ export type HomepageData = {
   initialHomeSettings: Partial<HomeSettings> | null;
   initialProducts: Product[];
   initialPlans: Plan[];
+  initialProductsLoaded: boolean;
+  initialPlansLoaded: boolean;
 };
 
 export type ConfiguratorData = {
   initialConfiguratorSettings: Partial<ConfiguratorSettings> | null;
   initialPlans: Plan[];
+  initialPlansLoaded: boolean;
 };
 
 export type StoreSettingsData = Partial<StoreSettings> | null;
+
+export type ContentListState<T> = {
+  data: T[];
+  loaded: boolean;
+};
 
 function emptyHomepageData(): HomepageData {
   return {
     initialHomeSettings: null,
     initialProducts: [],
-    initialPlans: []
+    initialPlans: [],
+    initialProductsLoaded: false,
+    initialPlansLoaded: false
   };
 }
 
@@ -74,9 +84,9 @@ function storeSettingsFromRow(row: any): StoreSettingsData {
   };
 }
 
-async function readProducts() {
+async function readProductsState(): Promise<ContentListState<Product>> {
   const client = getSupabaseAdmin();
-  if (!client) return [];
+  if (!client) return { data: [], loaded: false };
 
   const { data, error } = await client
     .from("products")
@@ -84,12 +94,16 @@ async function readProducts() {
     .eq("is_active", true)
     .order("title", { ascending: true });
 
-  return error ? [] : (data || []).map(productFromRow);
+  return error ? { data: [], loaded: false } : { data: (data || []).map(productFromRow), loaded: true };
 }
 
-async function readPlans() {
+async function readProducts() {
+  return (await readProductsState()).data;
+}
+
+async function readPlansState(): Promise<ContentListState<Plan>> {
   const client = getSupabaseAdmin();
-  if (!client) return [];
+  if (!client) return { data: [], loaded: false };
 
   const { data, error } = await client
     .from("plans")
@@ -97,12 +111,16 @@ async function readPlans() {
     .eq("is_active", true)
     .order("price", { ascending: true });
 
-  return error ? [] : (data || []).map(planFromRow);
+  return error ? { data: [], loaded: false } : { data: (data || []).map(planFromRow), loaded: true };
 }
 
-async function readPosts() {
+async function readPlans() {
+  return (await readPlansState()).data;
+}
+
+async function readPostsState(): Promise<ContentListState<EditablePost>> {
   const client = getSupabaseAdmin();
-  if (!client) return [];
+  if (!client) return { data: [], loaded: false };
 
   const { data, error } = await client
     .from("journal_posts")
@@ -110,7 +128,11 @@ async function readPosts() {
     .eq("status", "Publicado")
     .order("created_at", { ascending: false });
 
-  return error ? [] : (data || []).map(postFromRow);
+  return error ? { data: [], loaded: false } : { data: (data || []).map(postFromRow), loaded: true };
+}
+
+async function readPosts() {
+  return (await readPostsState()).data;
 }
 
 async function readHomepageData(): Promise<HomepageData> {
@@ -119,29 +141,32 @@ async function readHomepageData(): Promise<HomepageData> {
 
   const [homeResult, products, plans] = await Promise.all([
     client.from("home_settings").select("settings").eq("id", true).maybeSingle(),
-    readProducts(),
-    readPlans()
+    readProductsState(),
+    readPlansState()
   ]);
 
   return {
     initialHomeSettings: homeResult.error ? null : homeResult.data?.settings || null,
-    initialProducts: products,
-    initialPlans: plans
+    initialProducts: products.data,
+    initialPlans: plans.data,
+    initialProductsLoaded: products.loaded,
+    initialPlansLoaded: plans.loaded
   };
 }
 
 async function readConfiguratorData(): Promise<ConfiguratorData> {
   const client = getSupabaseAdmin();
-  if (!client) return { initialConfiguratorSettings: null, initialPlans: [] };
+  if (!client) return { initialConfiguratorSettings: null, initialPlans: [], initialPlansLoaded: false };
 
   const [configuratorResult, plans] = await Promise.all([
     client.from("configurator_settings").select("settings").eq("id", true).maybeSingle(),
-    readPlans()
+    readPlansState()
   ]);
 
   return {
     initialConfiguratorSettings: configuratorResult.error ? null : configuratorResult.data?.settings || null,
-    initialPlans: plans
+    initialPlans: plans.data,
+    initialPlansLoaded: plans.loaded
   };
 }
 
@@ -171,9 +196,24 @@ export const getCachedProducts = unstable_cache(readProducts, ["petbox-products"
   tags: ["petbox-products"]
 });
 
+export const getCachedProductsState = unstable_cache(readProductsState, ["petbox-products-state"], {
+  revalidate: CONTENT_REVALIDATE_SECONDS,
+  tags: ["petbox-products"]
+});
+
 export const getCachedPosts = unstable_cache(readPosts, ["petbox-posts"], {
   revalidate: CONTENT_REVALIDATE_SECONDS,
   tags: ["petbox-posts"]
+});
+
+export const getCachedPostsState = unstable_cache(readPostsState, ["petbox-posts-state"], {
+  revalidate: CONTENT_REVALIDATE_SECONDS,
+  tags: ["petbox-posts"]
+});
+
+export const getCachedPlansState = unstable_cache(readPlansState, ["petbox-plans-state"], {
+  revalidate: CONTENT_REVALIDATE_SECONDS,
+  tags: ["petbox-plans"]
 });
 
 export const getCachedHomepageData = unstable_cache(readHomepageData, ["petbox-homepage-data"], {

@@ -9,11 +9,12 @@ function findPost(posts: EditablePost[], slug: string, preview = false) {
   return posts.find((item) => item.slug === slug && (preview || item.status === "Publicado")) || null;
 }
 
-export default function JournalPostClient({ slug, initialPosts = [] }: { slug: string; initialPosts?: EditablePost[] }) {
+export default function JournalPostClient({ slug, initialPosts = [], initialPostsLoaded = false }: { slug: string; initialPosts?: EditablePost[]; initialPostsLoaded?: boolean }) {
+  const authoritativeInitialPosts = initialPostsLoaded || initialPosts.length > 0;
   const [post, setPost] = useState<EditablePost | null>(() => findPost(initialPosts, slug));
-  const [loaded, setLoaded] = useState(() => Boolean(initialPosts.length));
+  const [loaded, setLoaded] = useState(() => authoritativeInitialPosts);
   const [previewMode, setPreviewMode] = useState(false);
-  const hasInitialPosts = Boolean(initialPosts.length);
+  const hasInitialPosts = authoritativeInitialPosts;
 
   useEffect(() => {
     const isPreview = new URLSearchParams(window.location.search).get("preview") === "admin";

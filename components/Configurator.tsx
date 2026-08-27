@@ -52,6 +52,7 @@ function profileDetailsFromPet(pet: AccountPet, personalityLabel: string) {
 type ConfiguratorProps = {
   initialConfiguratorSettings?: Partial<ConfiguratorSettings> | null;
   initialPlans?: Plan[];
+  initialPlansLoaded?: boolean;
 };
 
 function initialSettingsFromProps(initialConfiguratorSettings?: Partial<ConfiguratorSettings> | null) {
@@ -68,21 +69,23 @@ function shouldUseAdminPreview() {
   return new URLSearchParams(window.location.search).get("preview") === "admin";
 }
 
-export default function Configurator({ initialConfiguratorSettings = null, initialPlans = [] }: ConfiguratorProps) {
+export default function Configurator({ initialConfiguratorSettings = null, initialPlans = [], initialPlansLoaded = false }: ConfiguratorProps) {
   const router = useRouter();
-  const [plans, setPlans] = useState<Plan[]>(() => initialPlansFromProps(initialPlans));
+  const authoritativeInitialPlans = initialPlansLoaded || initialPlans.length > 0;
+  const initialPlanChoices = authoritativeInitialPlans ? initialPlans : initialPlansFromProps(initialPlans);
+  const [plans, setPlans] = useState<Plan[]>(() => initialPlanChoices);
   const [settings, setSettings] = useState<ConfiguratorSettings>(() => initialSettingsFromProps(initialConfiguratorSettings));
   const [animalId, setAnimalId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).animals, "dog"));
   const [sizeId, setSizeId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).sizes, "medium"));
   const [ageId, setAgeId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).ages, "adult"));
-  const [planId, setPlanId] = useState(() => initialPlansFromProps(initialPlans)[0]?.id || "");
+  const [planId, setPlanId] = useState(() => initialPlanChoices[0]?.id || "");
   const [personalityId, setPersonalityId] = useState(() => firstOption(initialSettingsFromProps(initialConfiguratorSettings).personalities, "playful"));
   const [extraIds, setExtraIds] = useState<string[]>(() => initialSettingsFromProps(initialConfiguratorSettings).extras[0]?.id ? [initialSettingsFromProps(initialConfiguratorSettings).extras[0].id] : []);
   const [petNotes, setPetNotes] = useState("");
   const [selectedPet, setSelectedPet] = useState<AccountPet | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const selectedPetAppliedRef = useRef("");
-  const hasInitialData = Boolean(initialConfiguratorSettings || initialPlans.length);
+  const hasInitialData = Boolean(initialConfiguratorSettings || authoritativeInitialPlans);
 
   useEffect(() => {
     const applySelectedPet = (nextSettings: ConfiguratorSettings) => {
@@ -127,7 +130,7 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
       };
     }
 
-    if (initialPlans.length) {
+    if (authoritativeInitialPlans) {
       adminStore.plans.set(initialPlans);
     }
     if (initialConfiguratorSettings) {
@@ -145,13 +148,13 @@ export default function Configurator({ initialConfiguratorSettings = null, initi
     }
 
     Promise.all([
-      loadAdminPlans().catch(() => []),
+      loadAdminPlans().then((data) => ({ data })).catch(() => null),
       loadRemoteConfiguratorSettings(adminStore.configurator.get()).catch(() => null)
     ]).then(([remotePlans, remoteSettings]) => {
-      if (remotePlans.length) {
-        setPlans(remotePlans);
-        adminStore.plans.set(remotePlans);
-        setPlanId((current) => remotePlans.some((plan) => plan.id === current) ? current : remotePlans[0]?.id || "");
+      if (remotePlans) {
+        setPlans(remotePlans.data);
+        adminStore.plans.set(remotePlans.data);
+        setPlanId((current) => remotePlans.data.some((plan) => plan.id === current) ? current : remotePlans.data[0]?.id || "");
       }
       if (remoteSettings) {
         setSettings(remoteSettings);

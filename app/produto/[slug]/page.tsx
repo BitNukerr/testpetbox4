@@ -1,12 +1,13 @@
 import ProductDetailClient from "@/components/ProductDetailClient";
 import { products } from "@/data/products";
-import { getCachedProducts } from "@/lib/site-data";
+import { getCachedProductsState } from "@/lib/site-data";
 
 export const revalidate = 86400;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = products.find((item) => item.slug === slug);
+  const productsState = await getCachedProductsState();
+  const product = productsState.data.find((item) => item.slug === slug) || (!productsState.loaded ? products.find((item) => item.slug === slug) : null);
   if (!product) return { title: "Produto | PetBox" };
 
   return {
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const initialProducts = await getCachedProducts();
+  const productsState = await getCachedProductsState();
 
-  return <ProductDetailClient slug={slug} initialProducts={initialProducts} />;
+  return <ProductDetailClient slug={slug} initialProducts={productsState.data} initialProductsLoaded={productsState.loaded} />;
 }

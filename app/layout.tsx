@@ -5,12 +5,12 @@ import CookieConsent from "@/components/CookieConsent";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")),
-  title: "PetBox - Caixas misterio para caes e gatos",
-  description: "Caixas misterio mensais e trimestrais para caes e gatos com brinquedos, snacks e acessorios personalizados em Portugal.",
-  keywords: ["PetBox", "caixa misterio caes", "caixa misterio gatos", "produtos para animais Portugal", "MB WAY pets"],
+  title: "PetBox - Caixas mistério para cães e gatos",
+  description: "Caixas mistério mensais e trimestrais para cães e gatos com brinquedos, snacks e acessórios personalizados em Portugal.",
+  keywords: ["PetBox", "caixa mistério cães", "caixa mistério gatos", "produtos para animais Portugal", "MB WAY pets"],
   openGraph: {
-    title: "PetBox - Caixas misterio para caes e gatos",
-    description: "Brinquedos, snacks e acessorios escolhidos para o perfil do seu animal.",
+    title: "PetBox - Caixas mistério para cães e gatos",
+    description: "Brinquedos, snacks e acessórios escolhidos para o perfil do seu animal.",
     images: ["/images/hero-pets.svg"],
     locale: "pt_PT",
     type: "website"

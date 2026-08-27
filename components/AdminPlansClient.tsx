@@ -38,10 +38,8 @@ export default function AdminPlansClient() {
     setLoadingRemote(true);
     loadAdminPlansForAdmin()
       .then((items) => {
-        if (items.length) {
-          setPlans(items);
-          adminStore.plans.set(items);
-        }
+        setPlans(items);
+        adminStore.plans.set(items);
         setRemoteIssue("");
       })
       .catch(() => setRemoteIssue("Modo local: nao consegui carregar os planos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))
@@ -106,7 +104,10 @@ export default function AdminPlansClient() {
       remoteDeleted = false;
     }
     savePlans(plans.filter((plan) => plan.id !== id), remoteDeleted ? "Plano removido." : "Plano removido localmente. Confirme que o Supabase/RLS esta configurado.");
-    startNew();
+    setEditing(null);
+    setForm(emptyPlan);
+    setPerksText("");
+    setFormOpen(false);
   }
 
   function resetPlans() {

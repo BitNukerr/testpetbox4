@@ -30,10 +30,8 @@ export default function AdminJournalClient() {
     setLoadingRemote(true);
     loadAdminPostsForAdmin()
       .then((items) => {
-        if (items.length) {
-          setPosts(items);
-          adminStore.posts.set(items);
-        }
+        setPosts(items);
+        adminStore.posts.set(items);
         setRemoteIssue("");
       })
       .catch(() => setRemoteIssue("Modo local: nao consegui carregar os artigos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))
@@ -174,13 +172,19 @@ export default function AdminJournalClient() {
       remoteDeleted = false;
     }
     save(posts.filter((item) => item.slug !== slug), remoteDeleted ? "Artigo removido." : "Artigo removido localmente. Confirme que o Supabase/RLS esta configurado.");
-    startNew();
+    setEditing(null);
+    setForm({ ...emptyPost, date: new Date().toISOString().slice(0, 10) });
+    setImageAlt("");
+    setFormOpen(false);
   }
 
   function resetPosts() {
     adminStore.posts.reset();
     setPosts(adminStore.posts.get());
-    startNew();
+    setEditing(null);
+    setForm({ ...emptyPost, date: new Date().toISOString().slice(0, 10) });
+    setImageAlt("");
+    setFormOpen(false);
     setMessage("Blog reposto.");
   }
 
@@ -209,7 +213,15 @@ export default function AdminJournalClient() {
             <div className="admin-inline-tools">
               <input className="admin-form-control" value={imageAlt} onChange={(event) => setImageAlt(event.target.value)} placeholder="Descricao da imagem" />
             </div>
-            <input className="admin-form-control mt-2" type="file" accept="image/*" onChange={(event) => handleImageFile(event.target.files?.[0])} />
+            <input
+              className="admin-form-control mt-2"
+              type="file"
+              accept="image/*"
+              onChange={(event) => {
+                handleImageFile(event.target.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
             <div className="text-muted small mt-2">A imagem e ajustada automaticamente e inserida no conteudo.</div>
           </div>
           <div className="col-12"><label className="form-label fw-bold">Conteudo</label><textarea className="admin-form-control" rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} /></div>

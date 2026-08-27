@@ -23,16 +23,17 @@ const categoryIcons: Record<string, string> = {
   "Acessórios": "◇"
 };
 
-export default function ShopClient({ initialProducts = [] }: { initialProducts?: Product[] }) {
-  const [items, setItems] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
+export default function ShopClient({ initialProducts = [], initialProductsLoaded = false }: { initialProducts?: Product[]; initialProductsLoaded?: boolean }) {
+  const authoritativeInitialProducts = initialProductsLoaded || initialProducts.length > 0;
+  const [items, setItems] = useState<Product[]>(() => authoritativeInitialProducts ? initialProducts : adminStore.products.get());
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Todos");
   const [species, setSpecies] = useState<SpeciesFilter>("all");
   const [sort, setSort] = useState<SortMode>("featured");
-  const hasInitialProducts = Boolean(initialProducts.length);
+  const hasInitialProducts = authoritativeInitialProducts;
 
   useEffect(() => {
-    if (initialProducts.length) {
+    if (hasInitialProducts) {
       adminStore.products.set(initialProducts);
     }
 
@@ -45,10 +46,8 @@ export default function ShopClient({ initialProducts = [] }: { initialProducts?:
 
     loadAdminProducts()
       .then((products) => {
-        if (products.length) {
-          setItems(products);
-          adminStore.products.set(products);
-        }
+        setItems(products);
+        adminStore.products.set(products);
       })
       .catch(() => null);
     window.addEventListener("petbox-admin-changed", refresh);
@@ -89,18 +88,18 @@ export default function ShopClient({ initialProducts = [] }: { initialProducts?:
           <span>Animal</span>
           <div className="filter-options compact">
             <button className={species === "all" ? "active" : ""} onClick={() => setSpecies("all")}><b>✦</b>Todos</button>
-            <button className={species === "dog" ? "active" : ""} onClick={() => setSpecies("dog")}><b>♧</b>Cao</button>
+            <button className={species === "dog" ? "active" : ""} onClick={() => setSpecies("dog")}><b>♧</b>Cão</button>
             <button className={species === "cat" ? "active" : ""} onClick={() => setSpecies("cat")}><b>◌</b>Gato</button>
-            <button className={species === "both" ? "active" : ""} onClick={() => setSpecies("both")}><b>◇</b>Cao + gato</button>
+            <button className={species === "both" ? "active" : ""} onClick={() => setSpecies("both")}><b>◇</b>Cão + gato</button>
           </div>
         </div>
         <div className="filter-group">
           <span>Ordenar</span>
           <div className="filter-options compact">
             <button className={sort === "featured" ? "active" : ""} onClick={() => setSort("featured")}><b>★</b>Destaques</button>
-            <button className={sort === "rating" ? "active" : ""} onClick={() => setSort("rating")}><b>↟</b>Melhor avaliacao</button>
-            <button className={sort === "price-asc" ? "active" : ""} onClick={() => setSort("price-asc")}><b>€</b>Preco baixo</button>
-            <button className={sort === "price-desc" ? "active" : ""} onClick={() => setSort("price-desc")}><b>€</b>Preco alto</button>
+            <button className={sort === "rating" ? "active" : ""} onClick={() => setSort("rating")}><b>↟</b>Melhor avaliação</button>
+            <button className={sort === "price-asc" ? "active" : ""} onClick={() => setSort("price-asc")}><b>€</b>Preço baixo</button>
+            <button className={sort === "price-desc" ? "active" : ""} onClick={() => setSort("price-desc")}><b>€</b>Preço alto</button>
           </div>
         </div>
       </aside>

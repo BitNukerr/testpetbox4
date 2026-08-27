@@ -19,6 +19,8 @@ type HomeShowcaseClientProps = {
   initialHomeSettings?: Partial<HomeSettings> | null;
   initialProducts?: Product[];
   initialPlans?: Plan[];
+  initialProductsLoaded?: boolean;
+  initialPlansLoaded?: boolean;
 };
 
 function initialSettingsFromProps(initialHomeSettings?: Partial<HomeSettings> | null) {
@@ -31,12 +33,14 @@ function shouldUseAdminPreview() {
   return new URLSearchParams(window.location.search).get("preview") === "admin";
 }
 
-export default function HomeShowcaseClient({ initialHomeSettings = null, initialProducts = [], initialPlans = [] }: HomeShowcaseClientProps) {
+export default function HomeShowcaseClient({ initialHomeSettings = null, initialProducts = [], initialPlans = [], initialProductsLoaded = false, initialPlansLoaded = false }: HomeShowcaseClientProps) {
+  const authoritativeInitialProducts = initialProductsLoaded || initialProducts.length > 0;
+  const authoritativeInitialPlans = initialPlansLoaded || initialPlans.length > 0;
   const [settings, setSettings] = useState<HomeSettings>(() => initialSettingsFromProps(initialHomeSettings));
-  const [products, setProducts] = useState<Product[]>(() => initialProducts.length ? initialProducts : adminStore.products.get());
-  const [plans, setPlans] = useState<Plan[]>(() => initialPlans.length ? initialPlans : adminStore.plans.get());
+  const [products, setProducts] = useState<Product[]>(() => authoritativeInitialProducts ? initialProducts : adminStore.products.get());
+  const [plans, setPlans] = useState<Plan[]>(() => authoritativeInitialPlans ? initialPlans : adminStore.plans.get());
   const [previewMode, setPreviewMode] = useState(false);
-  const hasInitialData = Boolean(initialHomeSettings || initialProducts.length || initialPlans.length);
+  const hasInitialData = Boolean(initialHomeSettings || authoritativeInitialProducts || authoritativeInitialPlans);
 
   useEffect(() => {
     const refresh = () => {
@@ -55,10 +59,10 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
     if (initialHomeSettings) {
       adminStore.home.set(initialSettingsFromProps(initialHomeSettings));
     }
-    if (initialProducts.length) {
+    if (authoritativeInitialProducts) {
       adminStore.products.set(initialProducts);
     }
-    if (initialPlans.length) {
+    if (authoritativeInitialPlans) {
       adminStore.plans.set(initialPlans);
     }
 
@@ -70,20 +74,20 @@ export default function HomeShowcaseClient({ initialHomeSettings = null, initial
 
     Promise.all([
       loadRemoteHomeSettings(adminStore.home.get()).catch(() => null),
-      loadAdminProducts().catch(() => []),
-      loadAdminPlans().catch(() => [])
+      loadAdminProducts().then((data) => ({ data })).catch(() => null),
+      loadAdminPlans().then((data) => ({ data })).catch(() => null)
     ]).then(([remoteSettings, remoteProducts, remotePlans]) => {
       if (remoteSettings) {
         setSettings(remoteSettings);
         adminStore.home.set(remoteSettings);
       }
-      if (remoteProducts.length) {
-        setProducts(remoteProducts);
-        adminStore.products.set(remoteProducts);
+      if (remoteProducts) {
+        setProducts(remoteProducts.data);
+        adminStore.products.set(remoteProducts.data);
       }
-      if (remotePlans.length) {
-        setPlans(remotePlans);
-        adminStore.plans.set(remotePlans);
+      if (remotePlans) {
+        setPlans(remotePlans.data);
+        adminStore.plans.set(remotePlans.data);
       }
     });
     window.addEventListener("petbox-admin-changed", refresh);

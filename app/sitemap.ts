@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { products, journalPosts } from "@/data/products";
-import { getCachedPosts, getCachedProducts } from "@/lib/site-data";
+import { getCachedPostsState, getCachedProductsState } from "@/lib/site-data";
 
 export const revalidate = 86400;
 
@@ -11,11 +11,11 @@ function baseUrl() {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = baseUrl();
   const [publishedProducts, publishedPosts] = await Promise.all([
-    getCachedProducts(),
-    getCachedPosts()
+    getCachedProductsState(),
+    getCachedPostsState()
   ]);
-  const sitemapProducts = publishedProducts.length ? publishedProducts : products;
-  const sitemapPosts = publishedPosts.length ? publishedPosts : journalPosts;
+  const sitemapProducts = publishedProducts.loaded ? publishedProducts.data : products;
+  const sitemapPosts = publishedPosts.loaded ? publishedPosts.data : journalPosts;
   const staticRoutes = ["", "/loja", "/criar-caixa", "/blog", "/sobre", "/contacto", "/entrar", "/legal/termos", "/legal/privacidade", "/legal/envios-devolucoes", "/legal/cookies"];
   return [
     ...staticRoutes.map((route) => ({ url: `${base}${route}`, lastModified: new Date() })),

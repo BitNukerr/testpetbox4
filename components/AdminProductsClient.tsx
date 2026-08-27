@@ -53,10 +53,8 @@ export default function AdminProductsClient() {
     setLoadingRemote(true);
     loadAdminProductsForAdmin()
       .then((items) => {
-        if (items.length) {
-          setProducts(items);
-          adminStore.products.set(items);
-        }
+        setProducts(items);
+        adminStore.products.set(items);
         setRemoteIssue("");
       })
       .catch(() => setRemoteIssue("Modo local: nao consegui carregar os produtos do Supabase. Pode continuar a ver e editar os dados guardados neste browser."))

@@ -1,5 +1,5 @@
 import ShopClient from "@/components/ShopClient";
-import { getCachedProducts } from "@/lib/site-data";
+import { getCachedProductsState } from "@/lib/site-data";
 
 export const metadata = {
   title: "Loja PetBox | Snacks, brinquedos e acessorios",
@@ -9,18 +9,18 @@ export const metadata = {
 export const revalidate = 86400;
 
 export default async function LojaPage() {
-  const initialProducts = await getCachedProducts();
+  const productsState = await getCachedProductsState();
 
   return (
     <section className="container section">
       <div className="section-heading">
         <div>
           <span className="eyebrow">Loja</span>
-          <h1>Snacks, brinquedos e acessorios para animais</h1>
-          <p className="muted">Explore produtos por categoria, animal e preco.</p>
+          <h1>Snacks, brinquedos e acessórios para animais</h1>
+          <p className="muted">Explore produtos por categoria, animal e preço.</p>
         </div>
       </div>
-      <ShopClient initialProducts={initialProducts} />
+      <ShopClient initialProducts={productsState.data} initialProductsLoaded={productsState.loaded} />
     </section>
   );
 }
